@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/">
+        <file>../assets/logo-larger.png</file>
+    </qresource>
+</RCC>
