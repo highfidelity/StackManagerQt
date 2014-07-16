@@ -347,7 +347,7 @@ void AppDelegate::downloadLatestExecutablesAndRequirements() {
 
     // Check if Qt is already installed
     if (GlobalData::getInstance()->getPlatform() == "mac") {
-        if (QDir(GlobalData::getInstance()->getClientsLaunchPath() + "/QtCore.framework").exists()) {
+        if (QDir(GlobalData::getInstance()->getClientsLaunchPath() + "QtCore.framework").exists()) {
             _qtReady = true;
         }
     } else if (GlobalData::getInstance()->getPlatform() == "win") {
@@ -355,7 +355,7 @@ void AppDelegate::downloadLatestExecutablesAndRequirements() {
             _qtReady = true;
         }
     } else { // linux
-        if (QFileInfo(GlobalData::getInstance()->getClientsLaunchPath() + "/hifi/libQt5Core.so.5").exists()) {
+        if (QFileInfo(GlobalData::getInstance()->getClientsLaunchPath() + "libQt5Core.so.5").exists()) {
             _qtReady = true;
         }
     }

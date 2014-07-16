@@ -32,7 +32,7 @@ set(SM_SRCS ${QT_RES} ${QT_UI_HEADERS} ${SRCS})
 if (APPLE)
 	set(MACOSX_BUNDLE_BUNDLE_NAME "Stack Manager")
 	add_executable(stackmanager MACOSX_BUNDLE ${SM_SRCS})
-elseif (WIN32)
+else ()
     add_executable(stackmanager ${SM_SRCS})
 endif()
 
