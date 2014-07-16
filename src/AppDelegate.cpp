@@ -10,7 +10,6 @@
 #include <QDir>
 #include <QFile>
 #include <QDateTime>
-#include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QNetworkRequest>
 #include <QFileInfoList>
@@ -19,10 +18,11 @@
 AppDelegate::AppDelegate(QWidget *parent) :
     QWidget(parent),
     ui(new Ui::AppDelegate),
+    _manager(new QNetworkAccessManager(this)),
     _signalMapper(new QSignalMapper(this)) {
     ui->setupUi(this);
 
-    _updatingString = "Updating ";
+    _updatingString = "Updating: ";
     _upToDateString = "Up to date | Updated: ";
     _qtReady = false;
     _dsReady = false;
@@ -36,6 +36,10 @@ AppDelegate::AppDelegate(QWidget *parent) :
             buttonList.at(i)->setEnabled(false);
         }
     }
+
+    ui->noConnectionLabel->hide();
+    ui->retryButton->hide();
+    connect(ui->retryButton, SIGNAL(clicked()), SLOT(retryConnection()));
 
     FileWatcherListenerHandler::getInstance()->init();
 
@@ -87,6 +91,13 @@ AppDelegate::~AppDelegate() {
     }
 }
 
+void AppDelegate::retryConnection() {
+    ui->retryButton->setText("Retrying...");
+    ui->retryButton->setEnabled(false);
+    repaint();
+    downloadLatestExecutablesAndRequirements();
+}
+
 void AppDelegate::buttonClicked(QString buttonId) {
     if (buttonId.startsWith("start-")) {
         bool toStart = false;
@@ -107,7 +118,10 @@ void AppDelegate::buttonClicked(QString buttonId) {
             type = "audio-mixer";
             if (ui->startAudioMixerButton->text() == "Start") {
                 toStart = true;
-                ui->viewLogAudioMixerButton->setEnabled(true);
+                if (GlobalData::getInstance()->getPlatform() != "win") {
+                    // temporary measure for Windows
+                    ui->viewLogAudioMixerButton->setEnabled(true);
+                }
                 ui->startAudioMixerButton->setText("Stop");
             } else {
                 toStart = false;
@@ -118,7 +132,10 @@ void AppDelegate::buttonClicked(QString buttonId) {
             type = "avatar-mixer";
             if (ui->startAvatarMixerButton->text() == "Start") {
                 toStart = true;
-                ui->viewLogAvatarMixerButton->setEnabled(true);
+                if (GlobalData::getInstance()->getPlatform() != "win") {
+                    // temporary measure for Windows
+                    ui->viewLogAvatarMixerButton->setEnabled(true);
+                }
                 ui->startAvatarMixerButton->setText("Stop");
             } else {
                 toStart = false;
@@ -129,7 +146,10 @@ void AppDelegate::buttonClicked(QString buttonId) {
             type = "domain-server";
             if (ui->startDomainServerButton->text() == "Start") {
                 toStart = true;
-                ui->viewLogDomainServerButton->setEnabled(true);
+                if (GlobalData::getInstance()->getPlatform() != "win") {
+                    // temporary measure for Windows
+                    ui->viewLogDomainServerButton->setEnabled(true);
+                }
                 ui->startDomainServerButton->setText("Stop");
             } else {
                 toStart = false;
@@ -140,7 +160,10 @@ void AppDelegate::buttonClicked(QString buttonId) {
             type = "metavoxel-server";
             if (ui->startMetavoxelServerButton->text() == "Start") {
                 toStart = true;
-                ui->viewLogMetavoxelServerButton->setEnabled(true);
+                if (GlobalData::getInstance()->getPlatform() != "win") {
+                    // temporary measure for Windows
+                    ui->viewLogMetavoxelServerButton->setEnabled(true);
+                }
                 ui->startMetavoxelServerButton->setText("Stop");
             } else {
                 toStart = false;
@@ -151,7 +174,10 @@ void AppDelegate::buttonClicked(QString buttonId) {
             type = "model-server";
             if (ui->startModelServerButton->text() == "Start") {
                 toStart = true;
-                ui->viewLogModelServerButton->setEnabled(true);
+                if (GlobalData::getInstance()->getPlatform() != "win") {
+                    // temporary measure for Windows
+                    ui->viewLogModelServerButton->setEnabled(true);
+                }
                 ui->startModelServerButton->setText("Stop");
             } else {
                 toStart = false;
@@ -162,7 +188,10 @@ void AppDelegate::buttonClicked(QString buttonId) {
             type = "particle-server";
             if (ui->startParticleServerButton->text() == "Start") {
                 toStart = true;
-                ui->viewLogParticleServerButton->setEnabled(true);
+                if (GlobalData::getInstance()->getPlatform() != "win") {
+                    // temporary measure for Windows
+                    ui->viewLogParticleServerButton->setEnabled(true);
+                }
                 ui->startParticleServerButton->setText("Stop");
             } else {
                 toStart = false;
@@ -173,7 +202,10 @@ void AppDelegate::buttonClicked(QString buttonId) {
             type = "voxel-server";
             if (ui->startVoxelServerButton->text() == "Start") {
                 toStart = true;
-                ui->viewLogVoxelServerButton->setEnabled(true);
+                if (GlobalData::getInstance()->getPlatform() != "win") {
+                    // temporary measure for Windows
+                    ui->viewLogVoxelServerButton->setEnabled(true);
+                }
                 ui->startVoxelServerButton->setText("Stop");
             } else {
                 toStart = false;
@@ -295,25 +327,35 @@ void AppDelegate::createExecutablePath() {
 }
 
 void AppDelegate::downloadLatestExecutablesAndRequirements() {
-    bool downloadQt = true;
-    bool downloadAC = true;
-    bool downloadDS = true;
-    bool downloadDSResources = true;
+    if (_manager->networkAccessible() == QNetworkAccessManager::NotAccessible) {
+        ui->requirementsLabel->hide();
+        ui->domainServerLabel->hide();
+        ui->assignmentClientLabel->hide();
+        ui->retryButton->setEnabled(true);
+        ui->retryButton->setText("Retry");
+        ui->noConnectionLabel->show();
+        ui->retryButton->show();
+        qDebug() << "Could not connect to the internet.";
+        return;
+    } else {
+        ui->requirementsLabel->show();
+        ui->domainServerLabel->show();
+        ui->assignmentClientLabel->show();
+        ui->noConnectionLabel->hide();
+        ui->retryButton->hide();
+    }
 
     // Check if Qt is already installed
     if (GlobalData::getInstance()->getPlatform() == "mac") {
-        if (QDir(QDir::toNativeSeparators(GlobalData::getInstance()->getClientsLaunchPath() + "/QtCore.framework")).exists()) {
-            downloadQt = false;
+        if (QDir(GlobalData::getInstance()->getClientsLaunchPath() + "/QtCore.framework").exists()) {
             _qtReady = true;
         }
     } else if (GlobalData::getInstance()->getPlatform() == "win") {
-        if (QFileInfo(QDir::toNativeSeparators(GlobalData::getInstance()->getClientsLaunchPath() + "/QtCore.dll")).exists()) {
-            downloadQt = false;
+        if (QFileInfo(GlobalData::getInstance()->getClientsLaunchPath() + "Qt5Core.dll").exists()) {
             _qtReady = true;
         }
     } else { // linux
-        if (QFileInfo(QDir::toNativeSeparators(GlobalData::getInstance()->getClientsLaunchPath() + "/hifi/libQt5Core.so.5")).exists()) {
-            downloadQt = false;
+        if (QFileInfo(GlobalData::getInstance()->getClientsLaunchPath() + "/hifi/libQt5Core.so.5").exists()) {
             _qtReady = true;
         }
     }
@@ -334,37 +376,97 @@ void AppDelegate::downloadLatestExecutablesAndRequirements() {
         acData = acFile.readAll();
         acFile.close();
     }
+    QFile reqZipFile(GlobalData::getInstance()->getRequirementsZipPath());
+    QByteArray reqZipData;
+    if (reqZipFile.open(QIODevice::ReadOnly)) {
+        reqZipData = reqZipFile.readAll();
+        reqZipFile.close();
+    }
+    QFile resZipFile(GlobalData::getInstance()->getDomainServerResourcesZipPath());
+    QByteArray resZipData;
+    if (resZipFile.open(QIODevice::ReadOnly)) {
+        resZipData = resZipFile.readAll();
+        resZipFile.close();
+    }
 
     QDir resourcesDir(GlobalData::getInstance()->getClientsResourcesPath());
     if (!(resourcesDir.entryInfoList(QDir::AllEntries).size() < 3)) {
-        downloadDSResources = false;
         _dsResourcesReady = true;
     }
 
-    QNetworkAccessManager* manager = new QNetworkAccessManager(this);
-
     QNetworkRequest acReq(QUrl(GlobalData::getInstance()->getAssignmentClientMD5URL()));
-    QNetworkReply* acReply = manager->get(acReq);
+    QNetworkReply* acReply = _manager->get(acReq);
     QEventLoop acLoop;
     connect(acReply, SIGNAL(finished()), &acLoop, SLOT(quit()));
     acLoop.exec();
     QByteArray acMd5Data = acReply->readAll().trimmed();
+    if (GlobalData::getInstance()->getPlatform() == "win") {
+        // fix for reading the MD5 hash from Windows generated
+        // binary data of the MD5 hash
+        QTextStream stream(acMd5Data);
+        stream >> acMd5Data;
+    }
     qDebug() << "AC MD5: " << acMd5Data;
-    if (acMd5Data == QCryptographicHash::hash(acData, QCryptographicHash::Md5).toHex()) {
-        downloadAC = false;
+    if (acMd5Data.toLower() == QCryptographicHash::hash(acData, QCryptographicHash::Md5).toHex()) {
         _acReady = true;
     }
 
     QNetworkRequest dsReq(QUrl(GlobalData::getInstance()->getDomainServerMD5URL()));
-    QNetworkReply* dsReply = manager->get(dsReq);
+    QNetworkReply* dsReply = _manager->get(dsReq);
     QEventLoop dsLoop;
     connect(dsReply, SIGNAL(finished()), &dsLoop, SLOT(quit()));
     dsLoop.exec();
     QByteArray dsMd5Data = dsReply->readAll().trimmed();
+    if (GlobalData::getInstance()->getPlatform() == "win") {
+        // fix for reading the MD5 hash from Windows generated
+        // binary data of the MD5 hash
+        QTextStream stream(dsMd5Data);
+        stream >> dsMd5Data;
+    }
     qDebug() << "DS MD5: " << dsMd5Data;
-    if (dsMd5Data == QCryptographicHash::hash(dsData, QCryptographicHash::Md5).toHex()) {
-        downloadDS = false;
+    if (dsMd5Data.toLower() == QCryptographicHash::hash(dsData, QCryptographicHash::Md5).toHex()) {
         _dsReady = true;
+    }
+
+    if (_qtReady) {
+        // check MD5 of requirements.zip only if Qt is found
+        QNetworkRequest reqZipReq(QUrl(GlobalData::getInstance()->getRequirementsMD5URL()));
+        QNetworkReply* reqZipReply = _manager->get(reqZipReq);
+        QEventLoop reqZipLoop;
+        connect(reqZipReply, SIGNAL(finished()), &reqZipLoop, SLOT(quit()));
+        reqZipLoop.exec();
+        QByteArray reqZipMd5Data = reqZipReply->readAll().trimmed();
+        if (GlobalData::getInstance()->getPlatform() == "win") {
+            // fix for reading the MD5 hash from Windows generated
+            // binary data of the MD5 hash
+            QTextStream stream(reqZipMd5Data);
+            stream >> reqZipMd5Data;
+        }
+        qDebug() << "Requirements ZIP MD5: " << reqZipMd5Data;
+        if (reqZipMd5Data.toLower() != QCryptographicHash::hash(reqZipData, QCryptographicHash::Md5).toHex()) {
+            _qtReady = false;
+        }
+    }
+
+    if (_dsResourcesReady) {
+        // check MD5 of resources.zip only if Domain Server
+        // resources are installed
+        QNetworkRequest resZipReq(QUrl(GlobalData::getInstance()->getDomainServerResourcesMD5URL()));
+        QNetworkReply* resZipReply = _manager->get(resZipReq);
+        QEventLoop resZipLoop;
+        connect(resZipReply, SIGNAL(finished()), &resZipLoop, SLOT(quit()));
+        resZipLoop.exec();
+        QByteArray resZipMd5Data = resZipReply->readAll().trimmed();
+        if (GlobalData::getInstance()->getPlatform() == "win") {
+            // fix for reading the MD5 hash from Windows generated
+            // binary data of the MD5 hash
+            QTextStream stream(resZipMd5Data);
+            stream >> resZipMd5Data;
+        }
+        qDebug() << "Domain Server Resources ZIP MD5: " << resZipMd5Data;
+        if (resZipMd5Data.toLower() != QCryptographicHash::hash(resZipData, QCryptographicHash::Md5).toHex()) {
+            _dsResourcesReady = false;
+        }
     }
 
     if (_dsReady && _dsResourcesReady) {
@@ -376,9 +478,9 @@ void AppDelegate::downloadLatestExecutablesAndRequirements() {
     }
 
     DownloadManager* downloadManager = 0;
-    if (downloadQt || downloadAC || downloadDS || downloadDSResources) {
+    if (!_qtReady || !_acReady || !_dsReady || !_dsResourcesReady) {
         // initialise DownloadManager
-        downloadManager = new DownloadManager(manager);
+        downloadManager = new DownloadManager(_manager);
         downloadManager->setWindowModality(Qt::ApplicationModal);
         connect(downloadManager, SIGNAL(fileSuccessfullyInstalled(QUrl)),
                 SLOT(onFileSuccessfullyInstalled(QUrl)));
@@ -391,22 +493,22 @@ void AppDelegate::downloadLatestExecutablesAndRequirements() {
         }
     }
 
-    if (downloadQt) {
+    if (!_qtReady) {
         downloadManager->downloadFile(GlobalData::getInstance()->getRequirementsURL());
         ui->requirementsLabel->setText("Requirements: " + _updatingString + " " + QDateTime::currentDateTime().toString());
     }
 
-    if (downloadAC) {
+    if (!_acReady) {
         downloadManager->downloadFile(GlobalData::getInstance()->getAssignmentClientURL());
         ui->assignmentClientLabel->setText("Assignment Client: " + _updatingString + " " + QDateTime::currentDateTime().toString());
     }
 
-    if (downloadDS) {
+    if (!_dsReady) {
         downloadManager->downloadFile(GlobalData::getInstance()->getDomainServerURL());
         ui->domainServerLabel->setText("Domain Server: " + _updatingString + " " + QDateTime::currentDateTime().toString());
     }
 
-    if (downloadDSResources) {
+    if (!_dsResourcesReady) {
         downloadManager->downloadFile(GlobalData::getInstance()->getDomainServerResourcesURL());
         ui->domainServerLabel->setText("Domain Server: " + _updatingString + " " + QDateTime::currentDateTime().toString());
     }

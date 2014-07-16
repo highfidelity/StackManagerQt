@@ -24,10 +24,14 @@ public:
     QString getAssignmentClientExecutablePath() { return _assignmentClientExecutablePath; }
     QString getDomainServerExecutablePath() { return _domainServerExecutablePath; }
     QString getRequirementsURL() { return _requirementsURL; }
+    QString getRequirementsZipPath() { return _requirementsZipPath; }
+    QString getRequirementsMD5URL() { return _requirementsMD5URL; }
     QString getAssignmentClientURL() { return _assignmentClientURL; }
     QString getAssignmentClientMD5URL() { return _assignmentClientMD5URL; }
     QString getDomainServerURL() { return _domainServerURL; }
     QString getDomainServerResourcesURL() { return _domainServerResourcesURL; }
+    QString getDomainServerResourcesZipPath() { return _domainServerResourcesZipPath; }
+    QString getDomainServerResourcesMD5URL() { return _domainServerResourcesMD5URL; }
     QString getDomainServerMD5URL() { return _domainServerMD5URL; }
     QString getDefaultDomain() { return _defaultDomain; }
     QString getLogsPath() { return _logsPath; }
@@ -47,10 +51,14 @@ private:
     QString _assignmentClientExecutablePath;
     QString _domainServerExecutablePath;
     QString _requirementsURL;
+    QString _requirementsZipPath;
+    QString _requirementsMD5URL;
     QString _assignmentClientURL;
     QString _assignmentClientMD5URL;
     QString _domainServerURL;
     QString _domainServerResourcesURL;
+    QString _domainServerResourcesZipPath;
+    QString _domainServerResourcesMD5URL;
     QString _domainServerMD5URL;
     QString _defaultDomain;
     QString _logsPath;

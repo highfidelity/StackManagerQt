@@ -4,8 +4,8 @@
 <p>
 <ol>
 <li>Qt 5 - http://qt-project.org/downloads</li>
-<li>efsw - https://bitbucket.org/SpartanJ/efsw</li>
-<li>QuaZIP - http://quazip.sourceforge.net/</li>
+<li>efsw - https://github.com/binaryking/efsw</li>
+<li>QuaZIP - https://github.com/binaryking/quazip</li>
 </ol>
 </p>
 

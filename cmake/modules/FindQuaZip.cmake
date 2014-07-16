@@ -13,7 +13,7 @@ ELSE (QUAZIP_INCLUDE_DIRS AND QUAZIP_LIBRARIES)
 		FIND_PATH(QUAZIP_LIBRARY_DIR
 			WIN32_DEBUG_POSTFIX d
 			NAMES libquazip.dll
-			HINTS "C:/Programme/" "C:/Program Files"
+			HINTS "C:/Programme/" "C:/Program Files" "C:/Program Files(x86)"
 			PATH_SUFFIXES QuaZip/lib
 		)
 		FIND_LIBRARY(QUAZIP_LIBRARIES NAMES libquazip.dll HINTS ${QUAZIP_LIBRARY_DIR})

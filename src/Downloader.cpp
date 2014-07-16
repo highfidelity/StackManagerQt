@@ -49,7 +49,7 @@ void Downloader::downloadFinished() {
 
     QString fileName = QFileInfo(_url.toString()).fileName();
     QString fileDir = GlobalData::getInstance()->getClientsLaunchPath();
-    QString filePath = QDir::toNativeSeparators(fileDir + "/" + fileName);
+    QString filePath = fileDir + fileName;
 
     QFile file(filePath);
 
@@ -61,9 +61,9 @@ void Downloader::downloadFinished() {
     if (file.open(QIODevice::WriteOnly)) {
         if (fileName == "assignment-client" || fileName == "assignment-client.exe" ||
             fileName == "domain-server" || fileName == "domain-server.exe") {
-            file.setPermissions(QFile::ExeOwner | QFile::ReadOwner);
+            file.setPermissions(QFile::ExeOwner | QFile::ReadOwner | QFile::WriteOwner);
         } else {
-            file.setPermissions(QFile::ReadOwner);
+            file.setPermissions(QFile::ReadOwner | QFile::WriteOwner);
         }
         emit installingFiles(_url);
         file.write(reply->readAll());
@@ -89,7 +89,7 @@ void Downloader::downloadFinished() {
                         }
 
                         if (newFile.open(QIODevice::WriteOnly)) {
-                            newFile.setPermissions(QFile::ReadOwner);
+                            newFile.setPermissions(QFile::ReadOwner | QFile::WriteOwner);
                             newFile.write(zipFile.readAll());
                             newFile.close();
                         } else {

@@ -7,6 +7,7 @@
 
 #include <QWidget>
 #include <QList>
+#include <QNetworkAccessManager>
 #include <QSignalMapper>
 #include <QUrl>
 
@@ -22,6 +23,7 @@ public:
     ~AppDelegate();
 
 private slots:
+    void retryConnection();
     void buttonClicked(QString buttonId);
     void onFileSuccessfullyInstalled(QUrl url);
 
@@ -33,6 +35,7 @@ private:
     Ui::AppDelegate *ui;
     QString _updatingString;
     QString _upToDateString;
+    QNetworkAccessManager* _manager;
     bool _qtReady;
     bool _dsReady;
     bool _dsResourcesReady;

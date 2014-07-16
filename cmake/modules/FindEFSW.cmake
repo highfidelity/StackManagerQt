@@ -11,7 +11,7 @@ else (EFSW_INCLUDE_DIR AND EFSW_LIBRARY)
 		FIND_PATH(EFSW_LIBRARY_DIR
 			WIN32_DEBUG_POSTFIX d
 			NAMES libefsw.dll libefsw.lib
-			HINTS "C:/Program Files"
+			HINTS "C:/Program Files" "C:/Program Files(x86)"
 			PATH_SUFFIXES efsw/lib
 		)
 		FIND_LIBRARY(EFSW_LIBRARY NAMES libefsw.dll libefsw.lib HINTS ${EFSW_LIBRARY_DIR})
