@@ -9,4 +9,13 @@
 </ol>
 </p>
 
-
+<h3>Building:</h3>
+<p>
+<code>
+$ cmake ..
+</code>
+<br>
+<code>
+$ make (or equivalent on Windows)
+</code>
+</p>
