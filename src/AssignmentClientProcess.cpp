@@ -10,6 +10,6 @@ AssignmentClientProcess::AssignmentClientProcess(const QString &type, QObject* p
 void AssignmentClientProcess::startWithType() {
     QString program = GlobalData::getInstance()->getAssignmentClientExecutablePath();
     QStringList args;
-    args << "-t" << _type << "-a" << GlobalData::getInstance()->getDefaultDomain();
+    args << "-t" << QString::number(GlobalData::getInstance()->indexForAssignmentType(_type)) << "-a" << GlobalData::getInstance()->getDefaultDomain();
     start(program, args);
 }

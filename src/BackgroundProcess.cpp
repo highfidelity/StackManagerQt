@@ -29,7 +29,11 @@ void BackgroundProcess::onReadyRead() {
 void BackgroundProcess::displayLog() {
     _logViewer->updateForFileChanges(GlobalData::getInstance()->getOutputLogPathForType(_type));
     _logViewer->updateForFileChanges(GlobalData::getInstance()->getErrorLogPathForType(_type));
-    _logViewer->show();
+    if (_logViewer->isVisible()) {
+        _logViewer->raise();
+    } else {
+        _logViewer->show();
+    }
 }
 
 void BackgroundProcess::processStarted() {

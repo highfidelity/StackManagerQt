@@ -68,12 +68,20 @@ GlobalData::GlobalData() {
 
     _defaultDomain = "localhost";
     _logsPath = QDir::toNativeSeparators(_clientsLaunchPath + "logs/");
-    _availableAssignmentTypes << "audio-mixer"
-                              << "avatar-mixer"
-                              << "voxel-server"
-                              << "particle-server"
-                              << "metavoxel-server"
-                              << "model-server";
+    _availableAssignmentTypes.insert("audio-mixer", 0);
+    _availableAssignmentTypes.insert("avatar-mixer", 1);
+    _availableAssignmentTypes.insert("voxel-server", 3);
+    _availableAssignmentTypes.insert("particle-server", 4);
+    _availableAssignmentTypes.insert("metavoxel-server", 5);
+    _availableAssignmentTypes.insert("model-server", 6);
+}
+
+int GlobalData::indexForAssignmentType(const QString &type) {
+    for (int i = 0; i < _availableAssignmentTypes.size(); ++i) {
+        if (_availableAssignmentTypes.keys().at(i) == type) {
+            return _availableAssignmentTypes.value(type);
+        }
+    }
 }
 
 QString GlobalData::getOutputLogPathForType(const QString& type) {

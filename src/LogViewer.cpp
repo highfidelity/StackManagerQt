@@ -32,13 +32,17 @@ void LogViewer::updateForFileChanges(QString path) {
     if (path == _outputLogFile) {
         QFile file(_outputLogFile);
         if (file.open(QIODevice::ReadOnly)) {
-            ui->outputView->setPlainText(file.readAll());
+            ui->outputView->setPlainText("");
+            ui->outputView->insertPlainText(file.readAll());
+            ui->outputView->ensureCursorVisible();
             file.close();
         }
     } else if (path == _errorLogFile) {
         QFile file(_errorLogFile);
         if (file.open(QIODevice::ReadOnly)) {
-            ui->errorView->setPlainText(file.readAll());
+            ui->errorView->setPlainText("");
+            ui->errorView->insertPlainText(file.readAll());
+            ui->errorView->ensureCursorVisible();
             file.close();
         }
     }

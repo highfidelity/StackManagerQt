@@ -10,8 +10,7 @@
 #define GLOBALDATA_H
 
 #include <QString>
-#include <QStringList>
-#include <QList>
+#include <QHash>
 
 class GlobalData
 {
@@ -35,7 +34,8 @@ public:
     QString getDomainServerMD5URL() { return _domainServerMD5URL; }
     QString getDefaultDomain() { return _defaultDomain; }
     QString getLogsPath() { return _logsPath; }
-    QStringList getAvailableAssignmentTypes() { return _availableAssignmentTypes; }
+    QHash<QString, int> getAvailableAssignmentTypes() { return _availableAssignmentTypes; }
+    int indexForAssignmentType(const QString& type);
     QString getOutputLogPathForType(const QString& type);
     QString getErrorLogPathForType(const QString& type);
 
@@ -62,7 +62,7 @@ private:
     QString _domainServerMD5URL;
     QString _defaultDomain;
     QString _logsPath;
-    QStringList _availableAssignmentTypes;
+    QHash<QString, int> _availableAssignmentTypes;
 };
 
 #endif

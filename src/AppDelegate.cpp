@@ -103,7 +103,7 @@ void AppDelegate::buttonClicked(QString buttonId) {
         bool toStart = false;
         QString type = "";
         if (buttonId == "start-all-assignments-button") {
-            if (ui->startAllAssignmentsButton->text() == "Start All") {
+            /*if (ui->startAllAssignmentsButton->text() == "Start All") {
                 for (int i = 0; i < GlobalData::getInstance()->getAvailableAssignmentTypes().size(); ++i) {
                     if (findBackgroundProcess(GlobalData::getInstance()->getAvailableAssignmentTypes().at(i)) == NULL) {
                         buttonClicked("start-"+GlobalData::getInstance()->getAvailableAssignmentTypes().at(i)+"-button");
@@ -113,7 +113,7 @@ void AppDelegate::buttonClicked(QString buttonId) {
                 for (int i = 0; i < GlobalData::getInstance()->getAvailableAssignmentTypes().size(); ++i) {
                     buttonClicked("start-"+GlobalData::getInstance()->getAvailableAssignmentTypes().at(i)+"-button");
                 }
-            }
+            }*/
         } else if (buttonId == "start-audio-mixer-button") {
             type = "audio-mixer";
             if (ui->startAudioMixerButton->text() == "Start") {
@@ -231,7 +231,7 @@ void AppDelegate::buttonClicked(QString buttonId) {
 
         int c = 0;
         for (int i = 0; i < GlobalData::getInstance()->getAvailableAssignmentTypes().size(); ++i) {
-            if (findBackgroundProcess(GlobalData::getInstance()->getAvailableAssignmentTypes().at(i))) {
+            if (findBackgroundProcess(GlobalData::getInstance()->getAvailableAssignmentTypes().keys().at(i))) {
                 c++;
             }
         }
