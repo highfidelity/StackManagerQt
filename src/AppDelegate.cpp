@@ -327,23 +327,7 @@ void AppDelegate::createExecutablePath() {
 }
 
 void AppDelegate::downloadLatestExecutablesAndRequirements() {
-    if (_manager->networkAccessible() == QNetworkAccessManager::NotAccessible) {
-        ui->requirementsLabel->hide();
-        ui->domainServerLabel->hide();
-        ui->assignmentClientLabel->hide();
-        ui->retryButton->setEnabled(true);
-        ui->retryButton->setText("Retry");
-        ui->noConnectionLabel->show();
-        ui->retryButton->show();
-        qDebug() << "Could not connect to the internet.";
-        return;
-    } else {
-        ui->requirementsLabel->show();
-        ui->domainServerLabel->show();
-        ui->assignmentClientLabel->show();
-        ui->noConnectionLabel->hide();
-        ui->retryButton->hide();
-    }
+    _manager->setNetworkAccessible(QNetworkAccessManager::Accessible);
 
     // Check if Qt is already installed
     if (GlobalData::getInstance()->getPlatform() == "mac") {
@@ -406,6 +390,34 @@ void AppDelegate::downloadLatestExecutablesAndRequirements() {
         QTextStream stream(acMd5Data);
         stream >> acMd5Data;
     }
+
+    // fix for Mac and Linux network accessibility
+    if (acMd5Data.size() == 0) {
+        // network is not accessible
+        _manager->setNetworkAccessible(QNetworkAccessManager::NotAccessible);
+    } else {
+        _manager->setNetworkAccessible(QNetworkAccessManager::Accessible);
+    }
+
+    if (_manager->networkAccessible() != QNetworkAccessManager::Accessible) {
+        ui->requirementsLabel->hide();
+        ui->domainServerLabel->hide();
+        ui->assignmentClientLabel->hide();
+        ui->retryButton->setEnabled(true);
+        ui->retryButton->setText("Retry");
+        ui->noConnectionLabel->show();
+        ui->retryButton->show();
+        qDebug() << "Could not connect to the internet.";
+        return;
+    } else {
+        ui->requirementsLabel->show();
+        ui->domainServerLabel->show();
+        ui->assignmentClientLabel->show();
+        ui->noConnectionLabel->hide();
+        ui->retryButton->hide();
+    }
+
+
     qDebug() << "AC MD5: " << acMd5Data;
     if (acMd5Data.toLower() == QCryptographicHash::hash(acData, QCryptographicHash::Md5).toHex()) {
         _acReady = true;
