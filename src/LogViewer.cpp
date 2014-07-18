@@ -1,3 +1,10 @@
+//
+//  LogViewer.cpp
+//  StackManagerQt/src
+//
+//  Created by Mohammed Nafees on 07/10/14.
+//  Copyright (c) 2014 High Fidelity. All rights reserved.
+//
 
 #include "LogViewer.h"
 #include "ui_LogViewer.h"
@@ -17,33 +24,31 @@ LogViewer::LogViewer(const QString &type, QWidget* parent) :
     ui->typeLabel->setText(typeLabelText);
     setWindowTitle(typeLabelText + " Log");
 
-    _outputLogFile = GlobalData::getInstance()->getOutputLogPathForType(type);
-    _errorLogFile = GlobalData::getInstance()->getErrorLogPathForType(type);
+    _outputLogFilePath = GlobalData::getInstance()->getOutputLogPathForType(type);
+    _errorLogFilePath = GlobalData::getInstance()->getErrorLogPathForType(type);
 
-    connect(FileWatcherListenerHandler::getInstance(), SIGNAL(fileChanged(QString)),
-            SLOT(updateForFileChanges(QString)));
+    connect(FileWatcherListenerHandler::getInstance(), SIGNAL(fileChanged()),
+            SLOT(updateForFileChanges()));
 }
 
 LogViewer::~LogViewer() {
     delete ui;
 }
 
-void LogViewer::updateForFileChanges(QString path) {
-    if (path == _outputLogFile) {
-        QFile file(_outputLogFile);
-        if (file.open(QIODevice::ReadOnly)) {
-            ui->outputView->setPlainText("");
-            ui->outputView->insertPlainText(file.readAll());
-            ui->outputView->ensureCursorVisible();
-            file.close();
-        }
-    } else if (path == _errorLogFile) {
-        QFile file(_errorLogFile);
-        if (file.open(QIODevice::ReadOnly)) {
-            ui->errorView->setPlainText("");
-            ui->errorView->insertPlainText(file.readAll());
-            ui->errorView->ensureCursorVisible();
-            file.close();
-        }
+void LogViewer::updateForFileChanges() {
+    QFile outputFile(_outputLogFilePath);
+    if (outputFile.open(QIODevice::ReadOnly)) {
+        ui->outputView->setPlainText("");
+        ui->outputView->insertPlainText(outputFile.readAll());
+        ui->outputView->ensureCursorVisible();
+        outputFile.close();
+    }
+
+    QFile errorFile(_errorLogFilePath);
+    if (errorFile.open(QIODevice::ReadOnly)) {
+        ui->errorView->setPlainText("");
+        ui->errorView->insertPlainText(errorFile.readAll());
+        ui->errorView->ensureCursorVisible();
+        errorFile.close();
     }
 }

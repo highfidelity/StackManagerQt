@@ -1,3 +1,10 @@
+//
+//  BackgroundProcess.h
+//  StackManagerQt/src
+//
+//  Created by Mohammed Nafees on 07/03/14.
+//  Copyright (c) 2014 High Fidelity. All rights reserved.
+//
 
 #ifndef BACKGROUNDPROCESS_H
 #define BACKGROUNDPROCESS_H
@@ -17,7 +24,6 @@ public:
     void displayLog();
 
 private slots:
-    void onReadyRead();
     void processStarted();
     void processError();
 

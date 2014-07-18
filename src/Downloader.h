@@ -1,3 +1,10 @@
+//
+//  Downloader.h
+//  StackManagerQt/src
+//
+//  Created by Mohammed Nafees on 07/09/14.
+//  Copyright (c) 2014 High Fidelity. All rights reserved.
+//
 
 #ifndef DOWNLOADER_H
 #define DOWNLOADER_H

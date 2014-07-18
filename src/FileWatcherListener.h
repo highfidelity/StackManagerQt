@@ -1,3 +1,10 @@
+//
+//  FileWatcherListener.h
+//  StackManagerQt/src
+//
+//  Created by Mohammed Nafees on 07/10/14.
+//  Copyright (c) 2014 High Fidelity. All rights reserved.
+//
 
 #ifndef FILEWATCHERLISTENER_H
 #define FILEWATCHERLISTENER_H
@@ -30,7 +37,7 @@ public:
     void init();
 
 signals:
-    void fileChanged(QString path);
+    void fileChanged();
 
 private:
     explicit FileWatcherListenerHandler(QObject* parent = 0);

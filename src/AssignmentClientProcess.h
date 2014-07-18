@@ -1,3 +1,10 @@
+//
+//  AssignmentClientProcess.h
+//  StackManagerQt/src
+//
+//  Created by Mohammed Nafees on 07/03/14.
+//  Copyright (c) 2014 High Fidelity. All rights reserved.
+//
 
 #ifndef ASSIGNMENTCLIENTPROCESS_H
 #define ASSIGNMENTCLIENTPROCESS_H

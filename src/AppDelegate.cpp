@@ -1,4 +1,10 @@
-
+//
+//  AppDelegate.cpp
+//  StackManagerQt/src
+//
+//  Created by Mohammed Nafees on 06/27/14.
+//  Copyright (c) 2014 High Fidelity. All rights reserved.
+//
 
 #include "AppDelegate.h"
 #include "ui_AppDelegate.h"
@@ -87,7 +93,7 @@ AppDelegate::AppDelegate(QWidget *parent) :
 AppDelegate::~AppDelegate() {
     delete ui;
     for (int i = 0; i < _backgroundProcesses.size(); ++i) {
-        findBackgroundProcess(_backgroundProcesses.at(i)->getType())->terminate();
+        _backgroundProcesses.at(i)->terminate();
     }
 }
 

@@ -1,8 +1,16 @@
+//
+//  LogViewer.h
+//  StackManagerQt/src
+//
+//  Created by Mohammed Nafees on 07/10/14.
+//  Copyright (c) 2014 High Fidelity. All rights reserved.
+//
 
 #ifndef LOGVIEWER_H
 #define LOGVIEWER_H
 
 #include <QWidget>
+#include <QFile>
 
 namespace Ui {
     class LogViewer;
@@ -16,12 +24,12 @@ public:
     ~LogViewer();
 
 public slots:
-    void updateForFileChanges(QString path);
+    void updateForFileChanges();
 
 private:
     Ui::LogViewer *ui;
-    QString _outputLogFile;
-    QString _errorLogFile;
+    QString _outputLogFilePath;
+    QString _errorLogFilePath;
 };
 
 #endif

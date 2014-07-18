@@ -1,3 +1,11 @@
+//
+//  main.cpp
+//  StackManagerQt/src
+//
+//  Created by Mohammed Nafees on 06/27/14.
+//  Copyright (c) 2014 High Fidelity. All rights reserved.
+//
+
 #include <QApplication>
 
 #include "AppDelegate.h"
