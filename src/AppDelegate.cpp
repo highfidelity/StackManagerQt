@@ -87,7 +87,7 @@ AppDelegate::AppDelegate(QWidget *parent) :
 AppDelegate::~AppDelegate() {
     delete ui;
     for (int i = 0; i < _backgroundProcesses.size(); ++i) {
-        findBackgroundProcess(_backgroundProcesses.at(i)->getType())->terminate();
+        _backgroundProcesses.at(i)->terminate();
     }
 }
 

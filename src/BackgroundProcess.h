@@ -17,7 +17,6 @@ public:
     void displayLog();
 
 private slots:
-    void onReadyRead();
     void processStarted();
     void processError();
 

@@ -30,7 +30,7 @@ public:
     void init();
 
 signals:
-    void fileChanged(QString path);
+    void fileChanged();
 
 private:
     explicit FileWatcherListenerHandler(QObject* parent = 0);

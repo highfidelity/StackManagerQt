@@ -3,6 +3,7 @@
 #define LOGVIEWER_H
 
 #include <QWidget>
+#include <QFile>
 
 namespace Ui {
     class LogViewer;
@@ -16,12 +17,12 @@ public:
     ~LogViewer();
 
 public slots:
-    void updateForFileChanges(QString path);
+    void updateForFileChanges();
 
 private:
     Ui::LogViewer *ui;
-    QString _outputLogFile;
-    QString _errorLogFile;
+    QString _outputLogFilePath;
+    QString _errorLogFilePath;
 };
 
 #endif

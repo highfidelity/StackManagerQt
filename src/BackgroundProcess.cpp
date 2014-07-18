@@ -18,18 +18,14 @@ BackgroundProcess::BackgroundProcess(const QString &type, QObject *parent) :
 
     _logViewer = new LogViewer(_type);
 
-    //connect(this, SIGNAL(readyRead()), SLOT(onReadyRead()));
     connect(this, SIGNAL(started()), SLOT(processStarted()));
     connect(this, SIGNAL(error(QProcess::ProcessError)), SLOT(processError()));
-}
 
-void BackgroundProcess::onReadyRead() {
-    qDebug() << readAll();
+    setWorkingDirectory(GlobalData::getInstance()->getClientsLaunchPath());
 }
 
 void BackgroundProcess::displayLog() {
-    _logViewer->updateForFileChanges(GlobalData::getInstance()->getOutputLogPathForType(_type));
-    _logViewer->updateForFileChanges(GlobalData::getInstance()->getErrorLogPathForType(_type));
+    _logViewer->updateForFileChanges();
     if (_logViewer->isVisible()) {
         _logViewer->raise();
     } else {
@@ -39,7 +35,6 @@ void BackgroundProcess::displayLog() {
 
 void BackgroundProcess::processStarted() {
     qDebug() << "process " << _type << " started.";
-    setWorkingDirectory(QFileInfo(program()).absolutePath());
 }
 
 void BackgroundProcess::processError() {

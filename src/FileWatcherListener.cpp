@@ -15,11 +15,11 @@ void FileWatcherListener::handleFileAction(efsw::WatchID watchid, const std::str
                                            std::string oldFilename) {
     Q_UNUSED(watchid);
     Q_UNUSED(oldFilename);
+    Q_UNUSED(dir);
+    Q_UNUSED(filename);
+    Q_UNUSED(action);
 
-    if (action == efsw::Actions::Modified || action == efsw::Actions::Add) {
-        QString path = QDir::toNativeSeparators(QString::fromStdString(dir) + QString::fromStdString(filename));
-        emit _parent->fileChanged(path);
-    }
+    emit _parent->fileChanged();
 }
 
 FileWatcherListenerHandler* FileWatcherListenerHandler::_instance = NULL;
