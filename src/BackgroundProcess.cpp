@@ -4,6 +4,7 @@
 
 #include <QWidget>
 #include <QFile>
+#include <QFileInfo>
 #include <QDebug>
 
 BackgroundProcess::BackgroundProcess(const QString &type, QObject *parent) :
@@ -38,6 +39,7 @@ void BackgroundProcess::displayLog() {
 
 void BackgroundProcess::processStarted() {
     qDebug() << "process " << _type << " started.";
+    setWorkingDirectory(QFileInfo(program()).absolutePath());
 }
 
 void BackgroundProcess::processError() {
