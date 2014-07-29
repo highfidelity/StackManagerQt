@@ -83,11 +83,3 @@ int GlobalData::indexForAssignmentType(const QString &type) {
         }
     }
 }
-
-QString GlobalData::getOutputLogPathForType(const QString& type) {
-    return QDir::toNativeSeparators(_logsPath + type + "_output.log");
-}
-
-QString GlobalData::getErrorLogPathForType(const QString& type) {
-    return QDir::toNativeSeparators(_logsPath + type + "_error.log");
-}

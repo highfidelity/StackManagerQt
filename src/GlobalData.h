@@ -36,9 +36,6 @@ public:
     QString getLogsPath() { return _logsPath; }
     QHash<QString, int> getAvailableAssignmentTypes() { return _availableAssignmentTypes; }
     int indexForAssignmentType(const QString& type);
-    QString getOutputLogPathForType(const QString& type);
-    QString getErrorLogPathForType(const QString& type);
-
 
 private:
     GlobalData();

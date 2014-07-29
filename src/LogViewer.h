@@ -23,13 +23,11 @@ public:
     explicit LogViewer(const QString& type, QWidget* parent = 0);
     ~LogViewer();
 
-public slots:
-    void updateForFileChanges();
+    void setStandardOutput(const QString& output);
+    void setStandardError(const QString& error);
 
 private:
     Ui::LogViewer *ui;
-    QString _outputLogFilePath;
-    QString _errorLogFilePath;
 };
 
 #endif

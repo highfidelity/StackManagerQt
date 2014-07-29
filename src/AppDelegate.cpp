@@ -11,7 +11,6 @@
 #include "GlobalData.h"
 #include "AssignmentClientProcess.h"
 #include "DownloadManager.h"
-#include "FileWatcherListener.h"
 
 #include <QDir>
 #include <QFile>
@@ -46,8 +45,6 @@ AppDelegate::AppDelegate(QWidget *parent) :
     ui->noConnectionLabel->hide();
     ui->retryButton->hide();
     connect(ui->retryButton, SIGNAL(clicked()), SLOT(retryConnection()));
-
-    FileWatcherListenerHandler::getInstance()->init();
 
     createExecutablePath();
     downloadLatestExecutablesAndRequirements();

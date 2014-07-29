@@ -26,6 +26,8 @@ public:
 private slots:
     void processStarted();
     void processError();
+    void receivedStandardOutput();
+    void receivedStandardError();
 
 private:
     QString _type;
