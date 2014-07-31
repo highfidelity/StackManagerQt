@@ -11,12 +11,14 @@ find_package(Qt5Gui)
 find_package(Qt5Core)
 find_package(Qt5Network)
 find_package(QuaZip)
+find_package(ZLIB)
 
 include_directories(${Qt5Widgets_INCLUDE_DIRS}
 					${Qt5Gui_INCLUDE_DIRS}
 					${Qt5Core_INCLUDE_DIRS}
 					${Qt5Network_INCLUDE_DIRS}
 					${QUAZIP_INCLUDE_DIRS}
+					${ZLIB_INCLUDE_DIRS}
 					${CMAKE_CURRENT_BINARY_DIR}
 					src)
 
@@ -34,4 +36,4 @@ else ()
     add_executable(stackmanager ${SM_SRCS})
 endif()
 
-target_link_libraries(stackmanager Qt5::Core Qt5::Gui Qt5::Network Qt5::Widgets ${QUAZIP_LIBRARIES})
+target_link_libraries(stackmanager Qt5::Core Qt5::Gui Qt5::Network Qt5::Widgets ${QUAZIP_LIBRARIES} ${ZLIB_LIBRARIES})
