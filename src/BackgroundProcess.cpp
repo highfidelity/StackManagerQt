@@ -17,22 +17,17 @@
 BackgroundProcess::BackgroundProcess(const QString &type, QObject *parent) :
     QProcess(parent),
     _type(type) {
-    QString outputFilePath = GlobalData::getInstance()->getOutputLogPathForType(_type);
-    QString errorFilePath = GlobalData::getInstance()->getErrorLogPathForType(_type);
-
-    setStandardOutputFile(outputFilePath);
-    setStandardErrorFile(errorFilePath);
-
     _logViewer = new LogViewer(_type);
 
     connect(this, SIGNAL(started()), SLOT(processStarted()));
+    connect(this, SIGNAL(readyReadStandardOutput()), SLOT(receivedStandardOutput()));
+    connect(this, SIGNAL(readyReadStandardError()), SLOT(receivedStandardError()));
     connect(this, SIGNAL(error(QProcess::ProcessError)), SLOT(processError()));
 
     setWorkingDirectory(GlobalData::getInstance()->getClientsLaunchPath());
 }
 
 void BackgroundProcess::displayLog() {
-    _logViewer->updateForFileChanges();
     if (_logViewer->isVisible()) {
         _logViewer->raise();
     } else {
@@ -46,4 +41,12 @@ void BackgroundProcess::processStarted() {
 
 void BackgroundProcess::processError() {
     qDebug() << errorString();
+}
+
+void BackgroundProcess::receivedStandardOutput() {
+    _logViewer->setStandardOutput(readAllStandardOutput());
+}
+
+void BackgroundProcess::receivedStandardError() {
+    _logViewer->setStandardError(readAllStandardError());
 }
