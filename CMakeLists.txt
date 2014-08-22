@@ -23,11 +23,12 @@ include_directories(${Qt5Widgets_INCLUDE_DIRS}
 					src)
 
 file(GLOB SRCS "src/*.cpp")
+file(GLOB HEADERS "src/*.h")
 file(GLOB QT_UI_FILES "ui/*.ui")
 file(GLOB QT_RES_FILES "src/*.qrc")
 qt5_wrap_ui(QT_UI_HEADERS "${QT_UI_FILES}")
 qt5_add_resources(QT_RES "${QT_RES_FILES}")
-set(SM_SRCS ${QT_RES} ${QT_UI_HEADERS} ${SRCS})
+set(SM_SRCS ${QT_RES} ${QT_UI_HEADERS} ${SRCS} ${HEADERS})
 
 if (APPLE)
 	set(MACOSX_BUNDLE_BUNDLE_NAME "Stack Manager")
