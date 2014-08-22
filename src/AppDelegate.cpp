@@ -121,10 +121,7 @@ void AppDelegate::buttonClicked(QString buttonId) {
             type = "audio-mixer";
             if (ui->startAudioMixerButton->text() == "Start") {
                 toStart = true;
-                if (GlobalData::getInstance()->getPlatform() != "win") {
-                    // temporary measure for Windows
-                    ui->viewLogAudioMixerButton->setEnabled(true);
-                }
+                ui->viewLogAudioMixerButton->setEnabled(true);
                 ui->startAudioMixerButton->setText("Stop");
             } else {
                 toStart = false;
@@ -135,10 +132,7 @@ void AppDelegate::buttonClicked(QString buttonId) {
             type = "avatar-mixer";
             if (ui->startAvatarMixerButton->text() == "Start") {
                 toStart = true;
-                if (GlobalData::getInstance()->getPlatform() != "win") {
-                    // temporary measure for Windows
-                    ui->viewLogAvatarMixerButton->setEnabled(true);
-                }
+                ui->viewLogAvatarMixerButton->setEnabled(true);
                 ui->startAvatarMixerButton->setText("Stop");
             } else {
                 toStart = false;
@@ -149,10 +143,7 @@ void AppDelegate::buttonClicked(QString buttonId) {
             type = "domain-server";
             if (ui->startDomainServerButton->text() == "Start") {
                 toStart = true;
-                if (GlobalData::getInstance()->getPlatform() != "win") {
-                    // temporary measure for Windows
-                    ui->viewLogDomainServerButton->setEnabled(true);
-                }
+                ui->viewLogDomainServerButton->setEnabled(true);
                 ui->startDomainServerButton->setText("Stop");
             } else {
                 toStart = false;
@@ -163,10 +154,7 @@ void AppDelegate::buttonClicked(QString buttonId) {
             type = "metavoxel-server";
             if (ui->startMetavoxelServerButton->text() == "Start") {
                 toStart = true;
-                if (GlobalData::getInstance()->getPlatform() != "win") {
-                    // temporary measure for Windows
-                    ui->viewLogMetavoxelServerButton->setEnabled(true);
-                }
+                ui->viewLogMetavoxelServerButton->setEnabled(true);
                 ui->startMetavoxelServerButton->setText("Stop");
             } else {
                 toStart = false;
@@ -177,10 +165,7 @@ void AppDelegate::buttonClicked(QString buttonId) {
             type = "model-server";
             if (ui->startModelServerButton->text() == "Start") {
                 toStart = true;
-                if (GlobalData::getInstance()->getPlatform() != "win") {
-                    // temporary measure for Windows
-                    ui->viewLogModelServerButton->setEnabled(true);
-                }
+                ui->viewLogModelServerButton->setEnabled(true);
                 ui->startModelServerButton->setText("Stop");
             } else {
                 toStart = false;
@@ -191,10 +176,7 @@ void AppDelegate::buttonClicked(QString buttonId) {
             type = "particle-server";
             if (ui->startParticleServerButton->text() == "Start") {
                 toStart = true;
-                if (GlobalData::getInstance()->getPlatform() != "win") {
-                    // temporary measure for Windows
-                    ui->viewLogParticleServerButton->setEnabled(true);
-                }
+                ui->viewLogParticleServerButton->setEnabled(true);
                 ui->startParticleServerButton->setText("Stop");
             } else {
                 toStart = false;
@@ -205,10 +187,7 @@ void AppDelegate::buttonClicked(QString buttonId) {
             type = "voxel-server";
             if (ui->startVoxelServerButton->text() == "Start") {
                 toStart = true;
-                if (GlobalData::getInstance()->getPlatform() != "win") {
-                    // temporary measure for Windows
-                    ui->viewLogVoxelServerButton->setEnabled(true);
-                }
+                ui->viewLogVoxelServerButton->setEnabled(true);
                 ui->startVoxelServerButton->setText("Stop");
             } else {
                 toStart = false;
