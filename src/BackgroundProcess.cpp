@@ -44,9 +44,9 @@ void BackgroundProcess::processError() {
 }
 
 void BackgroundProcess::receivedStandardOutput() {
-    _logViewer->setStandardOutput(readAllStandardOutput());
+    _logViewer->appendStandardOutput(readAllStandardOutput());
 }
 
 void BackgroundProcess::receivedStandardError() {
-    _logViewer->setStandardError(readAllStandardError());
+    _logViewer->appendStandardError(readAllStandardError());
 }
