@@ -108,5 +108,7 @@ void BackgroundProcess::receivedStandardError() {
     output = readAllStandardError();
 #endif
 
-    _logViewer->appendStandardError(output);
+    if (output != "") {
+        _logViewer->appendStandardError(output);
+    }
 }
