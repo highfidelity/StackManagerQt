@@ -9,28 +9,41 @@
 #include "BackgroundProcess.h"
 #include "GlobalData.h"
 
-#include <QWidget>
+#include <QDateTime>
+#include <QDebug>
 #include <QDir>
 #include <QFile>
 #include <QFileInfo>
-#include <QDebug>
+#include <QStandardPaths>
+#include <QWidget>
+
+const int LOG_CHECK_INTERVAL_MS = 500;
+
+const QString DATETIME_FORMAT = "yyyy-MM-dd_hh.mm.ss";
+const QString LOGS_DIRECTORY = "/Logs/";
 
 BackgroundProcess::BackgroundProcess(const QString &type, QObject *parent) :
     QProcess(parent),
-    _type(type) {
+    _type(type),
+    _stdoutFilePos(0),
+    _stderrFilePos(0) {
     _logViewer = new LogViewer(_type);
 
     connect(this, SIGNAL(started()), SLOT(processStarted()));
     connect(this, SIGNAL(error(QProcess::ProcessError)), SLOT(processError()));
 
+    QString path = QStandardPaths::writableLocation(QStandardPaths::DataLocation);
+    path.append(LOGS_DIRECTORY);
+    QDir logDir(path);
+    if (!logDir.exists(path)) {
+        logDir.mkpath(path);
+    }
 
-#ifdef Q_OS_WIN
-    // On Windows there are issues piping stdout/err - writing to a file first and reading from
-    // there seems to solve the problem.
-    _stdoutFilePos = 0;
-    _stderrFilePos = 0;
-    _stdoutFilename = QDir::temp().absolutePath() + "/" + _type + "_stdout.log";
-    _stderrFilename = QDir::temp().absolutePath() + "/" + _type + "_stderr.log";
+    QDateTime now = QDateTime::currentDateTime();
+    QString nowString = now.toString(DATETIME_FORMAT);
+    QString baseFilename = path + _type;
+    _stdoutFilename = QString("%1_stdout_%2.txt").arg(baseFilename, nowString);
+    _stderrFilename = QString("%1_stderr_%2.txt").arg(baseFilename, nowString);
 
     qDebug() << "stdout for " << type << " being written to: " << _stdoutFilename;
     qDebug() << "stderr for " << type << " being written to: " << _stderrFilename;
@@ -38,15 +51,11 @@ BackgroundProcess::BackgroundProcess(const QString &type, QObject *parent) :
     setStandardOutputFile(_stdoutFilename);
     setStandardErrorFile(_stderrFilename);
 
-    _logTimer.setInterval(500);
+    _logTimer.setInterval(LOG_CHECK_INTERVAL_MS);
     _logTimer.setSingleShot(false);
     connect(&_logTimer, SIGNAL(timeout()), this, SLOT(receivedStandardError()));
     connect(&_logTimer, SIGNAL(timeout()), this, SLOT(receivedStandardOutput()));
     connect(this, SIGNAL(started()), &_logTimer, SLOT(start()));
-#else
-    connect(this, SIGNAL(readyReadStandardOutput()), SLOT(receivedStandardOutput()));
-    connect(this, SIGNAL(readyReadStandardError()), SLOT(receivedStandardError()));
-#endif
 
     setWorkingDirectory(GlobalData::getInstance()->getClientsLaunchPath());
 }
@@ -70,7 +79,6 @@ void BackgroundProcess::processError() {
 void BackgroundProcess::receivedStandardOutput() {
     QString output;
 
-#ifdef Q_OS_WIN
     QFile file(_stdoutFilename);
 
     if (!file.open(QIODevice::ReadOnly)) return;
@@ -82,17 +90,15 @@ void BackgroundProcess::receivedStandardOutput() {
     }
 
     file.close();
-#else
-    output = readAllStandardOutput();
-#endif
 
-    _logViewer->appendStandardOutput(output);
+    if (!output.isEmpty() && !output.isNull()) {
+        _logViewer->appendStandardOutput(output);
+    }
 }
 
 void BackgroundProcess::receivedStandardError() {
     QString output;
 
-#ifdef Q_OS_WIN
     QFile file(_stderrFilename);
 
     if (!file.open(QIODevice::ReadOnly)) return;
@@ -104,11 +110,8 @@ void BackgroundProcess::receivedStandardError() {
     }
 
     file.close();
-#else
-    output = readAllStandardError();
-#endif
 
-    if (output != "") {
+    if (!output.isEmpty() && !output.isNull()) {
         _logViewer->appendStandardError(output);
     }
 }
