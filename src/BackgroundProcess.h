@@ -12,6 +12,8 @@
 #include "LogViewer.h"
 
 #include <QProcess>
+#include <QString>
+#include <QTimer>
 
 class BackgroundProcess : public QProcess
 {
@@ -32,6 +34,11 @@ private slots:
 private:
     QString _type;
     LogViewer* _logViewer;
+    QTimer _logTimer;
+    QString _stdoutFilename;
+    QString _stderrFilename;
+    qint64 _stdoutFilePos;
+    qint64 _stderrFilePos;
 };
 
 #endif

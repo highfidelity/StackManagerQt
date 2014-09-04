@@ -23,8 +23,8 @@ public:
     explicit LogViewer(const QString& type, QWidget* parent = 0);
     ~LogViewer();
 
-    void setStandardOutput(const QString& output);
-    void setStandardError(const QString& error);
+    void appendStandardOutput(const QString& output);
+    void appendStandardError(const QString& error);
 
 private:
     Ui::LogViewer *ui;

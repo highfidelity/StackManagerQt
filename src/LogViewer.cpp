@@ -22,18 +22,27 @@ LogViewer::LogViewer(const QString &type, QWidget* parent) :
     QString typeLabelText = type.split("-").join(" ").toUpper();
     ui->typeLabel->setText(typeLabelText);
     setWindowTitle(typeLabelText + " Log");
+
+    QFont font("Monospace");
+    font.setStyleHint(QFont::TypeWriter);
+    ui->outputView->setFont(font);
+    ui->errorView->setFont(font);
 }
 
 LogViewer::~LogViewer() {
     delete ui;
 }
 
-void LogViewer::setStandardOutput(const QString& output) {
-    ui->outputView->insertPlainText(output);
+void LogViewer::appendStandardOutput(const QString& output) {
+    QTextCursor cursor = ui->outputView->textCursor();
+    cursor.movePosition(QTextCursor::End);
+    cursor.insertText(output);
     ui->outputView->ensureCursorVisible();
 }
 
-void LogViewer::setStandardError(const QString& error) {
-    ui->errorView->insertPlainText(error);
+void LogViewer::appendStandardError(const QString& error) {
+    QTextCursor cursor = ui->errorView->textCursor();
+    cursor.movePosition(QTextCursor::End);
+    cursor.insertText(error);
     ui->errorView->ensureCursorVisible();
 }

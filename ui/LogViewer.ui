@@ -13,12 +13,6 @@
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <property name="styleSheet">
-   <string notr="true">QTextEdit {
-	font-family: Inconsolata, Lucida Console, Andale Mono, Monaco;
-	font-size: 16px;
-}</string>
-  </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
     <widget class="QLabel" name="typeLabel">
