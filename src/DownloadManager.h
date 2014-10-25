@@ -10,15 +10,12 @@
 #define DOWNLOADMANAGER_H
 
 #include <QWidget>
+#include <QTableWidget>
 #include <QHash>
 #include <QEvent>
 #include <QNetworkAccessManager>
 
 #include "Downloader.h"
-
-namespace Ui {
-    class DownloadManager;
-}
 
 class DownloadManager : public QWidget
 {
@@ -45,7 +42,7 @@ signals:
     void fileSuccessfullyInstalled(QUrl url);
 
 private:
-    Ui::DownloadManager* ui;
+    QTableWidget* _table;
     QNetworkAccessManager* _manager;
     QHash<Downloader*, int> _downloaderHash;
 

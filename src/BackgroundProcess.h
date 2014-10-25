@@ -23,7 +23,7 @@ public:
 
     QString& getType() { return _type; }
 
-    void displayLog();
+    LogViewer* getLogViewer() { return _logViewer; }
 
 private slots:
     void processStarted();

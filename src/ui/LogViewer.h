@@ -1,6 +1,6 @@
 //
 //  LogViewer.h
-//  StackManagerQt/src
+//  StackManagerQt/src/ui
 //
 //  Created by Mohammed Nafees on 07/10/14.
 //  Copyright (c) 2014 High Fidelity. All rights reserved.
@@ -10,24 +10,20 @@
 #define LOGVIEWER_H
 
 #include <QWidget>
-#include <QFile>
-
-namespace Ui {
-    class LogViewer;
-}
+#include <QTextEdit>
 
 class LogViewer : public QWidget
 {
     Q_OBJECT
 public:
-    explicit LogViewer(const QString& type, QWidget* parent = 0);
-    ~LogViewer();
+    explicit LogViewer(QWidget* parent = 0);
 
     void appendStandardOutput(const QString& output);
     void appendStandardError(const QString& error);
 
 private:
-    Ui::LogViewer *ui;
+    QTextEdit* _outputView;
+    QTextEdit* _errorView;
 };
 
 #endif

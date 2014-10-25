@@ -11,26 +11,31 @@
 
 #include "BackgroundProcess.h"
 
-#include <QWidget>
+#include <QApplication>
+#include <QCoreApplication>
 #include <QList>
 #include <QNetworkAccessManager>
-#include <QSignalMapper>
 #include <QUrl>
+#include <QHash>
 
-namespace Ui {
-    class AppDelegate;
-}
+#include "MainWindow.h"
 
-class AppDelegate : public QWidget
+class AppDelegate : public QApplication
 {
     Q_OBJECT
 public:
-    explicit AppDelegate(QWidget* parent = 0);
-    ~AppDelegate();
+    static AppDelegate* getInstance() { return static_cast<AppDelegate*>(QCoreApplication::instance()); }
+
+    AppDelegate(int argc, char* argv[]);
+
+    void startDomainServer();
+    void stopDomainServer();
+
+    void startAssignment(int id, QString poolId = "");
+    void stopAssignment(int id);
 
 private slots:
-    void retryConnection();
-    void buttonClicked(QString buttonId);
+    void cleanupProcesses();
     void onFileSuccessfullyInstalled(QUrl url);
 
 private:
@@ -38,17 +43,14 @@ private:
     void downloadLatestExecutablesAndRequirements();
     BackgroundProcess* findBackgroundProcess(QString type);
 
-    Ui::AppDelegate *ui;
-    QString _updatingString;
-    QString _upToDateString;
+    MainWindow* _window;
     QNetworkAccessManager* _manager;
     bool _qtReady;
     bool _dsReady;
     bool _dsResourcesReady;
     bool _acReady;
-    bool _startStopAll;
     QList<BackgroundProcess*> _backgroundProcesses;
-    QSignalMapper* _signalMapper;
+    QHash<QString, int> _logsTabWidgetHash;
 };
 
 #endif
