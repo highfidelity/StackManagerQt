@@ -18,6 +18,7 @@
 
 #include "AppDelegate.h"
 #include "AssignmentWidget.h"
+#include "GlobalData.h"
 
 const int globalx = 55;
 const QColor lightGrayColor = QColor(205, 205, 205);
@@ -44,7 +45,12 @@ MainWindow* MainWindow::getInstance() {
 MainWindow::MainWindow() :
     QWidget(0) {
     setWindowTitle("High Fidelity - Stack Manager");
-    setGeometry(qApp->desktop()->availableGeometry().width()/2 - 270, 0, 540, 200);
+    if (GlobalData::getInstance()->getPlatform() == "win") {
+        setGeometry(qApp->desktop()->availableGeometry().width()/2 - 270, 30, 540, 200);
+    } else {
+        setGeometry(qApp->desktop()->availableGeometry().width()/2 - 270, 0, 540, 200);
+    }
+    setFixedWidth(width());
     setMaximumHeight(qApp->desktop()->availableGeometry().height() - 40);
     setWindowFlags(Qt::CustomizeWindowHint | Qt::WindowTitleHint |
                    Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);

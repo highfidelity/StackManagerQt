@@ -24,12 +24,10 @@ AppDelegate::AppDelegate(int argc, char* argv[]) :
     setOrganizationName("High Fidelity");
     setOrganizationDomain("io.highfidelity.StackManager");
 
-    MainWindow::getInstance();
     _manager = new QNetworkAccessManager(this);
 
     createExecutablePath();
-    //downloadLatestExecutablesAndRequirements();
-    MainWindow::getInstance()->show();
+    downloadLatestExecutablesAndRequirements();
 
     connect(this, &QApplication::aboutToQuit, this, &AppDelegate::cleanupProcesses);
 }

@@ -1,6 +1,11 @@
 cmake_minimum_required(VERSION 2.8.11)
 
-set(TARGET_NAME "Stack Manager")
+if (WIN32)
+    # A space in the target name leads to compile-time error on Windows
+	set(TARGET_NAME "StackManager")
+else ()
+	set(TARGET_NAME "Stack Manager")
+endif ()	
 project(${TARGET_NAME})
 
 set(CMAKE_AUTOMOC ON)
@@ -40,7 +45,11 @@ if (APPLE)
     set(SM_SRCS ${SM_SRCS} "${CMAKE_CURRENT_SOURCE_DIR}/assets/icon.icns")
     add_executable(${TARGET_NAME} MACOSX_BUNDLE ${SM_SRCS})
 else ()
-    add_executable(${TARGET_NAME} ${SM_SRCS})
-endif()
+	if (WIN32)
+    	add_executable(${TARGET_NAME} WIN32 ${SM_SRCS})
+    else ()	
+		add_executable(${TARGET_NAME} ${SM_SRCS})	
+	endif ()	    
+endif ()
 
 target_link_libraries(${TARGET_NAME} Qt5::Core Qt5::Gui Qt5::Svg Qt5::Network Qt5::Widgets ${QUAZIP_LIBRARIES} ${ZLIB_LIBRARIES})
