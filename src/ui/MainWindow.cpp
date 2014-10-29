@@ -44,7 +44,7 @@ MainWindow* MainWindow::getInstance() {
 
 MainWindow::MainWindow() :
     QWidget(0) {
-    setWindowTitle("High Fidelity - Stack Manager");
+    setWindowTitle("High Fidelity Stack Manager");
     if (GlobalData::getInstance()->getPlatform() == "win") {
         setGeometry(qApp->desktop()->availableGeometry().width()/2 - 270, 30, 540, 200);
     } else {
@@ -55,7 +55,7 @@ MainWindow::MainWindow() :
     setWindowFlags(Qt::CustomizeWindowHint | Qt::WindowTitleHint |
                    Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
     setMouseTracking(true);
-    setFont(QFont("sans-serif"));
+    setStyleSheet("font-family: 'Helvetica', 'Arial', 'sans-serif';");
 
     _domainServerRunning = false;
     _serverAddress = "";
@@ -97,7 +97,7 @@ MainWindow::MainWindow() :
     _assignmentScrollArea->setWidget(new QWidget);
     _assignmentScrollArea->setWidgetResizable(true);
     _assignmentScrollArea->setFrameShape(QFrame::NoFrame);
-    _assignmentScrollArea->move(globalx, 178);
+    _assignmentScrollArea->move(globalx - 14, 178);
     _assignmentScrollArea->setMaximumWidth(width() - globalx*2);
     _assignmentScrollArea->setMaximumHeight(qApp->desktop()->availableGeometry().height() - 215);
 

@@ -211,21 +211,9 @@ void AppDelegate::downloadLatestExecutablesAndRequirements() {
     }
 
     if (_manager->networkAccessible() != QNetworkAccessManager::Accessible) {
-        /*ui->requirementsLabel->hide();
-        ui->domainServerLabel->hide();
-        ui->assignmentClientLabel->hide();
-        ui->retryButton->setEnabled(true);
-        ui->retryButton->setText("Retry");
-        ui->noConnectionLabel->show();
-        ui->retryButton->show();*/
         qDebug() << "Could not connect to the internet.";
+        MainWindow::getInstance()->show();
         return;
-    } else {
-        /*ui->requirementsLabel->show();
-        ui->domainServerLabel->show();
-        ui->assignmentClientLabel->show();
-        ui->noConnectionLabel->hide();
-        ui->retryButton->hide();*/
     }
 
 
