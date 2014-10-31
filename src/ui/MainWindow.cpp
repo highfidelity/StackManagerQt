@@ -69,6 +69,7 @@ MainWindow::MainWindow() :
 
     _serverAddressLabel = new QLabel(this);
     _serverAddressLabel->move(360, _serverButtonBounds.y());
+    _serverAddressLabel->setOpenExternalLinks(true);
     _serverAddressLabel->hide();
 
     _viewLogsButton = new QPushButton("View Logs", this);
@@ -120,7 +121,7 @@ MainWindow::MainWindow() :
     // temporary
     {
         _serverAddress = "hifi://localhost";
-        _serverAddressLabel->setText("<html><head/><body><p><a href=\""+ _serverAddress +"\"><span style=\"font:14px 'Helvetica', 'Arial', 'sans-serif'; font-weight: bold; color:#29957e;\">" + _serverAddress +"</span></a></p></body></html>");
+        _serverAddressLabel->setText("<html><head/><body><p><a href=\"" + _serverAddress + "\"><span style=\"font:14px 'Helvetica', 'Arial', 'sans-serif'; font-weight: bold; color:#29957e;\">" + _serverAddress +"</span></a></p></body></html>");
     }
 }
 
