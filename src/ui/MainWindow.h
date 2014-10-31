@@ -15,6 +15,7 @@
 #include <QTabWidget>
 #include <QVBoxLayout>
 #include <QScrollArea>
+#include <QLabel>
 
 #include "SvgButton.h"
 
@@ -44,6 +45,7 @@ private:
     QString _serverAddress;
     QString _requirementsLastCheckedDateTime;
     SvgButton* _serverButton;
+    QLabel* _serverAddressLabel;
     QRect _serverButtonBounds;
     QPushButton* _viewLogsButton;
     QPushButton* _settingsButton;

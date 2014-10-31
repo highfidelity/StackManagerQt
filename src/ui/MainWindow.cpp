@@ -15,6 +15,7 @@
 #include <QDesktopServices>
 #include <QMutex>
 #include <QLayoutItem>
+#include <QCursor>
 
 #include "AppDelegate.h"
 #include "AssignmentWidget.h"
@@ -66,6 +67,10 @@ MainWindow::MainWindow() :
     _serverButton->setGeometry(globalx, 37, width() - globalx*2, QPixmap(":/server-start.svg").scaledToWidth(width() - globalx*2).height());
     _serverButton->setSvgImage(":/server-start.svg");
 
+    _serverAddressLabel = new QLabel(this);
+    _serverAddressLabel->move(360, _serverButtonBounds.y());
+    _serverAddressLabel->hide();
+
     _viewLogsButton = new QPushButton("View Logs", this);
     _viewLogsButton->setAutoDefault(false);
     _viewLogsButton->setDefault(false);
@@ -113,7 +118,10 @@ MainWindow::MainWindow() :
     connect(_runAssignmentButton, &QPushButton::clicked, this, &MainWindow::addAssignment);
 
     // temporary
-    _serverAddress = "hifi://localhost";
+    {
+        _serverAddress = "hifi://localhost";
+        _serverAddressLabel->setText("<html><head/><body><p><a href=\""+ _serverAddress +"\"><span style=\"font:14px 'Helvetica', 'Arial', 'sans-serif'; font-weight: bold; color:#29957e;\">" + _serverAddress +"</span></a></p></body></html>");
+    }
 }
 
 void MainWindow::setServerAddress(const QString &address) {
@@ -129,6 +137,7 @@ void MainWindow::setDomainServerStarted() {
     _serverButton->setGeometry(_serverButtonBounds);
     _serverButton->update();
     _domainServerRunning = true;
+    _serverAddressLabel->show();
     _viewLogsButton->show();
     _settingsButton->show();
     _runAssignmentButton->show();
@@ -141,6 +150,7 @@ void MainWindow::setDomainServerStopped() {
     _serverButton->setGeometry(globalx, 37, width() - globalx*2, QPixmap(":/server-start.svg").scaledToWidth(width() - globalx*2).height());
     _serverButton->update();
     _domainServerRunning = false;
+    _serverAddressLabel->hide();
     _viewLogsButton->hide();
     _settingsButton->hide();
     _runAssignmentButton->hide();
@@ -159,7 +169,8 @@ void MainWindow::paintEvent(QPaintEvent *) {
 
     int x = globalx, y = _serverButtonBounds.y();
 
-    QFont font("sans-serif");
+    QFont font("Helvetica");
+    font.insertSubstitutions("Helvetica", QStringList() << "Arial" << "sans-serif");
     if (_domainServerRunning) {
         painter.setPen(darkGrayColor);
         painter.setBrush(QBrush(Qt::transparent));
@@ -167,14 +178,7 @@ void MainWindow::paintEvent(QPaintEvent *) {
         font.setPixelSize(14);
         painter.setFont(font);
         x += _serverButtonBounds.width() + 15;
-        painter.drawText(QRectF(x, y, QFontMetrics(font).width("Accessible at:"), 14), "Accessible at:");
-
-        x += QFontMetrics(font).width("Accessible at:") + 5;
-        font.setUnderline(true);
-        painter.setFont(font);
-        painter.setPen(greenColor);
-        painter.drawText(QRectF(x, y, QFontMetrics(font).width(_serverAddress),
-                            QFontMetrics(font).height()), _serverAddress);
+        painter.drawText(QRectF(x, y, QFontMetrics(font).width("Accessible at:") + 2, 14), "Accessible at:");
     }
 
     y += _serverButtonBounds.height() + 19;
