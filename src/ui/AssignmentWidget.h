@@ -6,8 +6,8 @@
 //  Copyright (c) 2014 High Fidelity. All rights reserved.
 //
 
-#ifndef ASSIGNMENTWIDGET_H
-#define ASSIGNMENTWIDGET_H
+#ifndef hifi_AssignmentWidget_h
+#define hifi_AssignmentWidget_h
 
 #include <QWidget>
 #include <QLineEdit>
@@ -29,7 +29,7 @@ private:
     int _id;
     bool _isRunning;
     SvgButton* _runButton;
-    QLineEdit* _poolIdLineEdit;
+    QLineEdit* _poolIDLineEdit;
 };
 
 #endif

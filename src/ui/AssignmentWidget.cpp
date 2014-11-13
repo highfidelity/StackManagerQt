@@ -16,7 +16,8 @@
 AssignmentWidget::AssignmentWidget(int id, QWidget* parent) :
     QWidget(parent),
     _isRunning(false),
-    _id(id) {
+    _id(id)
+{
     setFont(QFont("sans-serif"));
 
     QHBoxLayout* layout = new QHBoxLayout;
@@ -30,12 +31,12 @@ AssignmentWidget::AssignmentWidget(int id, QWidget* parent) :
     QLabel* label = new QLabel;
     label->setText("Pool ID");
 
-    _poolIdLineEdit = new QLineEdit;
-    _poolIdLineEdit->setPlaceholderText("Optional");
+    _poolIDLineEdit = new QLineEdit;
+    _poolIDLineEdit->setPlaceholderText("Optional");
 
     layout->addWidget(_runButton, 5);
     layout->addWidget(label);
-    layout->addWidget(_poolIdLineEdit);
+    layout->addWidget(_poolIDLineEdit);
 
     setLayout(layout);
 
@@ -49,15 +50,15 @@ void AssignmentWidget::toggleRunningState(bool toggleProcess) {
         }
         _runButton->setSvgImage(":/assignment-run.svg");
         update();
-        _poolIdLineEdit->setEnabled(true);
+        _poolIDLineEdit->setEnabled(true);
         _isRunning = false;
     } else {
         if (toggleProcess) {
-            AppDelegate::getInstance()->startAssignment(_id, _poolIdLineEdit->text());
+            AppDelegate::getInstance()->startAssignment(_id, _poolIDLineEdit->text());
         }
         _runButton->setSvgImage(":/assignment-stop.svg");
         update();
-        _poolIdLineEdit->setEnabled(false);
+        _poolIDLineEdit->setEnabled(false);
         _isRunning = true;
     }
 }

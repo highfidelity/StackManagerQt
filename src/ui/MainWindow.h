@@ -6,8 +6,8 @@
 //  Copyright (c) 2014 High Fidelity. All rights reserved.
 //
 
-#ifndef MAINWINDOW_H
-#define MAINWINDOW_H
+#ifndef hifi_MainWindow_h
+#define hifi_MainWindow_h
 
 #include <QWidget>
 #include <QMouseEvent>

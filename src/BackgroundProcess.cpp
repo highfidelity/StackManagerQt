@@ -26,7 +26,8 @@ BackgroundProcess::BackgroundProcess(const QString& type, QObject *parent) :
     QProcess(parent),
     _type(type),
     _stdoutFilePos(0),
-    _stderrFilePos(0) {
+    _stderrFilePos(0)
+{
     _logViewer = new LogViewer;
 
     connect(this, SIGNAL(started()), SLOT(processStarted()));

@@ -6,8 +6,8 @@
 //  Copyright (c) 2014 High Fidelity. All rights reserved.
 //
 
-#ifndef BACKGROUNDPROCESS_H
-#define BACKGROUNDPROCESS_H
+#ifndef hifi_BackgroundProcess_h
+#define hifi_BackgroundProcess_h
 
 #include "LogViewer.h"
 

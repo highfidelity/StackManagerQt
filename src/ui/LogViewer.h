@@ -6,8 +6,8 @@
 //  Copyright (c) 2014 High Fidelity. All rights reserved.
 //
 
-#ifndef LOGVIEWER_H
-#define LOGVIEWER_H
+#ifndef hifi_LogViewer_h
+#define hifi_LogViewer_h
 
 #include <QWidget>
 #include <QTextEdit>

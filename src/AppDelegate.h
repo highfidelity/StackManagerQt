@@ -6,8 +6,8 @@
 //  Copyright (c) 2014 High Fidelity. All rights reserved.
 //
 
-#ifndef APPDELEGATE_H
-#define APPDELEGATE_H
+#ifndef hifi_AppDelegate_h
+#define hifi_AppDelegate_h
 
 #include "BackgroundProcess.h"
 
@@ -31,7 +31,7 @@ public:
     void startDomainServer();
     void stopDomainServer();
 
-    void startAssignment(int id, QString poolId = "");
+    void startAssignment(int id, QString poolID = "");
     void stopAssignment(int id);
 
 private slots:

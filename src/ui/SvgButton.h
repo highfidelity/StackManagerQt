@@ -6,8 +6,8 @@
 //  Copyright (c) 2014 High Fidelity. All rights reserved.
 //
 
-#ifndef SVGBUTTON_H
-#define SVGBUTTON_H
+#ifndef hifi_SvgButton_h
+#define hifi_SvgButton_h
 
 #include <QWidget>
 #include <QAbstractButton>

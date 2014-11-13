@@ -13,7 +13,8 @@
 #include <QCursor>
 
 SvgButton::SvgButton(QWidget* parent) :
-    QAbstractButton(parent) {
+    QAbstractButton(parent)
+{
 }
 
 void SvgButton::enterEvent(QEvent*) {

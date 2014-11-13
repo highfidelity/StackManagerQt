@@ -24,7 +24,8 @@
 
 DownloadManager::DownloadManager(QNetworkAccessManager* manager, QWidget* parent) :
     QWidget(parent),
-    _manager(manager) {
+    _manager(manager)
+{
     setBaseSize(500, 250);
 
     QVBoxLayout* layout = new QVBoxLayout;

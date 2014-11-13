@@ -21,7 +21,12 @@
 #include "AssignmentWidget.h"
 #include "GlobalData.h"
 
-const int globalx = 55;
+const int globalX = 55;
+const int serverButtonYCoord = 37;
+const int assignmentScrollAreaHeightOffset = 215;
+const int resizeFactor = 56;
+const int assignmentLayoutWidgetStretch = 0;
+const int fontPixelSize = 14;
 const QColor lightGrayColor = QColor(205, 205, 205);
 const QColor darkGrayColor = QColor(84, 84, 84);
 const QColor redColor = QColor(189, 54, 78);
@@ -44,15 +49,22 @@ MainWindow* MainWindow::getInstance() {
 }
 
 MainWindow::MainWindow() :
-    QWidget(0) {
+    QWidget(0)
+{
     setWindowTitle("High Fidelity Stack Manager");
+    const int windowFixedWidth = 540;
+    const int windowInitialHeight = 200;
     if (GlobalData::getInstance()->getPlatform() == "win") {
-        setGeometry(qApp->desktop()->availableGeometry().width()/2 - 270, 30, 540, 200);
+        const int windowsYCoord = 30;
+        setGeometry(qApp->desktop()->availableGeometry().width() / 2 - windowFixedWidth / 2, windowsYCoord,
+                    windowFixedWidth, windowInitialHeight);
     } else {
-        setGeometry(qApp->desktop()->availableGeometry().width()/2 - 270, 0, 540, 200);
+        const int unixYCoord = 0;
+        setGeometry(qApp->desktop()->availableGeometry().width() / 2 - windowFixedWidth / 2, unixYCoord,
+                    windowFixedWidth, windowInitialHeight);
     }
-    setFixedWidth(width());
-    setMaximumHeight(qApp->desktop()->availableGeometry().height() - 40);
+    setFixedWidth(windowFixedWidth);
+    setMaximumHeight(qApp->desktop()->availableGeometry().height());
     setWindowFlags(Qt::CustomizeWindowHint | Qt::WindowTitleHint |
                    Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
     setMouseTracking(true);
@@ -62,55 +74,73 @@ MainWindow::MainWindow() :
     _serverAddress = "";
     _requirementsLastCheckedDateTime = "";
 
+    const int serverButtonHeight = 47;
     _serverButton = new SvgButton(this);
-    _serverButtonBounds = QRect(globalx, 37, QPixmap(":/server-start.svg").scaledToHeight(47).width(), 47);
-    _serverButton->setGeometry(globalx, 37, width() - globalx*2, QPixmap(":/server-start.svg").scaledToWidth(width() - globalx*2).height());
+    _serverButtonBounds = QRect(globalX, serverButtonYCoord,
+                                QPixmap(":/server-start.svg").scaledToHeight(serverButtonHeight).width(),
+                                serverButtonHeight);
+    _serverButton->setGeometry(globalX, serverButtonYCoord, width() - globalX * 2,
+                               QPixmap(":/server-start.svg").scaledToWidth(width() - globalX * 2).height());
     _serverButton->setSvgImage(":/server-start.svg");
 
+    const int serverAddressLabelXCoord = 360;
     _serverAddressLabel = new QLabel(this);
-    _serverAddressLabel->move(360, _serverButtonBounds.y());
+    _serverAddressLabel->move(serverAddressLabelXCoord, _serverButtonBounds.y());
     _serverAddressLabel->setOpenExternalLinks(true);
     _serverAddressLabel->hide();
 
+    const int viewLogsButtonXCoord = 257;
+    const int viewLogsButtonYCoord = 59;
     _viewLogsButton = new QPushButton("View Logs", this);
     _viewLogsButton->setAutoDefault(false);
     _viewLogsButton->setDefault(false);
     _viewLogsButton->setFocusPolicy(Qt::NoFocus);
-    _viewLogsButton->move(257, 59);
+    _viewLogsButton->move(viewLogsButtonXCoord, viewLogsButtonYCoord);
     _viewLogsButton->hide();
 
+    const int settingsButtonXCoord = 262;
+    const int settingsButtonYCoord = 59;
     _settingsButton = new QPushButton("Settings", this);
     _settingsButton->setAutoDefault(false);
     _settingsButton->setDefault(false);
     _settingsButton->setFocusPolicy(Qt::NoFocus);
-    _settingsButton->move(262 + _viewLogsButton->width(), 59);
+    _settingsButton->move(settingsButtonXCoord + _viewLogsButton->width(), settingsButtonYCoord);
     _settingsButton->hide();
 
+    const int runAssignmentButtonXCoordOffset = 7;
+    const int runAssignmentButtonYCoord = 138;
     _runAssignmentButton = new QPushButton("Run Assignment", this);
     _runAssignmentButton->setAutoDefault(false);
     _runAssignmentButton->setDefault(false);
     _runAssignmentButton->setFocusPolicy(Qt::NoFocus);
-    _runAssignmentButton->move(globalx - 7, 138);
+    _runAssignmentButton->move(globalX - runAssignmentButtonXCoordOffset, runAssignmentButtonYCoord);
     _runAssignmentButton->hide();
 
+    const QSize logsWidgetSize = QSize(500, 500);
     _logsWidget = new QTabWidget;
     _logsWidget->setUsesScrollButtons(true);
     _logsWidget->setElideMode(Qt::ElideMiddle);
-    _logsWidget->setWindowFlags(Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowMinMaxButtonsHint | Qt::WindowCloseButtonHint);
-    _logsWidget->resize(500, 500);
+    _logsWidget->setWindowFlags(Qt::CustomizeWindowHint | Qt::WindowTitleHint |
+                                Qt::WindowMinMaxButtonsHint | Qt::WindowCloseButtonHint);
+    _logsWidget->resize(logsWidgetSize);
 
+    const int assignmentScrollAreaXCoordOffset = 14;
+    const int assignmentScrollAreaYCoord = 178;
     _assignmentScrollArea = new QScrollArea(this);
     _assignmentScrollArea->setWidget(new QWidget);
     _assignmentScrollArea->setWidgetResizable(true);
     _assignmentScrollArea->setFrameShape(QFrame::NoFrame);
-    _assignmentScrollArea->move(globalx - 14, 178);
-    _assignmentScrollArea->setMaximumWidth(width() - globalx*2);
-    _assignmentScrollArea->setMaximumHeight(qApp->desktop()->availableGeometry().height() - 215);
+    _assignmentScrollArea->move(globalX - assignmentScrollAreaXCoordOffset, assignmentScrollAreaYCoord);
+    _assignmentScrollArea->setMaximumWidth(width() - globalX * 2);
+    _assignmentScrollArea->setMaximumHeight(qApp->desktop()->availableGeometry().height() -
+                                            assignmentScrollAreaHeightOffset);
 
+    const int assignmentLayoutSpacingMargin = 0;
     _assignmentLayout = new QVBoxLayout;
-    _assignmentLayout->setSpacing(0);
-    _assignmentLayout->setMargin(0);
-    _assignmentLayout->setContentsMargins(0, 0, 0, 0);
+    _assignmentLayout->setSpacing(assignmentLayoutSpacingMargin);
+    _assignmentLayout->setMargin(assignmentLayoutSpacingMargin);
+    _assignmentLayout->setContentsMargins(assignmentLayoutSpacingMargin, assignmentLayoutSpacingMargin,
+                                          assignmentLayoutSpacingMargin, assignmentLayoutSpacingMargin);
     _assignmentScrollArea->widget()->setLayout(_assignmentLayout);
 
     connect(_serverButton, &QPushButton::clicked, this, &MainWindow::toggleDomainServer);
@@ -121,7 +151,10 @@ MainWindow::MainWindow() :
     // temporary
     {
         _serverAddress = "hifi://localhost";
-        _serverAddressLabel->setText("<html><head/><body><p><a href=\"" + _serverAddress + "\"><span style=\"font:14px 'Helvetica', 'Arial', 'sans-serif'; font-weight: bold; color:#29957e;\">" + _serverAddress +"</span></a></p></body></html>");
+        _serverAddressLabel->setText("<html><head/><body><p><a href=\"" + _serverAddress + "\">"
+                                     "<span style=\"font:14px 'Helvetica', 'Arial', 'sans-serif';"
+                                     "font-weight: bold; color:#29957e;\">" + _serverAddress +
+                                     "</span></a></p></body></html>");
     }
 }
 
@@ -148,7 +181,8 @@ void MainWindow::setDomainServerStarted() {
 
 void MainWindow::setDomainServerStopped() {
     _serverButton->setSvgImage(":/server-start.svg");
-    _serverButton->setGeometry(globalx, 37, width() - globalx*2, QPixmap(":/server-start.svg").scaledToWidth(width() - globalx*2).height());
+    _serverButton->setGeometry(globalX, serverButtonYCoord, width() - globalX * 2,
+                               QPixmap(":/server-start.svg").scaledToWidth(width() - globalX * 2).height());
     _serverButton->update();
     _domainServerRunning = false;
     _serverAddressLabel->hide();
@@ -168,7 +202,7 @@ void MainWindow::paintEvent(QPaintEvent *) {
     QPainter painter(this);
     painter.setRenderHint(QPainter::Antialiasing);
 
-    int x = globalx, y = _serverButtonBounds.y();
+    int x = globalX, y = _serverButtonBounds.y();
 
     QFont font("Helvetica");
     font.insertSubstitutions("Helvetica", QStringList() << "Arial" << "sans-serif");
@@ -176,20 +210,24 @@ void MainWindow::paintEvent(QPaintEvent *) {
         painter.setPen(darkGrayColor);
         painter.setBrush(QBrush(Qt::transparent));
         font.setBold(true);
-        font.setPixelSize(14);
+        font.setPixelSize(fontPixelSize);
         painter.setFont(font);
         x += _serverButtonBounds.width() + 15;
-        painter.drawText(QRectF(x, y, QFontMetrics(font).width("Accessible at:") + 2, 14), "Accessible at:");
+        painter.drawText(QRectF(x, y, QFontMetrics(font).width("Accessible at:") + 2, fontPixelSize),
+                         "Accessible at:");
     }
 
     y += _serverButtonBounds.height() + 19;
     if (!_requirementsLastCheckedDateTime.isEmpty()) {
-        x = globalx;
+        x = globalX;
         font.setBold(false);
         font.setUnderline(false);
         painter.setFont(font);
         painter.setPen(darkGrayColor);
-        painter.drawText(QRectF(x, y, QFontMetrics(font).width("Requirements are up to date as of " + _requirementsLastCheckedDateTime), QFontMetrics(font).height()), "Requirements are up to date as of " + _requirementsLastCheckedDateTime);
+        painter.drawText(QRectF(x, y, QFontMetrics(font).width("Requirements are up to date as of " +
+                                                               _requirementsLastCheckedDateTime),
+                                QFontMetrics(font).height()), "Requirements are up to date as of " +
+                         _requirementsLastCheckedDateTime);
     }
 
     y += QFontMetrics(font).height() + 9;
@@ -208,10 +246,11 @@ void MainWindow::toggleDomainServer() {
 }
 
 void MainWindow::addAssignment() {
-    AssignmentWidget* widget = new AssignmentWidget(_assignmentLayout->count()+1);
-    _assignmentLayout->addWidget(widget, 0, Qt::AlignTop);
-    resize(width(), _assignmentScrollArea->geometry().y() + 56*_assignmentLayout->count() + 37);
-    _assignmentScrollArea->resize(_assignmentScrollArea->maximumWidth(), height() - 215);
+    AssignmentWidget* widget = new AssignmentWidget(_assignmentLayout->count() + 1);
+    _assignmentLayout->addWidget(widget, assignmentLayoutWidgetStretch, Qt::AlignTop);
+    resize(width(), _assignmentScrollArea->geometry().y() + resizeFactor * _assignmentLayout->count() +
+           serverButtonYCoord);
+    _assignmentScrollArea->resize(_assignmentScrollArea->maximumWidth(), height() - assignmentScrollAreaHeightOffset);
 }
 
 void MainWindow::openSettings() {

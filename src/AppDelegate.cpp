@@ -19,7 +19,8 @@
 #include <QDebug>
 
 AppDelegate::AppDelegate(int argc, char* argv[]) :
-    QApplication(argc, argv) {
+    QApplication(argc, argv)
+{
     setApplicationName("Stack Manager");
     setOrganizationName("High Fidelity");
     setOrganizationDomain("io.highfidelity.StackManager");
@@ -66,29 +67,29 @@ void AppDelegate::stopDomainServer() {
     MainWindow::getInstance()->setDomainServerStopped();
 }
 
-void AppDelegate::startAssignment(int id, QString poolId) {
-    if (findBackgroundProcess("assignment"+QString::number(id)) == NULL) {
-        BackgroundProcess* process = new BackgroundProcess("assignment"+QString::number(id));
+void AppDelegate::startAssignment(int id, QString poolID) {
+    if (findBackgroundProcess("assignment" + QString::number(id)) == NULL) {
+        BackgroundProcess* process = new BackgroundProcess("assignment" + QString::number(id));
         _backgroundProcesses.append(process);
-        process->start(GlobalData::getInstance()->getAssignmentClientExecutablePath(), QStringList() << "-t 2 --pool" << poolId);
+        process->start(GlobalData::getInstance()->getAssignmentClientExecutablePath(), QStringList() << "-t 2 --pool" << poolID);
     } else {
-        findBackgroundProcess("assignment"+QString::number(id))->start(GlobalData::getInstance()->getAssignmentClientExecutablePath(), QStringList() << "-t 2 --pool" << poolId);
+        findBackgroundProcess("assignment" + QString::number(id))->start(GlobalData::getInstance()->getAssignmentClientExecutablePath(), QStringList() << "-t 2 --pool" << poolID);
     }
-    int index = MainWindow::getInstance()->getLogsWidget()->addTab(findBackgroundProcess("assignment"+QString::number(id))->getLogViewer(), "Assignment "+QString::number(id));
-    _logsTabWidgetHash.insert("Assignment "+QString::number(id), index);
+    int index = MainWindow::getInstance()->getLogsWidget()->addTab(findBackgroundProcess("assignment" + QString::number(id))->getLogViewer(), "Assignment " + QString::number(id));
+    _logsTabWidgetHash.insert("Assignment " + QString::number(id), index);
 }
 
 void AppDelegate::stopAssignment(int id) {
-    findBackgroundProcess("assignment"+QString::number(id))->kill();
+    findBackgroundProcess("assignment" + QString::number(id))->kill();
     int index = -1;
     for (int i = 1; i < _logsTabWidgetHash.size(); ++i) {
-        if (MainWindow::getInstance()->getLogsWidget()->tabText(_logsTabWidgetHash.values().at(i)) == "Assignment "+QString::number(id)) {
+        if (MainWindow::getInstance()->getLogsWidget()->tabText(_logsTabWidgetHash.values().at(i)) == "Assignment " + QString::number(id)) {
             index = i;
             break;
         }
     }
     MainWindow::getInstance()->getLogsWidget()->removeTab(index);
-    _logsTabWidgetHash.remove("Assignment "+QString::number(id));
+    _logsTabWidgetHash.remove("Assignment " + QString::number(id));
 }
 
 void AppDelegate::onFileSuccessfullyInstalled(QUrl url) {

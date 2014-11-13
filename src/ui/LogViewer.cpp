@@ -14,13 +14,14 @@
 #include <QVBoxLayout>
 
 LogViewer::LogViewer(QWidget* parent) :
-    QWidget(parent) {
+    QWidget(parent)
+{
     QVBoxLayout* layout = new QVBoxLayout;
-    QLabel* label = new QLabel;
-    label->setText("Standard Output:");
-    label->setStyleSheet("font-size: 13px;");
+    QLabel* outputLabel = new QLabel;
+    outputLabel->setText("Standard Output:");
+    outputLabel->setStyleSheet("font-size: 13px;");
 
-    layout->addWidget(label);
+    layout->addWidget(outputLabel);
 
     _outputView = new QTextEdit;
     _outputView->setUndoRedoEnabled(false);
@@ -28,11 +29,11 @@ LogViewer::LogViewer(QWidget* parent) :
 
     layout->addWidget(_outputView);
 
-    QLabel* label_2 = new QLabel;
-    label_2->setText("Standard Error:");
-    label_2->setStyleSheet("font-size: 13px;");
+    QLabel* errorLabel = new QLabel;
+    errorLabel->setText("Standard Error:");
+    errorLabel->setStyleSheet("font-size: 13px;");
 
-    layout->addWidget(label_2);
+    layout->addWidget(errorLabel);
 
     _errorView = new QTextEdit;
     _errorView->setUndoRedoEnabled(false);

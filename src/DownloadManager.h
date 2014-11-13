@@ -6,8 +6,8 @@
 //  Copyright (c) 2014 High Fidelity. All rights reserved.
 //
 
-#ifndef DOWNLOADMANAGER_H
-#define DOWNLOADMANAGER_H
+#ifndef hifi_DownloadManager_h
+#define hifi_DownloadManager_h
 
 #include <QWidget>
 #include <QTableWidget>
