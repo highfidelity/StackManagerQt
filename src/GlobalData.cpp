@@ -29,7 +29,8 @@ GlobalData* GlobalData::getInstance() {
     return _instance;
 }
 
-GlobalData::GlobalData() {
+GlobalData::GlobalData()
+{
     QString urlBase = "http://s3.amazonaws.com/hifi-public";
 #if defined Q_OS_OSX
     _platform = "mac";

@@ -6,8 +6,8 @@
 //  Copyright (c) 2014 High Fidelity. All rights reserved.
 //
 
-#ifndef DOWNLOADER_H
-#define DOWNLOADER_H
+#ifndef hifi_Downloader_h
+#define hifi_Downloader_h
 
 #include <QObject>
 #include <QUrl>

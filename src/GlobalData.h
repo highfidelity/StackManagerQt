@@ -6,8 +6,8 @@
 //  Copyright (c) 2014 High Fidelity. All rights reserved.
 //
 
-#ifndef GLOBALDATA_H
-#define GLOBALDATA_H
+#ifndef hifi_GlobalData_h
+#define hifi_GlobalData_h
 
 #include <QString>
 #include <QHash>

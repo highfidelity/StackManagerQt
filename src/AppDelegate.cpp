@@ -7,9 +7,7 @@
 //
 
 #include "AppDelegate.h"
-#include "ui_AppDelegate.h"
 #include "GlobalData.h"
-#include "AssignmentClientProcess.h"
 #include "DownloadManager.h"
 
 #include <QDir>
@@ -20,258 +18,94 @@
 #include <QFileInfoList>
 #include <QDebug>
 
-AppDelegate::AppDelegate(QWidget *parent) :
-    QWidget(parent),
-    ui(new Ui::AppDelegate),
-    _manager(new QNetworkAccessManager(this)),
-    _signalMapper(new QSignalMapper(this)) {
-    ui->setupUi(this);
+AppDelegate::AppDelegate(int argc, char* argv[]) :
+    QApplication(argc, argv)
+{
+    setApplicationName("Stack Manager");
+    setOrganizationName("High Fidelity");
+    setOrganizationDomain("io.highfidelity.StackManager");
 
-    _updatingString = "Updating: ";
-    _upToDateString = "Up to date | Updated: ";
-    _qtReady = false;
-    _dsReady = false;
-    _dsResourcesReady = false;
-    _acReady = false;
-
-    QList<QPushButton*> buttonList = findChildren<QPushButton*>();
-    for (int i = 0; i < buttonList.size(); ++i) {
-        // disable all view log buttons at startup
-        if (buttonList.at(i)->objectName().startsWith("viewLog")) {
-            buttonList.at(i)->setEnabled(false);
-        }
-    }
-
-    ui->noConnectionLabel->hide();
-    ui->retryButton->hide();
-    connect(ui->retryButton, SIGNAL(clicked()), SLOT(retryConnection()));
+    _manager = new QNetworkAccessManager(this);
 
     createExecutablePath();
     downloadLatestExecutablesAndRequirements();
 
-    // temporary
-    ui->startAllAssignmentsButton->hide();
-
-    connect(ui->startAllAssignmentsButton, SIGNAL(clicked()), _signalMapper, SLOT(map()));
-    connect(ui->startAudioMixerButton, SIGNAL(clicked()), _signalMapper, SLOT(map()));
-    connect(ui->startAvatarMixerButton, SIGNAL(clicked()), _signalMapper, SLOT(map()));
-    connect(ui->startDomainServerButton, SIGNAL(clicked()), _signalMapper, SLOT(map()));
-    connect(ui->startMetavoxelServerButton, SIGNAL(clicked()), _signalMapper, SLOT(map()));
-    connect(ui->startModelServerButton, SIGNAL(clicked()), _signalMapper, SLOT(map()));
-    connect(ui->startParticleServerButton, SIGNAL(clicked()), _signalMapper, SLOT(map()));
-    connect(ui->startVoxelServerButton, SIGNAL(clicked()), _signalMapper, SLOT(map()));
-    connect(ui->viewLogAudioMixerButton, SIGNAL(clicked()), _signalMapper, SLOT(map()));
-    connect(ui->viewLogAvatarMixerButton, SIGNAL(clicked()), _signalMapper, SLOT(map()));
-    connect(ui->viewLogDomainServerButton, SIGNAL(clicked()), _signalMapper, SLOT(map()));
-    connect(ui->viewLogMetavoxelServerButton, SIGNAL(clicked()), _signalMapper, SLOT(map()));
-    connect(ui->viewLogModelServerButton, SIGNAL(clicked()), _signalMapper, SLOT(map()));
-    connect(ui->viewLogParticleServerButton, SIGNAL(clicked()), _signalMapper, SLOT(map()));
-    connect(ui->viewLogVoxelServerButton, SIGNAL(clicked()), _signalMapper, SLOT(map()));
-
-    _signalMapper->setMapping(ui->startAllAssignmentsButton, "start-all-assignments-button");
-    _signalMapper->setMapping(ui->startAudioMixerButton, "start-audio-mixer-button");
-    _signalMapper->setMapping(ui->startAvatarMixerButton, "start-avatar-mixer-button");
-    _signalMapper->setMapping(ui->startDomainServerButton, "start-domain-server-button");
-    _signalMapper->setMapping(ui->startMetavoxelServerButton, "start-metavoxel-server-button");
-    _signalMapper->setMapping(ui->startModelServerButton, "start-model-server-button");
-    _signalMapper->setMapping(ui->startParticleServerButton, "start-particle-server-button");
-    _signalMapper->setMapping(ui->startVoxelServerButton, "start-voxel-server-button");
-    _signalMapper->setMapping(ui->viewLogAudioMixerButton, "view-log-audio-mixer-button");
-    _signalMapper->setMapping(ui->viewLogAvatarMixerButton, "view-log-avatar-mixer-button");
-    _signalMapper->setMapping(ui->viewLogDomainServerButton, "view-log-domain-server-button");
-    _signalMapper->setMapping(ui->viewLogMetavoxelServerButton, "view-log-metavoxel-server-button");
-    _signalMapper->setMapping(ui->viewLogModelServerButton, "view-log-model-server-button");
-    _signalMapper->setMapping(ui->viewLogParticleServerButton, "view-log-particle-server-button");
-    _signalMapper->setMapping(ui->viewLogVoxelServerButton, "view-log-voxel-server-button");
-
-    connect(_signalMapper, SIGNAL(mapped(QString)), SLOT(buttonClicked(QString)));
+    connect(this, &QApplication::aboutToQuit, this, &AppDelegate::cleanupProcesses);
 }
 
-AppDelegate::~AppDelegate() {
-    delete ui;
-    for (int i = 0; i < _backgroundProcesses.size(); ++i) {
-        _backgroundProcesses.at(i)->terminate();
+void AppDelegate::cleanupProcesses() {
+    for(int i = 0; i < _backgroundProcesses.size(); ++i) {
+        _backgroundProcesses.at(i)->kill();
+        _backgroundProcesses.at(i)->waitForFinished();
     }
 }
 
-void AppDelegate::retryConnection() {
-    ui->retryButton->setText("Retrying...");
-    ui->retryButton->setEnabled(false);
-    repaint();
-    downloadLatestExecutablesAndRequirements();
+void AppDelegate::startDomainServer() {
+    if (findBackgroundProcess("domain-server") == NULL && findBackgroundProcess("assignmentDS") == NULL) {
+        BackgroundProcess* dsProcess = new BackgroundProcess("domain-server");
+        _backgroundProcesses.append(dsProcess);
+        dsProcess->start(GlobalData::getInstance()->getDomainServerExecutablePath(), QStringList());
+        BackgroundProcess* acProcess = new BackgroundProcess("assignmentDS");
+        _backgroundProcesses.append(acProcess);
+        acProcess->start(GlobalData::getInstance()->getAssignmentClientExecutablePath(),
+                                                    QStringList() << "-n 5");
+    } else {
+        findBackgroundProcess("domain-server")->start(GlobalData::getInstance()->getDomainServerExecutablePath(), QStringList());
+        findBackgroundProcess("assignmentDS")->start(GlobalData::getInstance()->getAssignmentClientExecutablePath(), QStringList() << "-n 5");
+    }
+    MainWindow::getInstance()->setDomainServerStarted();
+    MainWindow::getInstance()->getLogsWidget()->addTab(findBackgroundProcess("domain-server")->getLogViewer(), "Domain Server");
+    _logsTabWidgetHash.insert("Domain Server", 0);
 }
 
-void AppDelegate::buttonClicked(QString buttonId) {
-    if (buttonId.startsWith("start-")) {
-        bool toStart = false;
-        QString type = "";
-        if (buttonId == "start-all-assignments-button") {
-            /*if (ui->startAllAssignmentsButton->text() == "Start All") {
-                for (int i = 0; i < GlobalData::getInstance()->getAvailableAssignmentTypes().size(); ++i) {
-                    if (findBackgroundProcess(GlobalData::getInstance()->getAvailableAssignmentTypes().at(i)) == NULL) {
-                        buttonClicked("start-"+GlobalData::getInstance()->getAvailableAssignmentTypes().at(i)+"-button");
-                    }
-                }
-            } else {
-                for (int i = 0; i < GlobalData::getInstance()->getAvailableAssignmentTypes().size(); ++i) {
-                    buttonClicked("start-"+GlobalData::getInstance()->getAvailableAssignmentTypes().at(i)+"-button");
-                }
-            }*/
-        } else if (buttonId == "start-audio-mixer-button") {
-            type = "audio-mixer";
-            if (ui->startAudioMixerButton->text() == "Start") {
-                toStart = true;
-                ui->viewLogAudioMixerButton->setEnabled(true);
-                ui->startAudioMixerButton->setText("Stop");
-            } else {
-                toStart = false;
-                ui->viewLogAudioMixerButton->setEnabled(false);
-                ui->startAudioMixerButton->setText("Start");
-            }
-        } else if (buttonId == "start-avatar-mixer-button") {
-            type = "avatar-mixer";
-            if (ui->startAvatarMixerButton->text() == "Start") {
-                toStart = true;
-                ui->viewLogAvatarMixerButton->setEnabled(true);
-                ui->startAvatarMixerButton->setText("Stop");
-            } else {
-                toStart = false;
-                ui->viewLogAvatarMixerButton->setEnabled(false);
-                ui->startAvatarMixerButton->setText("Start");
-            }
-        } else if (buttonId == "start-domain-server-button") {
-            type = "domain-server";
-            if (ui->startDomainServerButton->text() == "Start") {
-                toStart = true;
-                ui->viewLogDomainServerButton->setEnabled(true);
-                ui->startDomainServerButton->setText("Stop");
-            } else {
-                toStart = false;
-                ui->viewLogDomainServerButton->setEnabled(false);
-                ui->startDomainServerButton->setText("Start");
-            }
-        } else if (buttonId == "start-metavoxel-server-button") {
-            type = "metavoxel-server";
-            if (ui->startMetavoxelServerButton->text() == "Start") {
-                toStart = true;
-                ui->viewLogMetavoxelServerButton->setEnabled(true);
-                ui->startMetavoxelServerButton->setText("Stop");
-            } else {
-                toStart = false;
-                ui->viewLogMetavoxelServerButton->setEnabled(false);
-                ui->startMetavoxelServerButton->setText("Start");
-            }
-        } else if (buttonId == "start-model-server-button") {
-            type = "model-server";
-            if (ui->startModelServerButton->text() == "Start") {
-                toStart = true;
-                ui->viewLogModelServerButton->setEnabled(true);
-                ui->startModelServerButton->setText("Stop");
-            } else {
-                toStart = false;
-                ui->viewLogModelServerButton->setEnabled(false);
-                ui->startModelServerButton->setText("Start");
-            }
-        } else if (buttonId == "start-particle-server-button") {
-            type = "particle-server";
-            if (ui->startParticleServerButton->text() == "Start") {
-                toStart = true;
-                ui->viewLogParticleServerButton->setEnabled(true);
-                ui->startParticleServerButton->setText("Stop");
-            } else {
-                toStart = false;
-                ui->viewLogParticleServerButton->setEnabled(false);
-                ui->startParticleServerButton->setText("Start");
-            }
-        } else if (buttonId == "start-voxel-server-button") {
-            type = "voxel-server";
-            if (ui->startVoxelServerButton->text() == "Start") {
-                toStart = true;
-                ui->viewLogVoxelServerButton->setEnabled(true);
-                ui->startVoxelServerButton->setText("Stop");
-            } else {
-                toStart = false;
-                ui->viewLogVoxelServerButton->setEnabled(false);
-                ui->startVoxelServerButton->setText("Start");
-            }
-        }
-
-        if (toStart) {
-            if (type == "domain-server") {
-                BackgroundProcess* process = new BackgroundProcess(type);
-                _backgroundProcesses.append(process);
-                process->start(GlobalData::getInstance()->getDomainServerExecutablePath(), QStringList());
-            } else {
-                AssignmentClientProcess* process = new AssignmentClientProcess(type);
-                _backgroundProcesses.append(process);
-                process->startWithType();
-            }
-        } else {
-            findBackgroundProcess(type)->terminate();
-            _backgroundProcesses.removeOne(findBackgroundProcess(type));
-        }
-
-        int c = 0;
-        for (int i = 0; i < GlobalData::getInstance()->getAvailableAssignmentTypes().size(); ++i) {
-            if (findBackgroundProcess(GlobalData::getInstance()->getAvailableAssignmentTypes().keys().at(i))) {
-                c++;
-            }
-        }
-        if (c == GlobalData::getInstance()->getAvailableAssignmentTypes().size()) {
-            // all the assignment clients are running
-            ui->startAllAssignmentsButton->setText("Stop All");
-        } else {
-            ui->startAllAssignmentsButton->setText("Start All");
-        }
-    } else if (buttonId.startsWith("view-log")) {
-        QString type;
-        if (buttonId == "view-log-audio-mixer-button") {
-            type = "audio-mixer";
-        } else if (buttonId == "view-log-avatar-mixer-button") {
-            type = "avatar-mixer";
-        } else if (buttonId == "view-log-domain-server-button") {
-            type = "domain-server";
-        } else if (buttonId == "view-log-metavoxel-server-button") {
-            type = "metavoxel-server";
-        } else if (buttonId == "view-log-model-server-button") {
-            type = "model-server";
-        } else if (buttonId == "view-log-particle-server-button") {
-            type = "particle-server";
-        } else if (buttonId == "view-log-voxel-server-button") {
-            type = "voxel-server";
-        }
-
-        findBackgroundProcess(type)->displayLog();
+void AppDelegate::stopDomainServer() {
+    for (int i = 0; i < _logsTabWidgetHash.size(); ++i) {
+        MainWindow::getInstance()->getLogsWidget()->removeTab(_logsTabWidgetHash.values().at(i));
     }
+    _logsTabWidgetHash.clear();
+    cleanupProcesses();
+    MainWindow::getInstance()->setDomainServerStopped();
+}
+
+void AppDelegate::startAssignment(int id, QString poolID) {
+    if (findBackgroundProcess("assignment" + QString::number(id)) == NULL) {
+        BackgroundProcess* process = new BackgroundProcess("assignment" + QString::number(id));
+        _backgroundProcesses.append(process);
+        process->start(GlobalData::getInstance()->getAssignmentClientExecutablePath(), QStringList() << "-t 2 --pool" << poolID);
+    } else {
+        findBackgroundProcess("assignment" + QString::number(id))->start(GlobalData::getInstance()->getAssignmentClientExecutablePath(), QStringList() << "-t 2 --pool" << poolID);
+    }
+    int index = MainWindow::getInstance()->getLogsWidget()->addTab(findBackgroundProcess("assignment" + QString::number(id))->getLogViewer(), "Assignment " + QString::number(id));
+    _logsTabWidgetHash.insert("Assignment " + QString::number(id), index);
+}
+
+void AppDelegate::stopAssignment(int id) {
+    findBackgroundProcess("assignment" + QString::number(id))->kill();
+    int index = -1;
+    for (int i = 1; i < _logsTabWidgetHash.size(); ++i) {
+        if (MainWindow::getInstance()->getLogsWidget()->tabText(_logsTabWidgetHash.values().at(i)) == "Assignment " + QString::number(id)) {
+            index = i;
+            break;
+        }
+    }
+    MainWindow::getInstance()->getLogsWidget()->removeTab(index);
+    _logsTabWidgetHash.remove("Assignment " + QString::number(id));
 }
 
 void AppDelegate::onFileSuccessfullyInstalled(QUrl url) {
     if (url == GlobalData::getInstance()->getRequirementsURL()) {
-        // Qt has been installed successfully
         _qtReady = true;
-        ui->requirementsLabel->setText("Requirements: " + _upToDateString + " " + QDateTime::currentDateTime().toString());
     } else if (url == GlobalData::getInstance()->getAssignmentClientURL()) {
-        // Assignment client has been installed successfully
         _acReady = true;
-        ui->assignmentClientLabel->setText("Assignment Client: " + _upToDateString + " " + QDateTime::currentDateTime().toString());
     } else if (url == GlobalData::getInstance()->getDomainServerURL()) {
         _dsReady = true;
     } else if (url == GlobalData::getInstance()->getDomainServerResourcesURL()) {
         _dsResourcesReady = true;
     }
 
-    if (_dsReady && _dsResourcesReady) {
-        ui->domainServerLabel->setText("Domain Server: " + _upToDateString + " " + QDateTime::currentDateTime().toString());
-    }
-
     if (_qtReady && _acReady && _dsReady && _dsResourcesReady) {
-        // enable all buttons except the view log buttons
-        QList<QPushButton*> buttonList = findChildren<QPushButton*>();
-        for (int i = 0; i < buttonList.size(); ++i) {
-            if (!buttonList.at(i)->objectName().startsWith("viewLog")) {
-                buttonList.at(i)->setEnabled(true);
-            }
-        }
+        MainWindow::getInstance()->setRequirementsLastChecked(QDateTime::currentDateTime().toString());
+        MainWindow::getInstance()->show();
     }
 }
 
@@ -326,10 +160,6 @@ void AppDelegate::downloadLatestExecutablesAndRequirements() {
         }
     }
 
-    if (_qtReady) {
-        ui->requirementsLabel->setText("Requirements: " + _upToDateString + " " + QDateTime::currentDateTime().toString());
-    }
-
     QFile dsFile(GlobalData::getInstance()->getDomainServerExecutablePath());
     QByteArray dsData;
     if (dsFile.open(QIODevice::ReadOnly)) {
@@ -367,7 +197,7 @@ void AppDelegate::downloadLatestExecutablesAndRequirements() {
     acLoop.exec();
     QByteArray acMd5Data = acReply->readAll().trimmed();
     if (GlobalData::getInstance()->getPlatform() == "win") {
-        // fix for reading the MD5 hash from Windows generated
+        // fix for reading the MD5 hash from Windows-generated
         // binary data of the MD5 hash
         QTextStream stream(acMd5Data);
         stream >> acMd5Data;
@@ -382,21 +212,9 @@ void AppDelegate::downloadLatestExecutablesAndRequirements() {
     }
 
     if (_manager->networkAccessible() != QNetworkAccessManager::Accessible) {
-        ui->requirementsLabel->hide();
-        ui->domainServerLabel->hide();
-        ui->assignmentClientLabel->hide();
-        ui->retryButton->setEnabled(true);
-        ui->retryButton->setText("Retry");
-        ui->noConnectionLabel->show();
-        ui->retryButton->show();
         qDebug() << "Could not connect to the internet.";
+        MainWindow::getInstance()->show();
         return;
-    } else {
-        ui->requirementsLabel->show();
-        ui->domainServerLabel->show();
-        ui->assignmentClientLabel->show();
-        ui->noConnectionLabel->hide();
-        ui->retryButton->hide();
     }
 
 
@@ -463,14 +281,6 @@ void AppDelegate::downloadLatestExecutablesAndRequirements() {
         }
     }
 
-    if (_dsReady && _dsResourcesReady) {
-        ui->domainServerLabel->setText("Domain Server: " + _upToDateString + " " + QDateTime::currentDateTime().toString());
-    }
-
-    if (_acReady) {
-        ui->assignmentClientLabel->setText("Assigment Client: " + _upToDateString + " " + QDateTime::currentDateTime().toString());
-    }
-
     DownloadManager* downloadManager = 0;
     if (!_qtReady || !_acReady || !_dsReady || !_dsResourcesReady) {
         // initialise DownloadManager
@@ -479,32 +289,25 @@ void AppDelegate::downloadLatestExecutablesAndRequirements() {
         connect(downloadManager, SIGNAL(fileSuccessfullyInstalled(QUrl)),
                 SLOT(onFileSuccessfullyInstalled(QUrl)));
         downloadManager->show();
-
-        // disable all buttons
-        QList<QPushButton*> buttonList = findChildren<QPushButton*>();
-        for (int i = 0; i < buttonList.size(); ++i) {
-            buttonList.at(i)->setEnabled(false);
-        }
+    } else {
+        MainWindow::getInstance()->setRequirementsLastChecked(QDateTime::currentDateTime().toString());
+        MainWindow::getInstance()->show();
     }
 
     if (!_qtReady) {
         downloadManager->downloadFile(GlobalData::getInstance()->getRequirementsURL());
-        ui->requirementsLabel->setText("Requirements: " + _updatingString + " " + QDateTime::currentDateTime().toString());
     }
 
     if (!_acReady) {
         downloadManager->downloadFile(GlobalData::getInstance()->getAssignmentClientURL());
-        ui->assignmentClientLabel->setText("Assignment Client: " + _updatingString + " " + QDateTime::currentDateTime().toString());
     }
 
     if (!_dsReady) {
         downloadManager->downloadFile(GlobalData::getInstance()->getDomainServerURL());
-        ui->domainServerLabel->setText("Domain Server: " + _updatingString + " " + QDateTime::currentDateTime().toString());
     }
 
     if (!_dsResourcesReady) {
         downloadManager->downloadFile(GlobalData::getInstance()->getDomainServerResourcesURL());
-        ui->domainServerLabel->setText("Domain Server: " + _updatingString + " " + QDateTime::currentDateTime().toString());
     }
 }
 

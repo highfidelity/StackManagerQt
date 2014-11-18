@@ -22,12 +22,13 @@ const int LOG_CHECK_INTERVAL_MS = 500;
 const QString DATETIME_FORMAT = "yyyy-MM-dd_hh.mm.ss";
 const QString LOGS_DIRECTORY = "/Logs/";
 
-BackgroundProcess::BackgroundProcess(const QString &type, QObject *parent) :
+BackgroundProcess::BackgroundProcess(const QString& type, QObject *parent) :
     QProcess(parent),
     _type(type),
     _stdoutFilePos(0),
-    _stderrFilePos(0) {
-    _logViewer = new LogViewer(_type);
+    _stderrFilePos(0)
+{
+    _logViewer = new LogViewer;
 
     connect(this, SIGNAL(started()), SLOT(processStarted()));
     connect(this, SIGNAL(error(QProcess::ProcessError)), SLOT(processError()));
@@ -58,14 +59,6 @@ BackgroundProcess::BackgroundProcess(const QString &type, QObject *parent) :
     connect(this, SIGNAL(started()), &_logTimer, SLOT(start()));
 
     setWorkingDirectory(GlobalData::getInstance()->getClientsLaunchPath());
-}
-
-void BackgroundProcess::displayLog() {
-    if (_logViewer->isVisible()) {
-        _logViewer->raise();
-    } else {
-        _logViewer->show();
-    }
 }
 
 void BackgroundProcess::processStarted() {

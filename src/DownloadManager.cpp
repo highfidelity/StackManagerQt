@@ -7,13 +7,15 @@
 //
 
 #include "DownloadManager.h"
-#include "ui_DownloadManager.h"
 #include "GlobalData.h"
 
 #include <QFileInfo>
 #include <QTableWidgetItem>
 #include <QHeaderView>
 #include <QDebug>
+#include <QVBoxLayout>
+#include <QLabel>
+#include <QSizePolicy>
 #include <QDir>
 #include <QFileInfo>
 #include <QProgressBar>
@@ -22,16 +24,30 @@
 
 DownloadManager::DownloadManager(QNetworkAccessManager* manager, QWidget* parent) :
     QWidget(parent),
-    ui(new Ui::DownloadManager),
-    _manager(manager) {
-    ui->setupUi(this);
-    ui->table->setColumnCount(3);
-    ui->table->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
-    ui->table->setHorizontalHeaderLabels(QStringList() << "Name" << "Progress" << "Status");
+    _manager(manager)
+{
+    setBaseSize(500, 250);
+
+    QVBoxLayout* layout = new QVBoxLayout;
+    layout->setContentsMargins(10, 10, 10, 10);
+    QLabel* label = new QLabel;
+    label->setText("Download Manager");
+    label->setStyleSheet("font-size: 19px;");
+    label->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
+    label->setAlignment(Qt::AlignCenter);
+    layout->addWidget(label);
+
+    _table = new QTableWidget;
+    _table->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    _table->setColumnCount(3);
+    _table->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+    _table->setHorizontalHeaderLabels(QStringList() << "Name" << "Progress" << "Status");
+    layout->addWidget(_table);
+
+    setLayout(layout);
 }
 
 DownloadManager::~DownloadManager() {
-    delete ui;
     _downloaderHash.clear();
 }
 
@@ -56,41 +72,41 @@ void DownloadManager::downloadFile(QUrl url) {
 }
 
 void DownloadManager::onDownloadStarted(Downloader* downloader, QUrl url) {
-    int rowIndex = ui->table->rowCount();
-    ui->table->setRowCount(rowIndex + 1);
+    int rowIndex = _table->rowCount();
+    _table->setRowCount(rowIndex + 1);
     QTableWidgetItem* nameItem = new QTableWidgetItem(QFileInfo(url.toString()).fileName());
-    ui->table->setItem(rowIndex, 0, nameItem);
+    _table->setItem(rowIndex, 0, nameItem);
     QProgressBar* progressBar = new QProgressBar;
-    ui->table->setCellWidget(rowIndex, 1, progressBar);
+    _table->setCellWidget(rowIndex, 1, progressBar);
     QTableWidgetItem* statusItem = new QTableWidgetItem;
     if (QFile(QDir::toNativeSeparators(GlobalData::getInstance()->getClientsLaunchPath() + "/" + QFileInfo(url.toString()).fileName())).exists()) {
         statusItem->setText("Updating");
     } else {
         statusItem->setText("Downloading");
     }
-    ui->table->setItem(rowIndex, 2, statusItem);
+    _table->setItem(rowIndex, 2, statusItem);
     _downloaderHash.insert(downloader, rowIndex);
 }
 
 void DownloadManager::onDownloadCompleted(QUrl url) {
-    ui->table->item(downloaderRowIndexForUrl(url), 2)->setText("Download Complete");
+    _table->item(downloaderRowIndexForUrl(url), 2)->setText("Download Complete");
 }
 
 void DownloadManager::onDownloadProgress(QUrl url, int percentage) {
-    qobject_cast<QProgressBar*>(ui->table->cellWidget(downloaderRowIndexForUrl(url), 1))->setValue(percentage);
+    qobject_cast<QProgressBar*>(_table->cellWidget(downloaderRowIndexForUrl(url), 1))->setValue(percentage);
 }
 
 void DownloadManager::onDownloadFailed(QUrl url) {
-    ui->table->item(downloaderRowIndexForUrl(url), 2)->setText("Download Failed");
+    _table->item(downloaderRowIndexForUrl(url), 2)->setText("Download Failed");
     _downloaderHash.remove(downloaderForUrl(url));
 }
 
 void DownloadManager::onInstallingFiles(QUrl url) {
-    ui->table->item(downloaderRowIndexForUrl(url), 2)->setText("Installing");
+    _table->item(downloaderRowIndexForUrl(url), 2)->setText("Installing");
 }
 
 void DownloadManager::onFilesSuccessfullyInstalled(QUrl url) {
-    ui->table->item(downloaderRowIndexForUrl(url), 2)->setText("Successfully Installed");
+    _table->item(downloaderRowIndexForUrl(url), 2)->setText("Successfully Installed");
     _downloaderHash.remove(downloaderForUrl(url));
     emit fileSuccessfullyInstalled(url);
     if (_downloaderHash.size() == 0) {
@@ -99,7 +115,7 @@ void DownloadManager::onFilesSuccessfullyInstalled(QUrl url) {
 }
 
 void DownloadManager::onFilesInstallationFailed(QUrl url) {
-    ui->table->item(downloaderRowIndexForUrl(url), 2)->setText("Installation Failed");
+    _table->item(downloaderRowIndexForUrl(url), 2)->setText("Installation Failed");
     _downloaderHash.remove(downloaderForUrl(url));
 }
 

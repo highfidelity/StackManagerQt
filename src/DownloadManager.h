@@ -6,19 +6,16 @@
 //  Copyright (c) 2014 High Fidelity. All rights reserved.
 //
 
-#ifndef DOWNLOADMANAGER_H
-#define DOWNLOADMANAGER_H
+#ifndef hifi_DownloadManager_h
+#define hifi_DownloadManager_h
 
 #include <QWidget>
+#include <QTableWidget>
 #include <QHash>
 #include <QEvent>
 #include <QNetworkAccessManager>
 
 #include "Downloader.h"
-
-namespace Ui {
-    class DownloadManager;
-}
 
 class DownloadManager : public QWidget
 {
@@ -45,7 +42,7 @@ signals:
     void fileSuccessfullyInstalled(QUrl url);
 
 private:
-    Ui::DownloadManager* ui;
+    QTableWidget* _table;
     QNetworkAccessManager* _manager;
     QHash<Downloader*, int> _downloaderHash;
 

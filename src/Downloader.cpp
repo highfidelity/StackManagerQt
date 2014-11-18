@@ -19,7 +19,8 @@
 #include <QDebug>
 
 Downloader::Downloader(QUrl url, QObject* parent) :
-    QObject(parent) {
+    QObject(parent)
+{
     _url = url;
 }
 
