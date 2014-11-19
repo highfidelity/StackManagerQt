@@ -48,7 +48,7 @@ void AppDelegate::startDomainServer() {
         BackgroundProcess* acProcess = new BackgroundProcess("assignmentDS");
         _backgroundProcesses.append(acProcess);
         acProcess->start(GlobalData::getInstance()->getAssignmentClientExecutablePath(),
-                                                    QStringList() << "-n" <<  "5");
+                                                    QStringList() << "-n" << "5");
     } else {
         findBackgroundProcess("domain-server")->start(GlobalData::getInstance()->getDomainServerExecutablePath(), QStringList());
         findBackgroundProcess("assignmentDS")->start(GlobalData::getInstance()->getAssignmentClientExecutablePath(), QStringList() << "-n" << "5");
