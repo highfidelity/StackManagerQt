@@ -48,10 +48,10 @@ void AppDelegate::startDomainServer() {
         BackgroundProcess* acProcess = new BackgroundProcess("assignmentDS");
         _backgroundProcesses.append(acProcess);
         acProcess->start(GlobalData::getInstance()->getAssignmentClientExecutablePath(),
-                                                    QStringList() << "-n 5");
+                                                    QStringList() << "-n" << "5");
     } else {
         findBackgroundProcess("domain-server")->start(GlobalData::getInstance()->getDomainServerExecutablePath(), QStringList());
-        findBackgroundProcess("assignmentDS")->start(GlobalData::getInstance()->getAssignmentClientExecutablePath(), QStringList() << "-n 5");
+        findBackgroundProcess("assignmentDS")->start(GlobalData::getInstance()->getAssignmentClientExecutablePath(), QStringList() << "-n" << "5");
     }
     MainWindow::getInstance()->setDomainServerStarted();
     MainWindow::getInstance()->getLogsWidget()->addTab(findBackgroundProcess("domain-server")->getLogViewer(), "Domain Server");
@@ -71,9 +71,9 @@ void AppDelegate::startAssignment(int id, QString poolID) {
     if (findBackgroundProcess("assignment" + QString::number(id)) == NULL) {
         BackgroundProcess* process = new BackgroundProcess("assignment" + QString::number(id));
         _backgroundProcesses.append(process);
-        process->start(GlobalData::getInstance()->getAssignmentClientExecutablePath(), QStringList() << "-t 2 --pool" << poolID);
+        process->start(GlobalData::getInstance()->getAssignmentClientExecutablePath(), QStringList() << "-t" << "2" << "--pool" << poolID);
     } else {
-        findBackgroundProcess("assignment" + QString::number(id))->start(GlobalData::getInstance()->getAssignmentClientExecutablePath(), QStringList() << "-t 2 --pool" << poolID);
+        findBackgroundProcess("assignment" + QString::number(id))->start(GlobalData::getInstance()->getAssignmentClientExecutablePath(), QStringList() << "-t" << "2" << "--pool" << poolID);
     }
     int index = MainWindow::getInstance()->getLogsWidget()->addTab(findBackgroundProcess("assignment" + QString::number(id))->getLogViewer(), "Assignment " + QString::number(id));
     _logsTabWidgetHash.insert("Assignment " + QString::number(id), index);
