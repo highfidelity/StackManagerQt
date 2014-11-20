@@ -35,7 +35,7 @@ AppDelegate::AppDelegate(int argc, char* argv[]) :
 
 void AppDelegate::cleanupProcesses() {
     for(int i = 0; i < _backgroundProcesses.size(); ++i) {
-        _backgroundProcesses.at(i)->kill();
+        _backgroundProcesses.at(i)->terminate();
         _backgroundProcesses.at(i)->waitForFinished();
     }
 }
@@ -80,7 +80,7 @@ void AppDelegate::startAssignment(int id, QString poolID) {
 }
 
 void AppDelegate::stopAssignment(int id) {
-    findBackgroundProcess("assignment" + QString::number(id))->kill();
+    findBackgroundProcess("assignment" + QString::number(id))->terminate();
     int index = -1;
     for (int i = 1; i < _logsTabWidgetHash.size(); ++i) {
         if (MainWindow::getInstance()->getLogsWidget()->tabText(_logsTabWidgetHash.values().at(i)) == "Assignment " + QString::number(id)) {
