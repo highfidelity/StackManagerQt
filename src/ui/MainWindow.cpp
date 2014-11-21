@@ -65,18 +65,19 @@ MainWindow::MainWindow() :
     _assignmentScrollArea(NULL)
 {
     setWindowTitle("High Fidelity Stack Manager");
-    const int windowFixedWidth = 540;
-    const int windowInitialHeight = 200;
+    const int WINDOW_FIXED_WIDTH = 540;
+    const int WINDOW_INITIAL_HEIGHT = 200;
+
     if (GlobalData::getInstance()->getPlatform() == "win") {
         const int windowsYCoord = 30;
-        setGeometry(qApp->desktop()->availableGeometry().width() / 2 - windowFixedWidth / 2, windowsYCoord,
-                    windowFixedWidth, windowInitialHeight);
+        setGeometry(qApp->desktop()->availableGeometry().width() / 2 - WINDOW_FIXED_WIDTH / 2, windowsYCoord,
+                    WINDOW_FIXED_WIDTH, WINDOW_INITIAL_HEIGHT);
     } else {
         const int unixYCoord = 0;
-        setGeometry(qApp->desktop()->availableGeometry().width() / 2 - windowFixedWidth / 2, unixYCoord,
-                    windowFixedWidth, windowInitialHeight);
+        setGeometry(qApp->desktop()->availableGeometry().width() / 2 - WINDOW_FIXED_WIDTH / 2, unixYCoord,
+                    WINDOW_FIXED_WIDTH, WINDOW_INITIAL_HEIGHT);
     }
-    setFixedWidth(windowFixedWidth);
+    setFixedWidth(WINDOW_FIXED_WIDTH);
     setMaximumHeight(qApp->desktop()->availableGeometry().height());
     setWindowFlags(Qt::CustomizeWindowHint | Qt::WindowTitleHint |
                    Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
