@@ -19,8 +19,7 @@
 
 #include "SvgButton.h"
 
-class MainWindow : public QWidget
-{
+class MainWindow : public QWidget {
     Q_OBJECT
 public:
     static MainWindow* getInstance();
@@ -44,9 +43,9 @@ private:
     bool _domainServerRunning;
     QString _serverAddress;
     QString _requirementsLastCheckedDateTime;
-    SvgButton* _serverButton;
+    SvgButton* _startServerButton;
+    SvgButton* _stopServerButton;
     QLabel* _serverAddressLabel;
-    QRect _serverButtonBounds;
     QPushButton* _viewLogsButton;
     QPushButton* _settingsButton;
     QPushButton* _runAssignmentButton;
