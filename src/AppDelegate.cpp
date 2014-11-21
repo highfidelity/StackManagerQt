@@ -68,12 +68,18 @@ void AppDelegate::stopDomainServer() {
 }
 
 void AppDelegate::startAssignment(int id, QString poolID) {
+    QStringList argList = QStringList() << "-t" << "2";
+    if (!poolID.isEmpty()) {
+        argList << "--pool" << poolID;
+    }
+    
     if (findBackgroundProcess("assignment" + QString::number(id)) == NULL) {
         BackgroundProcess* process = new BackgroundProcess("assignment" + QString::number(id));
         _backgroundProcesses.append(process);
-        process->start(GlobalData::getInstance()->getAssignmentClientExecutablePath(), QStringList() << "-t" << "2" << "--pool" << poolID);
+        process->start(GlobalData::getInstance()->getAssignmentClientExecutablePath(), argList);
     } else {
-        findBackgroundProcess("assignment" + QString::number(id))->start(GlobalData::getInstance()->getAssignmentClientExecutablePath(), QStringList() << "-t" << "2" << "--pool" << poolID);
+        findBackgroundProcess("assignment" + QString::number(id))->start(GlobalData::getInstance()->getAssignmentClientExecutablePath(),
+                                                                         argList);
     }
     int index = MainWindow::getInstance()->getLogsWidget()->addTab(findBackgroundProcess("assignment" + QString::number(id))->getLogViewer(), "Assignment " + QString::number(id));
     _logsTabWidgetHash.insert("Assignment " + QString::number(id), index);

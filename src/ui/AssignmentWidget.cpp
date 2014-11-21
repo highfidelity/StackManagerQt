@@ -15,8 +15,8 @@
 
 AssignmentWidget::AssignmentWidget(int id, QWidget* parent) :
     QWidget(parent),
-    _isRunning(false),
-    _id(id)
+    _id(id),
+    _isRunning(false)
 {
     setFont(QFont("sans-serif"));
 
