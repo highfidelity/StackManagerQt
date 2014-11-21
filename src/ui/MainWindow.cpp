@@ -254,5 +254,5 @@ void MainWindow::addAssignment() {
 }
 
 void MainWindow::openSettings() {
-    QDesktopServices::openUrl(QUrl("http://localhost:40100/settings"));
+    QDesktopServices::openUrl(QUrl("http://localhost:40100/settings/"));
 }
