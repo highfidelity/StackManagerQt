@@ -26,8 +26,8 @@ const int TOP_Y_PADDING = 25;
 const int REQUIREMENTS_TEXT_TOP_MARGIN = 19;
 const int HORIZONTAL_RULE_TOP_MARGIN = 25;
 
-const int resizeFactor = 56;
-const int assignmentLayoutWidgetStretch = 0;
+const int ASSIGNMENT_LAYOUT_RESIZE_FACTOR = 56;
+const int ASSIGNMENT_LAYOUT_WIDGET_STRETCH = 0;
 const QColor lightGrayColor = QColor(205, 205, 205);
 const QColor darkGrayColor = QColor(84, 84, 84);
 const QColor redColor = QColor(189, 54, 78);
@@ -257,9 +257,10 @@ void MainWindow::toggleDomainServer() {
 
 void MainWindow::addAssignment() {
     AssignmentWidget* widget = new AssignmentWidget(_assignmentLayout->count() + 1);
-    _assignmentLayout->addWidget(widget, assignmentLayoutWidgetStretch, Qt::AlignTop);
-    resize(width(), _assignmentScrollArea->geometry().y() + resizeFactor * _assignmentLayout->count() +
-           TOP_Y_PADDING);
+    _assignmentLayout->addWidget(widget, ASSIGNMENT_LAYOUT_WIDGET_STRETCH, Qt::AlignTop);
+    resize(width(), _assignmentScrollArea->geometry().y()
+           + ASSIGNMENT_LAYOUT_RESIZE_FACTOR * _assignmentLayout->count()
+           + TOP_Y_PADDING);
     _assignmentScrollArea->resize(_assignmentScrollArea->maximumWidth(), height() - _assignmentScrollArea->geometry().top());
 }
 
