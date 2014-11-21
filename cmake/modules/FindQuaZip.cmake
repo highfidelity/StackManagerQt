@@ -1,3 +1,11 @@
+#
+#  FindQuaZip.h
+#  StackManagerQt/cmake/modules
+#
+#  Created by Mohammed Nafees.
+#  Copyright (c) 2014 High Fidelity. All rights reserved.
+# 
+
 # QUAZIP_FOUND               - QuaZip library was found
 # QUAZIP_INCLUDE_DIR         - Path to QuaZip include dir
 # QUAZIP_INCLUDE_DIRS        - Path to QuaZip and zlib include dir (combined from QUAZIP_INCLUDE_DIR + ZLIB_INCLUDE_DIR)
