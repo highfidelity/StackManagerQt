@@ -143,8 +143,6 @@ void AppDelegate::createExecutablePath() {
 }
 
 void AppDelegate::downloadLatestExecutablesAndRequirements() {
-    _manager->setNetworkAccessible(QNetworkAccessManager::Accessible);
-
     // Check if Qt is already installed
     if (GlobalData::getInstance()->getPlatform() == "mac") {
         if (QDir(GlobalData::getInstance()->getClientsLaunchPath() + "QtCore.framework").exists()) {
@@ -206,17 +204,10 @@ void AppDelegate::downloadLatestExecutablesAndRequirements() {
     // fix for Mac and Linux network accessibility
     if (acMd5Data.size() == 0) {
         // network is not accessible
-        _manager->setNetworkAccessible(QNetworkAccessManager::NotAccessible);
-    } else {
-        _manager->setNetworkAccessible(QNetworkAccessManager::Accessible);
-    }
-
-    if (_manager->networkAccessible() != QNetworkAccessManager::Accessible) {
         qDebug() << "Could not connect to the internet.";
         MainWindow::getInstance()->show();
         return;
     }
-
 
     qDebug() << "AC MD5: " << acMd5Data;
     if (acMd5Data.toLower() == QCryptographicHash::hash(acData, QCryptographicHash::Md5).toHex()) {

@@ -83,4 +83,6 @@ int GlobalData::indexForAssignmentType(const QString &type) {
             return _availableAssignmentTypes.value(type);
         }
     }
+    
+    return -1;
 }
