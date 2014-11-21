@@ -196,6 +196,7 @@ void MainWindow::setDomainServerStarted() {
     _viewLogsButton->show();
     _settingsButton->show();
     _runAssignmentButton->show();
+    _assignmentScrollArea->show();
     _assignmentScrollArea->widget()->setEnabled(true);
     update();
 }
@@ -208,11 +209,12 @@ void MainWindow::setDomainServerStopped() {
     _viewLogsButton->hide();
     _settingsButton->hide();
     _runAssignmentButton->hide();
+    _assignmentScrollArea->hide();
     _assignmentScrollArea->widget()->setEnabled(false);
     update();
     for (int i = 0; i < _assignmentLayout->count(); ++i) {
         if (qobject_cast<AssignmentWidget*>(_assignmentLayout->itemAt(i)->widget())->isRunning()) {
-            qobject_cast<AssignmentWidget*>(_assignmentLayout->itemAt(i)->widget())->toggleRunningState(false);
+            qobject_cast<AssignmentWidget*>(_assignmentLayout->itemAt(i)->widget())->toggleRunningState();
         }
     }
 }

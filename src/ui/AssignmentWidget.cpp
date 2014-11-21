@@ -43,19 +43,15 @@ AssignmentWidget::AssignmentWidget(int id, QWidget* parent) :
     connect(_runButton, &QPushButton::clicked, this, &AssignmentWidget::toggleRunningState);
 }
 
-void AssignmentWidget::toggleRunningState(bool toggleProcess) {
+void AssignmentWidget::toggleRunningState() {
     if (_isRunning) {
-        if (toggleProcess) {
-            AppDelegate::getInstance()->stopAssignment(_id);
-        }
+        AppDelegate::getInstance()->stopAssignment(_id);
         _runButton->setSvgImage(":/assignment-run.svg");
         update();
         _poolIDLineEdit->setEnabled(true);
         _isRunning = false;
     } else {
-        if (toggleProcess) {
-            AppDelegate::getInstance()->startAssignment(_id, _poolIDLineEdit->text());
-        }
+        AppDelegate::getInstance()->startAssignment(_id, _poolIDLineEdit->text());
         _runButton->setSvgImage(":/assignment-stop.svg");
         update();
         _poolIDLineEdit->setEnabled(false);
