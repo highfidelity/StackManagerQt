@@ -26,6 +26,8 @@ const int TOP_Y_PADDING = 25;
 const int REQUIREMENTS_TEXT_TOP_MARGIN = 19;
 const int HORIZONTAL_RULE_TOP_MARGIN = 25;
 
+const int BUTTON_PADDING_FIX = -5;
+
 const int ASSIGNMENT_LAYOUT_RESIZE_FACTOR = 56;
 const int ASSIGNMENT_LAYOUT_WIDGET_STRETCH = 0;
 const QColor lightGrayColor = QColor(205, 205, 205);
@@ -115,7 +117,7 @@ MainWindow::MainWindow() :
     _viewLogsButton->setAutoDefault(false);
     _viewLogsButton->setDefault(false);
     _viewLogsButton->setFocusPolicy(Qt::NoFocus);
-    _viewLogsButton->move(GLOBAL_X_PADDING, secondaryButtonY);
+    _viewLogsButton->move(GLOBAL_X_PADDING + BUTTON_PADDING_FIX, secondaryButtonY);
     _viewLogsButton->hide();
 
     _settingsButton = new QPushButton("Settings", this);
@@ -131,7 +133,7 @@ MainWindow::MainWindow() :
     _runAssignmentButton->setAutoDefault(false);
     _runAssignmentButton->setDefault(false);
     _runAssignmentButton->setFocusPolicy(Qt::NoFocus);
-    _runAssignmentButton->move(GLOBAL_X_PADDING,
+    _runAssignmentButton->move(GLOBAL_X_PADDING + BUTTON_PADDING_FIX,
                                _viewLogsButton->geometry().bottom() + REQUIREMENTS_TEXT_TOP_MARGIN
                                + HORIZONTAL_RULE_TOP_MARGIN + ASSIGNMENT_BUTTON_TOP_MARGIN);
     _runAssignmentButton->hide();
