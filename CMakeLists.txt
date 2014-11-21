@@ -1,36 +1,36 @@
 cmake_minimum_required(VERSION 2.8.11)
 
-if (WIN32)
-  # A space in the target name leads to compile-time error on Windows
-  set(TARGET_NAME "StackManager")
-else ()
-  set(TARGET_NAME "Stack Manager")
-endif ()
+set(TARGET_NAME "StackManager")
 
 project(${TARGET_NAME})
 
 set(CMAKE_AUTOMOC ON)
 
+if (NOT QT_CMAKE_PREFIX_PATH)
+  set(QT_CMAKE_PREFIX_PATH $ENV{QT_CMAKE_PREFIX_PATH})
+endif ()
+
+set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ${QT_CMAKE_PREFIX_PATH})
+
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules/")
 
-find_package(Qt5Widgets)
-find_package(Qt5Gui)
-find_package(Qt5Svg)
-find_package(Qt5Core)
-find_package(Qt5Network)
-find_package(QuaZip)
-find_package(ZLIB)
+find_package(Qt5Widgets REQUIRED)
+find_package(Qt5Gui REQUIRED)
+find_package(Qt5Svg REQUIRED)
+find_package(Qt5Core REQUIRED)
+find_package(Qt5Network REQUIRED)
+find_package(QuaZip REQUIRED)
 
-include_directories(${Qt5Widgets_INCLUDE_DIRS}
-  ${Qt5Gui_INCLUDE_DIRS}
-  ${Qt5Svg_INCLUDE_DIRS}
-  ${Qt5Core_INCLUDE_DIRS}
-  ${Qt5Network_INCLUDE_DIRS}
+if (WIN32)
+  find_package(ZLIB REQUIRED)
+endif ()
+
+include_directories(
   ${QUAZIP_INCLUDE_DIRS}
   ${ZLIB_INCLUDE_DIRS}
-  ${CMAKE_CURRENT_BINARY_DIR}
   src
-  src/ui)
+  src/ui
+)
 
 file(GLOB SRCS "src/*.cpp" "src/ui/*.cpp")
 file(GLOB HEADERS "src/*.h" "src/ui/*.h")
