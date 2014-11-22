@@ -104,9 +104,10 @@ MainWindow::MainWindow() :
     _stopServerButton->hide();
 
     const int SERVER_ADDRESS_LABEL_LEFT_MARGIN = 20;
+    const int SERVER_ADDRESS_LABEL_TOP_MARGIN = 17;
     _serverAddressLabel = new QLabel(this);
     _serverAddressLabel->move(_stopServerButton->geometry().right() + SERVER_ADDRESS_LABEL_LEFT_MARGIN,
-                              TOP_Y_PADDING);
+                              TOP_Y_PADDING + SERVER_ADDRESS_LABEL_TOP_MARGIN);
     _serverAddressLabel->setOpenExternalLinks(true);
     _serverAddressLabel->hide();
 
@@ -114,23 +115,33 @@ MainWindow::MainWindow() :
     
     int secondaryButtonY = _stopServerButton->geometry().bottom() + SECONDARY_BUTTON_ROW_TOP_MARGIN;
     
-    _viewLogsButton = new QPushButton("View Logs", this);
+    _shareButton = new QPushButton("Copy link", this);
+    _shareButton->setAutoDefault(false);
+    _shareButton->setDefault(false);
+    _shareButton->setFocusPolicy(Qt::NoFocus);
+    _shareButton->setGeometry(GLOBAL_X_PADDING + BUTTON_PADDING_FIX, secondaryButtonY,
+                              _shareButton->width(), _shareButton->height());
+    _shareButton->hide();
+    
+    _viewLogsButton = new QPushButton("View logs", this);
     _viewLogsButton->setAutoDefault(false);
     _viewLogsButton->setDefault(false);
     _viewLogsButton->setFocusPolicy(Qt::NoFocus);
-    _viewLogsButton->move(GLOBAL_X_PADDING + BUTTON_PADDING_FIX, secondaryButtonY);
+    _viewLogsButton->setGeometry(_shareButton->geometry().right(), secondaryButtonY,
+                                 _viewLogsButton->width(), _viewLogsButton->height());
     _viewLogsButton->hide();
 
     _settingsButton = new QPushButton("Settings", this);
     _settingsButton->setAutoDefault(false);
     _settingsButton->setDefault(false);
     _settingsButton->setFocusPolicy(Qt::NoFocus);
-    _settingsButton->move(GLOBAL_X_PADDING + _viewLogsButton->width(), secondaryButtonY);
+    _settingsButton->setGeometry(_viewLogsButton->geometry().right(), secondaryButtonY,
+                                 _settingsButton->width(), _settingsButton->height());
     _settingsButton->hide();
     
     const int ASSIGNMENT_BUTTON_TOP_MARGIN = 10;
 
-    _runAssignmentButton = new QPushButton("Run Assignment", this);
+    _runAssignmentButton = new QPushButton("Run assignment", this);
     _runAssignmentButton->setAutoDefault(false);
     _runAssignmentButton->setDefault(false);
     _runAssignmentButton->setFocusPolicy(Qt::NoFocus);
@@ -165,6 +176,13 @@ MainWindow::MainWindow() :
     _assignmentLayout->setContentsMargins(assignmentLayoutSpacingMargin, assignmentLayoutSpacingMargin,
                                           assignmentLayoutSpacingMargin, assignmentLayoutSpacingMargin);
     _assignmentScrollArea->widget()->setLayout(_assignmentLayout);
+    
+    _serverAddress = "hifi://localhost";
+    _serverAddressLabel->setText("<html><head/><body style=\"font:14px 'Helvetica', 'Arial', 'sans-serif';"
+                                 "font-weight: bold;\"><p><span style=\"color:#545454;\">Accessible at: </span>"
+                                 "<a href=\"" + _serverAddress + "\">"
+                                 "<span style=\"color:#29957e;\">" + _serverAddress +
+                                 "</span></a></p></body></html>");
 
     connect(_startServerButton, &QPushButton::clicked, this, &MainWindow::toggleDomainServer);
     connect(_stopServerButton, &QPushButton::clicked, this, &MainWindow::toggleDomainServer);
@@ -172,12 +190,7 @@ MainWindow::MainWindow() :
     connect(_settingsButton, &QPushButton::clicked, this, &MainWindow::openSettings);
     connect(_runAssignmentButton, &QPushButton::clicked, this, &MainWindow::addAssignment);
 
-    _serverAddress = "hifi://localhost";
-    _serverAddressLabel->setText("<html><head/><body style=\"font:14px 'Helvetica', 'Arial', 'sans-serif';"
-                                 "font-weight: bold;\"><p><span style=\"color:#545454;\">Accessible at: </span>"
-                                 "<a href=\"" + _serverAddress + "\">"
-                                 "<span style=\"color:#29957e;\">" + _serverAddress +
-                                 "</span></a></p></body></html>");
+    
 }
 
 void MainWindow::setServerAddress(const QString &address) {
@@ -195,6 +208,7 @@ void MainWindow::setDomainServerStarted() {
     _serverAddressLabel->show();
     _viewLogsButton->show();
     _settingsButton->show();
+    _shareButton->show();
     _runAssignmentButton->show();
     _assignmentScrollArea->show();
     _assignmentScrollArea->widget()->setEnabled(true);
@@ -208,6 +222,7 @@ void MainWindow::setDomainServerStopped() {
     _serverAddressLabel->hide();
     _viewLogsButton->hide();
     _settingsButton->hide();
+    _shareButton->hide();
     _runAssignmentButton->hide();
     _assignmentScrollArea->hide();
     _assignmentScrollArea->widget()->setEnabled(false);
