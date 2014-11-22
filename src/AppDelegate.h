@@ -40,6 +40,7 @@ public:
     const QString getServerAddress() const { return "hifi://" + _domainServerName; }
     
 signals:
+    void domainServerIDMissing();
     void domainAddressChanged(const QString& newAddress);
 private slots:
     void cleanupProcesses();

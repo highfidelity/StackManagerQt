@@ -52,6 +52,9 @@ MainWindow* MainWindow::getInstance() {
     return _instance;
 }
 
+const QString SHARE_BUTTON_SHARE_TEXT = "Share";
+const QString SHARE_BUTTON_COPY_LINK_TEXT = "Copy link";
+
 MainWindow::MainWindow() :
     QWidget(0),
     _domainServerRunning(false),
@@ -132,7 +135,7 @@ MainWindow::MainWindow() :
                                  _settingsButton->width(), _settingsButton->height());
     _settingsButton->hide();
     
-    _shareButton = new QPushButton("Copy link", this);
+    _shareButton = new QPushButton(SHARE_BUTTON_COPY_LINK_TEXT, this);
     _shareButton->setAutoDefault(false);
     _shareButton->setDefault(false);
     _shareButton->setFocusPolicy(Qt::NoFocus);
@@ -185,9 +188,14 @@ MainWindow::MainWindow() :
     connect(_settingsButton, &QPushButton::clicked, this, &MainWindow::openSettings);
     connect(_runAssignmentButton, &QPushButton::clicked, this, &MainWindow::addAssignment);
     
+    AppDelegate* app = AppDelegate::getInstance();
     // update the current server address label and change it if the AppDelegate says the address has changed
-    updateServerAddressLabel(AppDelegate::getInstance()->getServerAddress());
-    connect(AppDelegate::getInstance(), &AppDelegate::domainAddressChanged, this, &MainWindow::updateServerAddressLabel);
+    updateServerAddressLabel(app->getServerAddress());
+    connect(app, &AppDelegate::domainAddressChanged, this, &MainWindow::updateServerAddressLabel);
+    
+    // if domain is missing an ID, let us switch our share button text
+    connect(app, &AppDelegate::domainServerIDMissing, this, &MainWindow::toggleShareButtonText);
+
 }
 
 void MainWindow::updateServerAddressLabel(const QString& serverAddress) {
@@ -196,6 +204,12 @@ void MainWindow::updateServerAddressLabel(const QString& serverAddress) {
                                  "<a href=\"" + serverAddress + "\">"
                                  "<span style=\"color:#29957e;\">" + serverAddress +
                                  "</span></a></p></body></html>");
+    _serverAddressLabel->adjustSize();
+}
+
+void MainWindow::toggleShareButtonText() {
+    _shareButton->setText(_shareButton->text() == SHARE_BUTTON_COPY_LINK_TEXT
+                          ? SHARE_BUTTON_SHARE_TEXT : SHARE_BUTTON_COPY_LINK_TEXT);
 }
 
 void MainWindow::handleShareButton() {

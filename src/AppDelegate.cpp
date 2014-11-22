@@ -96,6 +96,8 @@ void AppDelegate::handleDomainIDReply() {
             QUrl domainGetURL = HIGH_FIDELITY_API_URL + "/domains/" + _domainServerID;
             QNetworkReply* domainGetReply = _manager->get(QNetworkRequest(domainGetURL));
             connect(domainGetReply, &QNetworkReply::finished, this, &AppDelegate::handleDomainGetReply);
+        } else {
+            emit domainServerIDMissing();
         }
     } else {
         qDebug() << "Error getting domain ID from domain-server - "

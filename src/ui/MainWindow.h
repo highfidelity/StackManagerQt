@@ -37,6 +37,7 @@ private slots:
     void addAssignment();
     void openSettings();
     void updateServerAddressLabel(const QString& serverAddress);
+    void toggleShareButtonText();
     void handleShareButton();
 
 private:
