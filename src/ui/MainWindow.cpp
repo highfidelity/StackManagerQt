@@ -14,6 +14,7 @@
 #include <QDesktopWidget>
 #include <QFrame>
 #include <QDesktopServices>
+#include <QMessageBox>
 #include <QMutex>
 #include <QLayoutItem>
 #include <QCursor>
@@ -54,6 +55,7 @@ MainWindow* MainWindow::getInstance() {
 
 const QString SHARE_BUTTON_SHARE_TEXT = "Share";
 const QString SHARE_BUTTON_COPY_LINK_TEXT = "Copy link";
+const QString SHARE_BUTTON_REQUESTING_TEXT = "Requesting...";
 
 MainWindow::MainWindow() :
     QWidget(0),
@@ -195,6 +197,9 @@ MainWindow::MainWindow() :
     
     // if domain is missing an ID, let us switch our share button text
     connect(app, &AppDelegate::domainServerIDMissing, this, &MainWindow::toggleShareButtonText);
+    
+    // handle temp domain response for window
+    connect(app, &AppDelegate::temporaryDomainResponse, this, &MainWindow::handleTemporaryDomainCreateResponse);
 
 }
 
@@ -205,6 +210,9 @@ void MainWindow::updateServerAddressLabel(const QString& serverAddress) {
                                  "<span style=\"color:#29957e;\">" + serverAddress +
                                  "</span></a></p></body></html>");
     _serverAddressLabel->adjustSize();
+    
+    _shareButton->setText(SHARE_BUTTON_COPY_LINK_TEXT);
+    _shareButton->setEnabled(true);
 }
 
 void MainWindow::toggleShareButtonText() {
@@ -213,8 +221,35 @@ void MainWindow::toggleShareButtonText() {
 }
 
 void MainWindow::handleShareButton() {
-    QClipboard *clipboard = QApplication::clipboard();
-    clipboard->setText(AppDelegate::getInstance()->getServerAddress());
+    if (_shareButton->text() == SHARE_BUTTON_COPY_LINK_TEXT) {
+        QClipboard *clipboard = QApplication::clipboard();
+        clipboard->setText(AppDelegate::getInstance()->getServerAddress());
+    } else {
+        // user hit the share button, show them a dialog asking them if they want to get a temp name
+        const QString SHARE_DIALOG_MESSAGE = "This will create a temporary domain name (valid for 30 days)"
+            " so other users can easily connect to your domain.\n\nThis will restart your domain with"
+            " the new temporary name and ID.\n\nDo you want to continue?";
+        QMessageBox::StandardButton clickedButton = QMessageBox::question(this, "Share domain",  SHARE_DIALOG_MESSAGE);
+        
+        if (clickedButton == QMessageBox::Yes) {
+            _shareButton->setText(SHARE_BUTTON_REQUESTING_TEXT);
+            _shareButton->setEnabled(false);
+            
+            AppDelegate::getInstance()->requestTemporaryDomain();
+        }
+    }
+}
+
+void MainWindow::handleTemporaryDomainCreateResponse(bool wasSuccessful) {
+    if (wasSuccessful) {
+        _shareButton->setEnabled(true);
+        _shareButton->setText(SHARE_BUTTON_COPY_LINK_TEXT);
+    } else {
+        _shareButton->setEnabled(true);
+        _shareButton->setText(SHARE_BUTTON_SHARE_TEXT);
+        
+        QMessageBox::information(this, "Error", "There was a problem sharing your domain. Please try again!");
+    }
 }
 
 void MainWindow::setRequirementsLastChecked(const QString& lastCheckedDateTime) {

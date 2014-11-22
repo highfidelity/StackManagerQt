@@ -81,6 +81,12 @@ void AppDelegate::stopDomainServer() {
     MainWindow::getInstance()->setDomainServerStopped();
 }
 
+void AppDelegate::requestTemporaryDomain() {
+    QUrl tempDomainURL = HIGH_FIDELITY_API_URL + "/domains/temporary";
+    QNetworkReply* tempReply = _manager->get(QNetworkRequest(tempDomainURL));
+    connect(tempReply, &QNetworkReply::finished, this, &AppDelegate::handleTempDomainReply);
+}
+
 void AppDelegate::handleDomainIDReply() {
     QNetworkReply* reply = qobject_cast<QNetworkReply*>(sender());
     
@@ -104,7 +110,8 @@ void AppDelegate::handleDomainIDReply() {
         }
     } else {
         qDebug() << "Error getting domain ID from domain-server - "
-            << reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+            << reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt()
+            << reply->errorString();
     }
 }
 
@@ -119,6 +126,25 @@ void AppDelegate::handleDomainGetReply() {
         qDebug() << "This domain server's name is" << _domainServerName << "- updating address link.";
         
         emit domainAddressChanged(getServerAddress());
+    }
+}
+
+void AppDelegate::handleTempDomainReply() {
+    QNetworkReply* reply = qobject_cast<QNetworkReply*>(sender());
+    
+    qDebug() << reply->readAll();
+    
+    if (reply->error() == QNetworkReply::NoError
+        && reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt() == 200) {
+        QJsonDocument responseDocument = QJsonDocument::fromJson(reply->readAll());
+        QJsonObject domainObject = responseDocument.object()["domain"].toObject();
+        _domainServerName = domainObject["name"].toString();
+        _domainServerID = domainObject["id"].toString();
+        
+        emit temporaryDomainResponse(true);
+        emit domainAddressChanged(getServerAddress());
+    } else {
+        emit temporaryDomainResponse(false);
     }
 }
 

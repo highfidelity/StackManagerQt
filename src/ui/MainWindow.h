@@ -39,6 +39,7 @@ private slots:
     void updateServerAddressLabel(const QString& serverAddress);
     void toggleShareButtonText();
     void handleShareButton();
+    void handleTemporaryDomainCreateResponse(bool wasSuccessful);
 
 private:
     static MainWindow* _instance;

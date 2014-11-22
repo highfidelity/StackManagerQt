@@ -36,16 +36,20 @@ public:
     void startAssignment(int id, QString poolID = "");
     void stopAssignment(int id);
     
+    void requestTemporaryDomain();
+    
     const QString getServerAddress() const { return "hifi://" + _domainServerName; }
     
 signals:
     void domainServerIDMissing();
     void domainAddressChanged(const QString& newAddress);
+    void temporaryDomainResponse(bool wasSuccessful);
 private slots:
     void cleanupProcesses();
     void onFileSuccessfullyInstalled(QUrl url);
     void handleDomainIDReply();
     void handleDomainGetReply();
+    void handleTempDomainReply();
 
 private:
     void createExecutablePath();
