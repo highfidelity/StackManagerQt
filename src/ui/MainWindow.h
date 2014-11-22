@@ -24,7 +24,6 @@ class MainWindow : public QWidget {
 public:
     static MainWindow* getInstance();
 
-    void setServerAddress(const QString& address);
     void setRequirementsLastChecked(const QString& lastCheckedDateTime);
     void setDomainServerStarted();
     void setDomainServerStopped();
@@ -37,11 +36,13 @@ private slots:
     void toggleDomainServer();
     void addAssignment();
     void openSettings();
+    void updateServerAddressLabel(const QString& serverAddress);
+    void handleShareButton();
 
 private:
     static MainWindow* _instance;
     bool _domainServerRunning;
-    QString _serverAddress;
+    
     QString _requirementsLastCheckedDateTime;
     SvgButton* _startServerButton;
     SvgButton* _stopServerButton;

@@ -17,8 +17,11 @@
 #include <QNetworkAccessManager>
 #include <QUrl>
 #include <QHash>
+#include <QUuid>
 
 #include "MainWindow.h"
+
+const QString DOMAIN_SERVER_BASE_URL = "http://localhost:40100";
 
 class AppDelegate : public QApplication
 {
@@ -33,10 +36,16 @@ public:
 
     void startAssignment(int id, QString poolID = "");
     void stopAssignment(int id);
-
+    
+    const QString getServerAddress() const { return "hifi://" + _domainServerName; }
+    
+signals:
+    void domainAddressChanged(const QString& newAddress);
 private slots:
     void cleanupProcesses();
     void onFileSuccessfullyInstalled(QUrl url);
+    void handleDomainIDReply();
+    void handleDomainGetReply();
 
 private:
     void createExecutablePath();
@@ -51,6 +60,9 @@ private:
     bool _acReady;
     QList<BackgroundProcess*> _backgroundProcesses;
     QHash<QString, int> _logsTabWidgetHash;
+    
+    QString _domainServerID;
+    QString _domainServerName;
 };
 
 #endif

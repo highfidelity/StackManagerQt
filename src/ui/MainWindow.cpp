@@ -8,6 +8,7 @@
 
 #include "MainWindow.h"
 
+#include <QClipboard>
 #include <QPainter>
 #include <QApplication>
 #include <QDesktopWidget>
@@ -92,7 +93,7 @@ MainWindow::MainWindow() :
     scaledStart.scaledToHeight(SERVER_BUTTON_HEIGHT);
     
     _startServerButton->setGeometry((width() / 2.0f) - (scaledStart.width() / 2.0f),
-                                    (height() / 2.0f) - (scaledStart.height() / 2.0f),
+                                    TOP_Y_PADDING,
                                     scaledStart.width(),
                                     scaledStart.height());
     _startServerButton->setSvgImage(":/server-start.svg");
@@ -115,19 +116,11 @@ MainWindow::MainWindow() :
     
     int secondaryButtonY = _stopServerButton->geometry().bottom() + SECONDARY_BUTTON_ROW_TOP_MARGIN;
     
-    _shareButton = new QPushButton("Copy link", this);
-    _shareButton->setAutoDefault(false);
-    _shareButton->setDefault(false);
-    _shareButton->setFocusPolicy(Qt::NoFocus);
-    _shareButton->setGeometry(GLOBAL_X_PADDING + BUTTON_PADDING_FIX, secondaryButtonY,
-                              _shareButton->width(), _shareButton->height());
-    _shareButton->hide();
-    
     _viewLogsButton = new QPushButton("View logs", this);
     _viewLogsButton->setAutoDefault(false);
     _viewLogsButton->setDefault(false);
     _viewLogsButton->setFocusPolicy(Qt::NoFocus);
-    _viewLogsButton->setGeometry(_shareButton->geometry().right(), secondaryButtonY,
+    _viewLogsButton->setGeometry(GLOBAL_X_PADDING + BUTTON_PADDING_FIX, secondaryButtonY,
                                  _viewLogsButton->width(), _viewLogsButton->height());
     _viewLogsButton->hide();
 
@@ -138,6 +131,14 @@ MainWindow::MainWindow() :
     _settingsButton->setGeometry(_viewLogsButton->geometry().right(), secondaryButtonY,
                                  _settingsButton->width(), _settingsButton->height());
     _settingsButton->hide();
+    
+    _shareButton = new QPushButton("Copy link", this);
+    _shareButton->setAutoDefault(false);
+    _shareButton->setDefault(false);
+    _shareButton->setFocusPolicy(Qt::NoFocus);
+    _shareButton->setGeometry(_settingsButton->geometry().right(), secondaryButtonY,
+                              _shareButton->width(), _shareButton->height());
+    _shareButton->hide();
     
     const int ASSIGNMENT_BUTTON_TOP_MARGIN = 10;
 
@@ -176,25 +177,30 @@ MainWindow::MainWindow() :
     _assignmentLayout->setContentsMargins(assignmentLayoutSpacingMargin, assignmentLayoutSpacingMargin,
                                           assignmentLayoutSpacingMargin, assignmentLayoutSpacingMargin);
     _assignmentScrollArea->widget()->setLayout(_assignmentLayout);
-    
-    _serverAddress = "hifi://localhost";
-    _serverAddressLabel->setText("<html><head/><body style=\"font:14px 'Helvetica', 'Arial', 'sans-serif';"
-                                 "font-weight: bold;\"><p><span style=\"color:#545454;\">Accessible at: </span>"
-                                 "<a href=\"" + _serverAddress + "\">"
-                                 "<span style=\"color:#29957e;\">" + _serverAddress +
-                                 "</span></a></p></body></html>");
 
     connect(_startServerButton, &QPushButton::clicked, this, &MainWindow::toggleDomainServer);
     connect(_stopServerButton, &QPushButton::clicked, this, &MainWindow::toggleDomainServer);
+    connect(_shareButton, &QPushButton::clicked, this, &MainWindow::handleShareButton);
     connect(_viewLogsButton, &QPushButton::clicked, _logsWidget, &QTabWidget::show);
     connect(_settingsButton, &QPushButton::clicked, this, &MainWindow::openSettings);
     connect(_runAssignmentButton, &QPushButton::clicked, this, &MainWindow::addAssignment);
-
     
+    // update the current server address label and change it if the AppDelegate says the address has changed
+    updateServerAddressLabel(AppDelegate::getInstance()->getServerAddress());
+    connect(AppDelegate::getInstance(), &AppDelegate::domainAddressChanged, this, &MainWindow::updateServerAddressLabel);
 }
 
-void MainWindow::setServerAddress(const QString &address) {
-    _serverAddress = address;
+void MainWindow::updateServerAddressLabel(const QString& serverAddress) {
+    _serverAddressLabel->setText("<html><head/><body style=\"font:14px 'Helvetica', 'Arial', 'sans-serif';"
+                                 "font-weight: bold;\"><p><span style=\"color:#545454;\">Accessible at: </span>"
+                                 "<a href=\"" + serverAddress + "\">"
+                                 "<span style=\"color:#29957e;\">" + serverAddress +
+                                 "</span></a></p></body></html>");
+}
+
+void MainWindow::handleShareButton() {
+    QClipboard *clipboard = QApplication::clipboard();
+    clipboard->setText(AppDelegate::getInstance()->getServerAddress());
 }
 
 void MainWindow::setRequirementsLastChecked(const QString& lastCheckedDateTime) {
@@ -285,5 +291,5 @@ void MainWindow::addAssignment() {
 }
 
 void MainWindow::openSettings() {
-    QDesktopServices::openUrl(QUrl("http://localhost:40100/settings/"));
+    QDesktopServices::openUrl(QUrl(DOMAIN_SERVER_BASE_URL + "/settings/"));
 }
