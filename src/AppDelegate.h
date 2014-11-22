@@ -17,7 +17,6 @@
 #include <QNetworkAccessManager>
 #include <QUrl>
 #include <QHash>
-#include <QUuid>
 
 #include "MainWindow.h"
 

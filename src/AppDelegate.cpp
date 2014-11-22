@@ -19,6 +19,7 @@
 #include <QJsonObject>
 #include <QNetworkReply>
 #include <QNetworkRequest>
+#include <QUuid>
 
 const QString HIGH_FIDELITY_API_URL = "https://data.highfidelity.io/api/v1";
 
@@ -89,15 +90,17 @@ void AppDelegate::handleDomainIDReply() {
         
         if (!_domainServerID.isEmpty()) {
             
-            qDebug() << "The domain server ID is" << _domainServerID;
-            qDebug() << "Asking High Fidelity API for associated domain name.";
-            
-            // fire off a request to high fidelity API to see if this domain exists with them
-            QUrl domainGetURL = HIGH_FIDELITY_API_URL + "/domains/" + _domainServerID;
-            QNetworkReply* domainGetReply = _manager->get(QNetworkRequest(domainGetURL));
-            connect(domainGetReply, &QNetworkReply::finished, this, &AppDelegate::handleDomainGetReply);
-        } else {
-            emit domainServerIDMissing();
+            if (!QUuid(_domainServerID).isNull()) {
+                qDebug() << "The domain server ID is" << _domainServerID;
+                qDebug() << "Asking High Fidelity API for associated domain name.";
+                
+                // fire off a request to high fidelity API to see if this domain exists with them
+                QUrl domainGetURL = HIGH_FIDELITY_API_URL + "/domains/" + _domainServerID;
+                QNetworkReply* domainGetReply = _manager->get(QNetworkRequest(domainGetURL));
+                connect(domainGetReply, &QNetworkReply::finished, this, &AppDelegate::handleDomainGetReply);
+            } else {
+                emit domainServerIDMissing();
+            }
         }
     } else {
         qDebug() << "Error getting domain ID from domain-server - "
