@@ -20,6 +20,8 @@
 
 #include "MainWindow.h"
 
+const QString DOMAIN_SERVER_BASE_URL = "http://localhost:40100";
+
 class AppDelegate : public QApplication
 {
     Q_OBJECT
@@ -33,15 +35,30 @@ public:
 
     void startAssignment(int id, QString poolID = "");
     void stopAssignment(int id);
-
+    
+    void requestTemporaryDomain();
+    
+    const QString getServerAddress() const { return "hifi://" + _domainServerName; }
+    
+signals:
+    void domainServerIDMissing();
+    void domainAddressChanged(const QString& newAddress);
+    void temporaryDomainResponse(bool wasSuccessful);
 private slots:
     void cleanupProcesses();
     void onFileSuccessfullyInstalled(QUrl url);
+    void requestDomainServerID();
+    void handleDomainIDReply();
+    void handleDomainGetReply();
+    void handleTempDomainReply();
+    void handleDomainSettingsResponse();
 
 private:
     void createExecutablePath();
     void downloadLatestExecutablesAndRequirements();
     BackgroundProcess* findBackgroundProcess(QString type);
+    
+    void sendNewIDToDomainServer();
 
     MainWindow* _window;
     QNetworkAccessManager* _manager;
@@ -51,6 +68,9 @@ private:
     bool _acReady;
     QList<BackgroundProcess*> _backgroundProcesses;
     QHash<QString, int> _logsTabWidgetHash;
+    
+    QString _domainServerID;
+    QString _domainServerName;
 };
 
 #endif

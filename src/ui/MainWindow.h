@@ -19,13 +19,11 @@
 
 #include "SvgButton.h"
 
-class MainWindow : public QWidget
-{
+class MainWindow : public QWidget {
     Q_OBJECT
 public:
     static MainWindow* getInstance();
 
-    void setServerAddress(const QString& address);
     void setRequirementsLastChecked(const QString& lastCheckedDateTime);
     void setDomainServerStarted();
     void setDomainServerStopped();
@@ -38,18 +36,23 @@ private slots:
     void toggleDomainServer();
     void addAssignment();
     void openSettings();
+    void updateServerAddressLabel(const QString& serverAddress);
+    void toggleShareButtonText();
+    void handleShareButton();
+    void handleTemporaryDomainCreateResponse(bool wasSuccessful);
 
 private:
     static MainWindow* _instance;
     bool _domainServerRunning;
-    QString _serverAddress;
+    
     QString _requirementsLastCheckedDateTime;
-    SvgButton* _serverButton;
+    SvgButton* _startServerButton;
+    SvgButton* _stopServerButton;
     QLabel* _serverAddressLabel;
-    QRect _serverButtonBounds;
     QPushButton* _viewLogsButton;
     QPushButton* _settingsButton;
     QPushButton* _runAssignmentButton;
+    QPushButton* _shareButton;
     QTabWidget* _logsWidget;
     QVBoxLayout* _assignmentLayout;
     QScrollArea* _assignmentScrollArea;

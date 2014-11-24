@@ -10,16 +10,22 @@
 #include "GlobalData.h"
 #include "DownloadManager.h"
 
+#include <QDateTime>
+#include <QDebug>
 #include <QDir>
 #include <QFile>
-#include <QDateTime>
+#include <QFileInfoList>
+#include <QJsonDocument>
+#include <QJsonObject>
 #include <QNetworkReply>
 #include <QNetworkRequest>
-#include <QFileInfoList>
-#include <QDebug>
+#include <QUuid>
+
+const QString HIGH_FIDELITY_API_URL = "https://data.highfidelity.io/api/v1";
 
 AppDelegate::AppDelegate(int argc, char* argv[]) :
-    QApplication(argc, argv)
+    QApplication(argc, argv),
+    _domainServerName("localhost")
 {
     setApplicationName("Stack Manager");
     setOrganizationName("High Fidelity");
@@ -56,6 +62,11 @@ void AppDelegate::startDomainServer() {
     MainWindow::getInstance()->setDomainServerStarted();
     MainWindow::getInstance()->getLogsWidget()->addTab(findBackgroundProcess("domain-server")->getLogViewer(), "Domain Server");
     _logsTabWidgetHash.insert("Domain Server", 0);
+    
+    if (_domainServerID.isEmpty()) {
+        // after giving the domain server some time to set up, ask for its ID
+        QTimer::singleShot(1000, this, SLOT(requestDomainServerID()));
+    }
 }
 
 void AppDelegate::stopDomainServer() {
@@ -67,13 +78,131 @@ void AppDelegate::stopDomainServer() {
     MainWindow::getInstance()->setDomainServerStopped();
 }
 
+void AppDelegate::requestDomainServerID() {
+    // ask the domain-server for its ID so we can update the accessible name
+    QUrl domainIDURL = DOMAIN_SERVER_BASE_URL + "/id";
+    
+    qDebug() << "Requesting domain server ID from" << domainIDURL.toString();
+    
+    QNetworkReply* idReply = _manager->get(QNetworkRequest(domainIDURL));
+    
+    connect(idReply, &QNetworkReply::finished, this, &AppDelegate::handleDomainIDReply);
+}
+
+void AppDelegate::requestTemporaryDomain() {
+    QUrl tempDomainURL = HIGH_FIDELITY_API_URL + "/domains";
+    QString tempDomainJSON = "{\"domain\": {\"temporary\": true }}";
+    
+    QNetworkRequest tempDomainRequest(tempDomainURL);
+    tempDomainRequest.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+    
+    QNetworkReply* tempReply = _manager->post(tempDomainRequest, tempDomainJSON.toLocal8Bit());
+    connect(tempReply, &QNetworkReply::finished, this, &AppDelegate::handleTempDomainReply);
+}
+
+void AppDelegate::handleDomainIDReply() {
+    QNetworkReply* reply = qobject_cast<QNetworkReply*>(sender());
+    
+    if (reply->error() == QNetworkReply::NoError
+        && reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt() == 200) {
+        _domainServerID = QString(reply->readAll());
+        
+        if (!_domainServerID.isEmpty()) {
+            
+            if (!QUuid(_domainServerID).isNull()) {
+                qDebug() << "The domain server ID is" << _domainServerID;
+                qDebug() << "Asking High Fidelity API for associated domain name.";
+                
+                // fire off a request to high fidelity API to see if this domain exists with them
+                QUrl domainGetURL = HIGH_FIDELITY_API_URL + "/domains/" + _domainServerID;
+                QNetworkReply* domainGetReply = _manager->get(QNetworkRequest(domainGetURL));
+                connect(domainGetReply, &QNetworkReply::finished, this, &AppDelegate::handleDomainGetReply);
+            } else {
+                emit domainServerIDMissing();
+            }
+        }
+    } else {
+        qDebug() << "Error getting domain ID from domain-server - "
+            << reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt()
+            << reply->errorString();
+    }
+}
+
+void AppDelegate::handleDomainGetReply() {
+    QNetworkReply* reply = qobject_cast<QNetworkReply*>(sender());
+    
+    if (reply->error() == QNetworkReply::NoError
+        && reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt() == 200) {
+        QJsonDocument responseDocument = QJsonDocument::fromJson(reply->readAll());
+        _domainServerName = responseDocument.object()["domain"].toObject()["name"].toString();
+        
+        qDebug() << "This domain server's name is" << _domainServerName << "- updating address link.";
+        
+        emit domainAddressChanged(getServerAddress());
+    }
+}
+
+void AppDelegate::handleTempDomainReply() {
+    QNetworkReply* reply = qobject_cast<QNetworkReply*>(sender());
+    
+    if (reply->error() == QNetworkReply::NoError
+        && reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt() == 200) {
+        QJsonDocument responseDocument = QJsonDocument::fromJson(reply->readAll());
+        QJsonObject domainObject = responseDocument.object()["domain"].toObject();
+        
+        _domainServerName = domainObject["name"].toString();
+        _domainServerID = domainObject["id"].toString();
+        
+        qDebug() << "Received new name" << _domainServerName << "and new ID" << _domainServerID << "for temp domain.";
+        
+        sendNewIDToDomainServer();
+    } else {
+        emit temporaryDomainResponse(false);
+    }
+}
+
+void AppDelegate::sendNewIDToDomainServer() {
+    // setup a JSON object for the settings we are posting
+    // it is possible this will require authentication - if so there's nothing we can do about it for now
+    QString settingsJSON = "{\"metaverse\": { \"id\": \"%1\", \"automatic_networking\": \"full\" } }";
+
+    QNetworkRequest settingsRequest(DOMAIN_SERVER_BASE_URL + "/settings.json");
+    settingsRequest.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+    
+    QNetworkReply* settingsReply = _manager->post(settingsRequest, settingsJSON.arg(_domainServerID).toLocal8Bit());
+    connect(settingsReply, &QNetworkReply::finished, this, &AppDelegate::handleDomainSettingsResponse);
+    
+}
+
+void AppDelegate::handleDomainSettingsResponse() {
+    QNetworkReply* reply = qobject_cast<QNetworkReply*>(sender());
+    
+    if (reply->error() == QNetworkReply::NoError
+        && reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt() == 200) {
+        
+        qDebug() << "Successfully stored new ID in domain-server.";
+        
+        emit temporaryDomainResponse(true);
+        emit domainAddressChanged(getServerAddress());
+    } else {
+        qDebug() << "Error saving ID with domain-server -" << reply->errorString();
+        emit temporaryDomainResponse(false);
+    }
+}
+
 void AppDelegate::startAssignment(int id, QString poolID) {
+    QStringList argList = QStringList() << "-t" << "2";
+    if (!poolID.isEmpty()) {
+        argList << "--pool" << poolID;
+    }
+    
     if (findBackgroundProcess("assignment" + QString::number(id)) == NULL) {
         BackgroundProcess* process = new BackgroundProcess("assignment" + QString::number(id));
         _backgroundProcesses.append(process);
-        process->start(GlobalData::getInstance()->getAssignmentClientExecutablePath(), QStringList() << "-t" << "2" << "--pool" << poolID);
+        process->start(GlobalData::getInstance()->getAssignmentClientExecutablePath(), argList);
     } else {
-        findBackgroundProcess("assignment" + QString::number(id))->start(GlobalData::getInstance()->getAssignmentClientExecutablePath(), QStringList() << "-t" << "2" << "--pool" << poolID);
+        findBackgroundProcess("assignment" + QString::number(id))->start(GlobalData::getInstance()->getAssignmentClientExecutablePath(),
+                                                                         argList);
     }
     int index = MainWindow::getInstance()->getLogsWidget()->addTab(findBackgroundProcess("assignment" + QString::number(id))->getLogViewer(), "Assignment " + QString::number(id));
     _logsTabWidgetHash.insert("Assignment " + QString::number(id), index);
@@ -143,8 +272,6 @@ void AppDelegate::createExecutablePath() {
 }
 
 void AppDelegate::downloadLatestExecutablesAndRequirements() {
-    _manager->setNetworkAccessible(QNetworkAccessManager::Accessible);
-
     // Check if Qt is already installed
     if (GlobalData::getInstance()->getPlatform() == "mac") {
         if (QDir(GlobalData::getInstance()->getClientsLaunchPath() + "QtCore.framework").exists()) {
@@ -206,17 +333,10 @@ void AppDelegate::downloadLatestExecutablesAndRequirements() {
     // fix for Mac and Linux network accessibility
     if (acMd5Data.size() == 0) {
         // network is not accessible
-        _manager->setNetworkAccessible(QNetworkAccessManager::NotAccessible);
-    } else {
-        _manager->setNetworkAccessible(QNetworkAccessManager::Accessible);
-    }
-
-    if (_manager->networkAccessible() != QNetworkAccessManager::Accessible) {
         qDebug() << "Could not connect to the internet.";
         MainWindow::getInstance()->show();
         return;
     }
-
 
     qDebug() << "AC MD5: " << acMd5Data;
     if (acMd5Data.toLower() == QCryptographicHash::hash(acData, QCryptographicHash::Md5).toHex()) {

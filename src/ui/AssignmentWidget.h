@@ -23,7 +23,7 @@ public:
     bool isRunning() { return _isRunning; }
 
 public slots:
-    void toggleRunningState(bool toggleProcess = true);
+    void toggleRunningState();
 
 private:
     int _id;
