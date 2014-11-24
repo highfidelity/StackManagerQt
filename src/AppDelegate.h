@@ -47,14 +47,18 @@ signals:
 private slots:
     void cleanupProcesses();
     void onFileSuccessfullyInstalled(QUrl url);
+    void requestDomainServerID();
     void handleDomainIDReply();
     void handleDomainGetReply();
     void handleTempDomainReply();
+    void handleDomainSettingsResponse();
 
 private:
     void createExecutablePath();
     void downloadLatestExecutablesAndRequirements();
     BackgroundProcess* findBackgroundProcess(QString type);
+    
+    void sendNewIDToDomainServer();
 
     MainWindow* _window;
     QNetworkAccessManager* _manager;
