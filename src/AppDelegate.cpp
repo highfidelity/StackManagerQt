@@ -164,7 +164,7 @@ void AppDelegate::handleTempDomainReply() {
 void AppDelegate::sendNewIDToDomainServer() {
     // setup a JSON object for the settings we are posting
     // it is possible this will require authentication - if so there's nothing we can do about it for now
-    QString settingsJSON = "{\"metaverse\": { \"id\": \"%1\", \"automatic_networking\": \"full\" } }";
+    QString settingsJSON = "{\"metaverse\": { \"id\": \"%1\", \"automatic_networking\": \"full\", \"local_port\": \"0\" } }";
 
     QNetworkRequest settingsRequest(DOMAIN_SERVER_BASE_URL + "/settings.json");
     settingsRequest.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
