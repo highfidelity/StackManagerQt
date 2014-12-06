@@ -9,13 +9,15 @@
 #ifndef hifi_MainWindow_h
 #define hifi_MainWindow_h
 
-#include <QWidget>
+#include <QComboBox>
+#include <QLabel>
 #include <QMouseEvent>
 #include <QPushButton>
+#include <QScrollArea>
 #include <QTabWidget>
 #include <QVBoxLayout>
-#include <QScrollArea>
-#include <QLabel>
+#include <QWidget>
+
 
 #include "SvgButton.h"
 
@@ -33,15 +35,18 @@ protected:
     virtual void paintEvent(QPaintEvent*);
 
 private slots:
-    void toggleDomainServer();
+    void toggleDomainServerButton();
     void addAssignment();
     void openSettings();
     void updateServerAddressLabel(const QString& serverAddress);
     void toggleShareButtonText();
     void handleShareButton();
+    void showContentSetPage();
     void handleTemporaryDomainCreateResponse(bool wasSuccessful);
 
 private:
+    void toggleContent(bool isRunning);
+    
     static MainWindow* _instance;
     bool _domainServerRunning;
     
@@ -53,6 +58,7 @@ private:
     QPushButton* _settingsButton;
     QPushButton* _runAssignmentButton;
     QPushButton* _shareButton;
+    QPushButton* _contentSetButton;
     QTabWidget* _logsWidget;
     QVBoxLayout* _assignmentLayout;
     QScrollArea* _assignmentScrollArea;

@@ -36,14 +36,19 @@ public:
     void startAssignment(int id, QString poolID = "");
     void stopAssignment(int id);
     
+    void stopBaseAssignmentClients();
+    void startBaseAssignmentClients();
+    
     void requestTemporaryDomain();
     
     const QString getServerAddress() const { return "hifi://" + _domainServerName; }
-    
+public slots:
+    void downloadContentSet(const QUrl& contentSetURL);
 signals:
     void domainServerIDMissing();
     void domainAddressChanged(const QString& newAddress);
     void temporaryDomainResponse(bool wasSuccessful);
+    void contentSetDownloadResponse(bool wasSuccessful);
 private slots:
     void cleanupProcesses();
     void onFileSuccessfullyInstalled(QUrl url);
@@ -52,6 +57,7 @@ private slots:
     void handleDomainGetReply();
     void handleTempDomainReply();
     void handleDomainSettingsResponse();
+    void handleContentSetDownloadFinished();
 
 private:
     void createExecutablePath();

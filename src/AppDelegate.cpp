@@ -17,6 +17,7 @@
 #include <QFileInfoList>
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QMessageBox>
 #include <QNetworkReply>
 #include <QNetworkRequest>
 #include <QUuid>
@@ -40,7 +41,7 @@ AppDelegate::AppDelegate(int argc, char* argv[]) :
 }
 
 void AppDelegate::cleanupProcesses() {
-    for(int i = 0; i < _backgroundProcesses.size(); ++i) {
+    for (int i = 0; i < _backgroundProcesses.size(); ++i) {
         _backgroundProcesses.at(i)->terminate();
         _backgroundProcesses.at(i)->waitForFinished();
     }
@@ -51,14 +52,12 @@ void AppDelegate::startDomainServer() {
         BackgroundProcess* dsProcess = new BackgroundProcess("domain-server");
         _backgroundProcesses.append(dsProcess);
         dsProcess->start(GlobalData::getInstance()->getDomainServerExecutablePath(), QStringList());
-        BackgroundProcess* acProcess = new BackgroundProcess("assignmentDS");
-        _backgroundProcesses.append(acProcess);
-        acProcess->start(GlobalData::getInstance()->getAssignmentClientExecutablePath(),
-                                                    QStringList() << "-n" << "5");
     } else {
         findBackgroundProcess("domain-server")->start(GlobalData::getInstance()->getDomainServerExecutablePath(), QStringList());
-        findBackgroundProcess("assignmentDS")->start(GlobalData::getInstance()->getAssignmentClientExecutablePath(), QStringList() << "-n" << "5");
     }
+    
+    startBaseAssignmentClients();
+    
     MainWindow::getInstance()->setDomainServerStarted();
     MainWindow::getInstance()->getLogsWidget()->addTab(findBackgroundProcess("domain-server")->getLogViewer(), "Domain Server");
     _logsTabWidgetHash.insert("Domain Server", 0);
@@ -76,6 +75,25 @@ void AppDelegate::stopDomainServer() {
     _logsTabWidgetHash.clear();
     cleanupProcesses();
     MainWindow::getInstance()->setDomainServerStopped();
+}
+
+void AppDelegate::startBaseAssignmentClients() {
+    if (!findBackgroundProcess("assignmentDS")) {
+        BackgroundProcess* acProcess = new BackgroundProcess("assignmentDS");
+        _backgroundProcesses.append(acProcess);
+        acProcess->start(GlobalData::getInstance()->getAssignmentClientExecutablePath(),
+                         QStringList() << "-n" << "5");
+    } else {
+        findBackgroundProcess("assignmentDS")->start(GlobalData::getInstance()->getAssignmentClientExecutablePath(),
+                                                     QStringList() << "-n" << "5");
+    }
+    
+}
+
+void AppDelegate::stopBaseAssignmentClients() {
+    BackgroundProcess* assignmentBaseProcess = findBackgroundProcess("assignmentDS");
+    assignmentBaseProcess->terminate();
+    assignmentBaseProcess->waitForFinished();
 }
 
 void AppDelegate::requestDomainServerID() {
@@ -188,6 +206,52 @@ void AppDelegate::handleDomainSettingsResponse() {
         qDebug() << "Error saving ID with domain-server -" << reply->errorString();
         emit temporaryDomainResponse(false);
     }
+}
+
+void AppDelegate::downloadContentSet(const QUrl& contentSetURL) {
+    // make sure this link ends with svo
+    if (contentSetURL.toString().endsWith(".svo")) {
+        // setup a request for this content set
+        QNetworkRequest contentRequest(contentSetURL);
+        QNetworkReply* contentReply = _manager->get(contentRequest);
+        connect(contentReply, &QNetworkReply::finished, this, &AppDelegate::handleContentSetDownloadFinished);
+    }
+}
+
+void AppDelegate::handleContentSetDownloadFinished() {
+    QNetworkReply* reply = qobject_cast<QNetworkReply*>(sender());
+    
+    if (reply->error() == QNetworkReply::NoError
+        && reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt() == 200) {
+        QString modelFilename = GlobalData::getInstance()->getClientsResourcesPath() + "models.svo";
+        
+        
+        // write the model file
+        QFile modelFile(modelFilename);
+        modelFile.open(QIODevice::WriteOnly);
+        
+        // stop the base assignment clients before we try to write the new content
+        stopBaseAssignmentClients();
+        
+        if (modelFile.write(reply->readAll()) == -1) {
+            qDebug() << "Error writing content set to" << modelFilename;
+            modelFile.close();
+            startBaseAssignmentClients();
+        } else {
+            qDebug() << "Wrote new content set to" << modelFilename;
+            modelFile.close();
+            
+            // restart the assignment-client
+            startBaseAssignmentClients();
+            
+            QMessageBox::information(_window, "New content set",
+                                     "Your new content set has been downloaded and your assignment-clients have been restarted.");
+            
+            return;
+        }
+    }
+    
+    QMessageBox::information(_window, "Error", "There was a problem downloading that content set. Please try again!");
 }
 
 void AppDelegate::startAssignment(int id, QString poolID) {
