@@ -71,7 +71,7 @@ MainWindow::MainWindow() :
     _assignmentScrollArea(NULL)
 {
     setWindowTitle("High Fidelity Stack Manager");
-    const int WINDOW_FIXED_WIDTH = 540;
+    const int WINDOW_FIXED_WIDTH = 640;
     const int WINDOW_INITIAL_HEIGHT = 200;
 
     if (GlobalData::getInstance()->getPlatform() == "win") {
@@ -107,7 +107,6 @@ MainWindow::MainWindow() :
     _stopServerButton->setSvgImage(":/server-stop.svg");
     _stopServerButton->setGeometry(GLOBAL_X_PADDING, TOP_Y_PADDING,
                                    scaledStart.width(), scaledStart.height());
-    _stopServerButton->hide();
 
     const int SERVER_ADDRESS_LABEL_LEFT_MARGIN = 20;
     const int SERVER_ADDRESS_LABEL_TOP_MARGIN = 17;
@@ -115,46 +114,39 @@ MainWindow::MainWindow() :
     _serverAddressLabel->move(_stopServerButton->geometry().right() + SERVER_ADDRESS_LABEL_LEFT_MARGIN,
                               TOP_Y_PADDING + SERVER_ADDRESS_LABEL_TOP_MARGIN);
     _serverAddressLabel->setOpenExternalLinks(true);
-    _serverAddressLabel->hide();
 
     const int SECONDARY_BUTTON_ROW_TOP_MARGIN = 10;
     
     int secondaryButtonY = _stopServerButton->geometry().bottom() + SECONDARY_BUTTON_ROW_TOP_MARGIN;
     
     _viewLogsButton = new QPushButton("View logs", this);
-    _viewLogsButton->setAutoDefault(false);
-    _viewLogsButton->setDefault(false);
-    _viewLogsButton->setFocusPolicy(Qt::NoFocus);
     _viewLogsButton->setGeometry(GLOBAL_X_PADDING + BUTTON_PADDING_FIX, secondaryButtonY,
                                  _viewLogsButton->width(), _viewLogsButton->height());
-    _viewLogsButton->hide();
 
     _settingsButton = new QPushButton("Settings", this);
-    _settingsButton->setAutoDefault(false);
-    _settingsButton->setDefault(false);
-    _settingsButton->setFocusPolicy(Qt::NoFocus);
     _settingsButton->setGeometry(_viewLogsButton->geometry().right(), secondaryButtonY,
                                  _settingsButton->width(), _settingsButton->height());
-    _settingsButton->hide();
     
     _shareButton = new QPushButton(SHARE_BUTTON_COPY_LINK_TEXT, this);
-    _shareButton->setAutoDefault(false);
-    _shareButton->setDefault(false);
-    _shareButton->setFocusPolicy(Qt::NoFocus);
     _shareButton->setGeometry(_settingsButton->geometry().right(), secondaryButtonY,
                               _shareButton->width(), _shareButton->height());
-    _shareButton->hide();
+    
+    // add the drop down for content sets
+    _contentSetBox = new QComboBox(this);
+    _contentSetBox->setGeometry(_shareButton->geometry().right(), secondaryButtonY,
+                                _contentSetBox->width(), _contentSetBox->height());
+    
+    const QUrl FLOATING_ISLAND_MODEL_URL = QUrl("http://hifi-public.s3.amazonaws.com/content-sets/models.svo");
+    const QString FLOATING_ISLAND_OPTION = "Floating Island";
+    _contentSetBox->addItem(FLOATING_ISLAND_OPTION, FLOATING_ISLAND_MODEL_URL);
+    
     
     const int ASSIGNMENT_BUTTON_TOP_MARGIN = 10;
 
     _runAssignmentButton = new QPushButton("Run assignment", this);
-    _runAssignmentButton->setAutoDefault(false);
-    _runAssignmentButton->setDefault(false);
-    _runAssignmentButton->setFocusPolicy(Qt::NoFocus);
     _runAssignmentButton->move(GLOBAL_X_PADDING + BUTTON_PADDING_FIX,
                                _viewLogsButton->geometry().bottom() + REQUIREMENTS_TEXT_TOP_MARGIN
                                + HORIZONTAL_RULE_TOP_MARGIN + ASSIGNMENT_BUTTON_TOP_MARGIN);
-    _runAssignmentButton->hide();
 
     const QSize logsWidgetSize = QSize(500, 500);
     _logsWidget = new QTabWidget;
@@ -183,8 +175,8 @@ MainWindow::MainWindow() :
                                           assignmentLayoutSpacingMargin, assignmentLayoutSpacingMargin);
     _assignmentScrollArea->widget()->setLayout(_assignmentLayout);
 
-    connect(_startServerButton, &QPushButton::clicked, this, &MainWindow::toggleDomainServer);
-    connect(_stopServerButton, &QPushButton::clicked, this, &MainWindow::toggleDomainServer);
+    connect(_startServerButton, &QPushButton::clicked, this, &MainWindow::toggleDomainServerButton);
+    connect(_stopServerButton, &QPushButton::clicked, this, &MainWindow::toggleDomainServerButton);
     connect(_shareButton, &QPushButton::clicked, this, &MainWindow::handleShareButton);
     connect(_viewLogsButton, &QPushButton::clicked, _logsWidget, &QTabWidget::show);
     connect(_settingsButton, &QPushButton::clicked, this, &MainWindow::openSettings);
@@ -200,6 +192,8 @@ MainWindow::MainWindow() :
     
     // handle temp domain response for window
     connect(app, &AppDelegate::temporaryDomainResponse, this, &MainWindow::handleTemporaryDomainCreateResponse);
+    
+    toggleContent(false);
 
 }
 
@@ -256,32 +250,28 @@ void MainWindow::setRequirementsLastChecked(const QString& lastCheckedDateTime) 
     _requirementsLastCheckedDateTime = lastCheckedDateTime;
 }
 
-void MainWindow::setDomainServerStarted() {
-    _stopServerButton->show();
-    _startServerButton->hide();
-    _domainServerRunning = true;
-    _serverAddressLabel->show();
-    _viewLogsButton->show();
-    _settingsButton->show();
-    _shareButton->show();
-    _runAssignmentButton->show();
-    _assignmentScrollArea->show();
-    _assignmentScrollArea->widget()->setEnabled(true);
+void MainWindow::toggleContent(bool isRunning) {
+    _stopServerButton->setVisible(isRunning);
+    _startServerButton->setVisible(!isRunning);
+    _domainServerRunning = isRunning;
+    _serverAddressLabel->setVisible(isRunning);
+    _viewLogsButton->setVisible(isRunning);
+    _settingsButton->setVisible(isRunning);
+    _shareButton->setVisible(isRunning);
+    _contentSetBox->setVisible(isRunning);
+    _runAssignmentButton->setVisible(isRunning);
+    _assignmentScrollArea->setVisible(isRunning);
+    _assignmentScrollArea->widget()->setEnabled(isRunning);
     update();
 }
 
+void MainWindow::setDomainServerStarted() {
+    toggleContent(true);
+}
+
 void MainWindow::setDomainServerStopped() {
-    _startServerButton->show();
-    _stopServerButton->hide();
-    _domainServerRunning = false;
-    _serverAddressLabel->hide();
-    _viewLogsButton->hide();
-    _settingsButton->hide();
-    _shareButton->hide();
-    _runAssignmentButton->hide();
-    _assignmentScrollArea->hide();
-    _assignmentScrollArea->widget()->setEnabled(false);
-    update();
+    toggleContent(false);
+    
     for (int i = 0; i < _assignmentLayout->count(); ++i) {
         if (qobject_cast<AssignmentWidget*>(_assignmentLayout->itemAt(i)->widget())->isRunning()) {
             qobject_cast<AssignmentWidget*>(_assignmentLayout->itemAt(i)->widget())->toggleRunningState();
@@ -322,7 +312,7 @@ void MainWindow::paintEvent(QPaintEvent *) {
     }
 }
 
-void MainWindow::toggleDomainServer() {
+void MainWindow::toggleDomainServerButton() {
     if (_domainServerRunning) {
         AppDelegate::getInstance()->stopDomainServer();
     } else {
