@@ -18,6 +18,7 @@
 #include <QMutex>
 #include <QLayoutItem>
 #include <QCursor>
+#include <QtWebKitWidgets/qwebview.h>
 
 #include "AppDelegate.h"
 #include "AssignmentWidget.h"
@@ -66,6 +67,8 @@ MainWindow::MainWindow() :
     _viewLogsButton(NULL),
     _settingsButton(NULL),
     _runAssignmentButton(NULL),
+    _shareButton(NULL),
+    _contentSetButton(NULL),
     _logsWidget(NULL),
     _assignmentLayout(NULL),
     _assignmentScrollArea(NULL)
@@ -120,26 +123,25 @@ MainWindow::MainWindow() :
     int secondaryButtonY = _stopServerButton->geometry().bottom() + SECONDARY_BUTTON_ROW_TOP_MARGIN;
     
     _viewLogsButton = new QPushButton("View logs", this);
+    _viewLogsButton->adjustSize();
     _viewLogsButton->setGeometry(GLOBAL_X_PADDING + BUTTON_PADDING_FIX, secondaryButtonY,
                                  _viewLogsButton->width(), _viewLogsButton->height());
 
     _settingsButton = new QPushButton("Settings", this);
+    _settingsButton->adjustSize();
     _settingsButton->setGeometry(_viewLogsButton->geometry().right(), secondaryButtonY,
                                  _settingsButton->width(), _settingsButton->height());
     
     _shareButton = new QPushButton(SHARE_BUTTON_COPY_LINK_TEXT, this);
+    _shareButton->adjustSize();
     _shareButton->setGeometry(_settingsButton->geometry().right(), secondaryButtonY,
                               _shareButton->width(), _shareButton->height());
     
     // add the drop down for content sets
-    _contentSetBox = new QComboBox(this);
-    _contentSetBox->setGeometry(_shareButton->geometry().right(), secondaryButtonY,
-                                _contentSetBox->width(), _contentSetBox->height());
-    
-    const QUrl FLOATING_ISLAND_MODEL_URL = QUrl("http://hifi-public.s3.amazonaws.com/content-sets/models.svo");
-    const QString FLOATING_ISLAND_OPTION = "Floating Island";
-    _contentSetBox->addItem(FLOATING_ISLAND_OPTION, FLOATING_ISLAND_MODEL_URL);
-    
+    _contentSetButton = new QPushButton("Get content set", this);
+    _contentSetButton->adjustSize();
+    _contentSetButton->setGeometry(_shareButton->geometry().right(), secondaryButtonY,
+                                   _contentSetButton->width(), _contentSetButton->height());
     
     const int ASSIGNMENT_BUTTON_TOP_MARGIN = 10;
 
@@ -178,6 +180,7 @@ MainWindow::MainWindow() :
     connect(_startServerButton, &QPushButton::clicked, this, &MainWindow::toggleDomainServerButton);
     connect(_stopServerButton, &QPushButton::clicked, this, &MainWindow::toggleDomainServerButton);
     connect(_shareButton, &QPushButton::clicked, this, &MainWindow::handleShareButton);
+    connect(_contentSetButton, &QPushButton::clicked, this, &MainWindow::showContentSetPage);
     connect(_viewLogsButton, &QPushButton::clicked, _logsWidget, &QTabWidget::show);
     connect(_settingsButton, &QPushButton::clicked, this, &MainWindow::openSettings);
     connect(_runAssignmentButton, &QPushButton::clicked, this, &MainWindow::addAssignment);
@@ -234,6 +237,24 @@ void MainWindow::handleShareButton() {
     }
 }
 
+void MainWindow::showContentSetPage() {
+    const QString CONTENT_SET_HTML_URL = "http://hifi-public.s3.amazonaws.com/content-sets/content-sets.html";
+    
+    // show a QWebView for the content set page
+    QWebView* contentSetWebView = new QWebView();
+    contentSetWebView->setUrl(CONTENT_SET_HTML_URL);
+    
+    // have the widget delete on close
+    contentSetWebView->setAttribute(Qt::WA_DeleteOnClose);
+    
+    // have our app delegate handle a click on one of the content sets
+    contentSetWebView->page()->setLinkDelegationPolicy(QWebPage::DelegateAllLinks);
+    connect(contentSetWebView->page(), &QWebPage::linkClicked, AppDelegate::getInstance(), &AppDelegate::downloadContentSet);
+    connect(contentSetWebView->page(), &QWebPage::linkClicked, contentSetWebView, &QWebView::close);
+    
+    contentSetWebView->show();
+}
+
 void MainWindow::handleTemporaryDomainCreateResponse(bool wasSuccessful) {
     if (wasSuccessful) {
         _shareButton->setEnabled(true);
@@ -258,7 +279,7 @@ void MainWindow::toggleContent(bool isRunning) {
     _viewLogsButton->setVisible(isRunning);
     _settingsButton->setVisible(isRunning);
     _shareButton->setVisible(isRunning);
-    _contentSetBox->setVisible(isRunning);
+    _contentSetButton->setVisible(isRunning);
     _runAssignmentButton->setVisible(isRunning);
     _assignmentScrollArea->setVisible(isRunning);
     _assignmentScrollArea->widget()->setEnabled(isRunning);

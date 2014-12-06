@@ -41,6 +41,7 @@ private slots:
     void updateServerAddressLabel(const QString& serverAddress);
     void toggleShareButtonText();
     void handleShareButton();
+    void showContentSetPage();
     void handleTemporaryDomainCreateResponse(bool wasSuccessful);
 
 private:
@@ -57,7 +58,7 @@ private:
     QPushButton* _settingsButton;
     QPushButton* _runAssignmentButton;
     QPushButton* _shareButton;
-    QComboBox* _contentSetBox;
+    QPushButton* _contentSetButton;
     QTabWidget* _logsWidget;
     QVBoxLayout* _assignmentLayout;
     QScrollArea* _assignmentScrollArea;

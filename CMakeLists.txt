@@ -1,5 +1,9 @@
 cmake_minimum_required(VERSION 2.8.11)
 
+if (POLICY CMP0028)
+  cmake_policy(SET CMP0028 OLD)
+endif ()
+
 set(TARGET_NAME "StackManager")
 
 project(${TARGET_NAME})
@@ -19,6 +23,7 @@ find_package(Qt5Gui REQUIRED)
 find_package(Qt5Svg REQUIRED)
 find_package(Qt5Core REQUIRED)
 find_package(Qt5Network REQUIRED)
+find_package(Qt5WebKitWidgets REQUIRED)
 find_package(QuaZip REQUIRED)
 
 if (WIN32)
@@ -53,4 +58,4 @@ else ()
   endif ()
 endif ()
 
-target_link_libraries(${TARGET_NAME} Qt5::Core Qt5::Gui Qt5::Svg Qt5::Network Qt5::Widgets ${QUAZIP_LIBRARIES} ${ZLIB_LIBRARIES})
+target_link_libraries(${TARGET_NAME} Qt5::Core Qt5::Gui Qt5::Svg Qt5::Network Qt5::Widgets Qt5::WebKitWidgets ${QUAZIP_LIBRARIES} ${ZLIB_LIBRARIES})
