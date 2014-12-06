@@ -235,7 +235,6 @@ void AppDelegate::handleContentSetDownloadFinished() {
         
         if (modelFile.write(reply->readAll()) == -1) {
             qDebug() << "Error writing content set to" << modelFilename;
-            
             modelFile.close();
             startBaseAssignmentClients();
         } else {

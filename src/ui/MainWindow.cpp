@@ -247,6 +247,10 @@ void MainWindow::showContentSetPage() {
     // have the widget delete on close
     contentSetWebView->setAttribute(Qt::WA_DeleteOnClose);
     
+    // setup the page viewport to be the right size
+    const QSize CONTENT_SET_VIEWPORT_SIZE = QSize(800, 400);
+    contentSetWebView->resize(CONTENT_SET_VIEWPORT_SIZE);
+    
     // have our app delegate handle a click on one of the content sets
     contentSetWebView->page()->setLinkDelegationPolicy(QWebPage::DelegateAllLinks);
     connect(contentSetWebView->page(), &QWebPage::linkClicked, AppDelegate::getInstance(), &AppDelegate::downloadContentSet);
