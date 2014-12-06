@@ -244,14 +244,13 @@ void AppDelegate::handleContentSetDownloadFinished() {
             // restart the assignment-client
             startBaseAssignmentClients();
             
-            QMessageBox::information(_window, "New content set",
-                                     "Your new content set has been downloaded and your assignment-clients have been restarted.");
+            emit contentSetDownloadResponse(true);
             
             return;
         }
     }
     
-    QMessageBox::information(_window, "Error", "There was a problem downloading that content set. Please try again!");
+    emit contentSetDownloadResponse(false);
 }
 
 void AppDelegate::startAssignment(int id, QString poolID) {

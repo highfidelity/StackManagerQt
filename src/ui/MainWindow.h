@@ -43,6 +43,7 @@ private slots:
     void handleShareButton();
     void showContentSetPage();
     void handleTemporaryDomainCreateResponse(bool wasSuccessful);
+    void handleContentSetDownloadResponse(bool wasSuccessful);
 
 private:
     void toggleContent(bool isRunning);

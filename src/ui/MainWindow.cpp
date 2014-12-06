@@ -196,6 +196,9 @@ MainWindow::MainWindow() :
     // handle temp domain response for window
     connect(app, &AppDelegate::temporaryDomainResponse, this, &MainWindow::handleTemporaryDomainCreateResponse);
     
+    // handle response for content set download
+    connect(app, &AppDelegate::contentSetDownloadResponse, this, &MainWindow::handleContentSetDownloadResponse);
+    
     toggleContent(false);
 
 }
@@ -268,6 +271,15 @@ void MainWindow::handleTemporaryDomainCreateResponse(bool wasSuccessful) {
         _shareButton->setText(SHARE_BUTTON_SHARE_TEXT);
         
         QMessageBox::information(this, "Error", "There was a problem sharing your domain. Please try again!");
+    }
+}
+
+void MainWindow::handleContentSetDownloadResponse(bool wasSuccessful) {
+    if (wasSuccessful) {
+        QMessageBox::information(this, "New content set",
+                                 "Your new content set has been downloaded and your assignment-clients have been restarted.");
+    } else {
+        QMessageBox::information(this, "Error", "There was a problem downloading that content set. Please try again!");
     }
 }
 
