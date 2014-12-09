@@ -187,7 +187,7 @@ MainWindow::MainWindow() :
     
     AppDelegate* app = AppDelegate::getInstance();
     // update the current server address label and change it if the AppDelegate says the address has changed
-    updateServerAddressLabel(app->getServerAddress());
+    updateServerAddressLabel();
     connect(app, &AppDelegate::domainAddressChanged, this, &MainWindow::updateServerAddressLabel);
     
     // if domain is missing an ID, let us switch our share button text
@@ -203,11 +203,13 @@ MainWindow::MainWindow() :
 
 }
 
-void MainWindow::updateServerAddressLabel(const QString& serverAddress) {
+void MainWindow::updateServerAddressLabel() {
+    AppDelegate* app = AppDelegate::getInstance();
+    
     _serverAddressLabel->setText("<html><head/><body style=\"font:14px 'Helvetica', 'Arial', 'sans-serif';"
                                  "font-weight: bold;\"><p><span style=\"color:#545454;\">Accessible at: </span>"
-                                 "<a href=\"" + serverAddress + "\">"
-                                 "<span style=\"color:#29957e;\">" + serverAddress +
+                                 "<a href=\"" + app->getServerAddress() + "\">"
+                                 "<span style=\"color:#29957e;\">" + app->getServerAddress(false) +
                                  "</span></a></p></body></html>");
     _serverAddressLabel->adjustSize();
     
