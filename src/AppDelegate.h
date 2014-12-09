@@ -46,7 +46,7 @@ public slots:
     void downloadContentSet(const QUrl& contentSetURL);
 signals:
     void domainServerIDMissing();
-    void domainAddressChanged(const QString& newAddress);
+    void domainAddressChanged();
     void temporaryDomainResponse(bool wasSuccessful);
     void contentSetDownloadResponse(bool wasSuccessful);
 private slots:

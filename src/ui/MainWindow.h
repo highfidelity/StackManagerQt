@@ -38,7 +38,7 @@ private slots:
     void toggleDomainServerButton();
     void addAssignment();
     void openSettings();
-    void updateServerAddressLabel(const QString& serverAddress);
+    void updateServerAddressLabel();
     void toggleShareButtonText();
     void handleShareButton();
     void showContentSetPage();

@@ -161,7 +161,7 @@ void AppDelegate::handleDomainGetReply() {
         
         qDebug() << "This domain server's name is" << _domainServerName << "- updating address link.";
         
-        emit domainAddressChanged(getServerAddress(false));
+        emit domainAddressChanged();
     }
 }
 
@@ -206,7 +206,7 @@ void AppDelegate::handleDomainSettingsResponse() {
         qDebug() << "Successfully stored new ID in domain-server.";
         
         emit temporaryDomainResponse(true);
-        emit domainAddressChanged(getServerAddress(false));
+        emit domainAddressChanged();
     } else {
         qDebug() << "Error saving ID with domain-server -" << reply->errorString();
         emit temporaryDomainResponse(false);
@@ -256,6 +256,8 @@ void AppDelegate::handleContentSetDownloadFinished() {
             QUrlQuery svoQuery(reply->url().query());
             _sharePath = svoQuery.queryItemValue("path");
             
+            emit domainAddressChanged();
+            
             return;
         }
     }
@@ -263,6 +265,7 @@ void AppDelegate::handleContentSetDownloadFinished() {
     // if we failed we should clean up the share path
     _sharePath = QString();
     emit contentSetDownloadResponse(false);
+    emit domainAddressChanged();
 }
 
 void AppDelegate::startAssignment(int id, QString poolID) {
