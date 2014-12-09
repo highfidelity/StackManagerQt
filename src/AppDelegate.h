@@ -41,7 +41,7 @@ public:
     
     void requestTemporaryDomain();
     
-    const QString getServerAddress() const { return "hifi://" + _domainServerName; }
+    const QString getServerAddress(bool withPath = true) const;
 public slots:
     void downloadContentSet(const QUrl& contentSetURL);
 signals:
@@ -77,6 +77,8 @@ private:
     
     QString _domainServerID;
     QString _domainServerName;
+    
+    QString _sharePath;
 };
 
 #endif

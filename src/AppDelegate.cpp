@@ -20,6 +20,7 @@
 #include <QMessageBox>
 #include <QNetworkReply>
 #include <QNetworkRequest>
+#include <QUrlQuery>
 #include <QUuid>
 
 const QString HIGH_FIDELITY_API_URL = "https://data.highfidelity.io/api/v1";
@@ -118,6 +119,10 @@ void AppDelegate::requestTemporaryDomain() {
     connect(tempReply, &QNetworkReply::finished, this, &AppDelegate::handleTempDomainReply);
 }
 
+const QString AppDelegate::getServerAddress(bool withPath) const {
+    return "hifi://" + _domainServerName + (withPath ? _sharePath : "");
+}
+
 void AppDelegate::handleDomainIDReply() {
     QNetworkReply* reply = qobject_cast<QNetworkReply*>(sender());
     
@@ -156,7 +161,7 @@ void AppDelegate::handleDomainGetReply() {
         
         qDebug() << "This domain server's name is" << _domainServerName << "- updating address link.";
         
-        emit domainAddressChanged(getServerAddress());
+        emit domainAddressChanged(getServerAddress(false));
     }
 }
 
@@ -201,7 +206,7 @@ void AppDelegate::handleDomainSettingsResponse() {
         qDebug() << "Successfully stored new ID in domain-server.";
         
         emit temporaryDomainResponse(true);
-        emit domainAddressChanged(getServerAddress());
+        emit domainAddressChanged(getServerAddress(false));
     } else {
         qDebug() << "Error saving ID with domain-server -" << reply->errorString();
         emit temporaryDomainResponse(false);
@@ -209,8 +214,8 @@ void AppDelegate::handleDomainSettingsResponse() {
 }
 
 void AppDelegate::downloadContentSet(const QUrl& contentSetURL) {
-    // make sure this link ends with svo
-    if (contentSetURL.toString().endsWith(".svo")) {
+    // make sure this link was an svo
+    if (contentSetURL.path().endsWith(".svo")) {
         // setup a request for this content set
         QNetworkRequest contentRequest(contentSetURL);
         QNetworkReply* contentReply = _manager->get(contentRequest);
@@ -223,8 +228,8 @@ void AppDelegate::handleContentSetDownloadFinished() {
     
     if (reply->error() == QNetworkReply::NoError
         && reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt() == 200) {
-        QString modelFilename = GlobalData::getInstance()->getClientsResourcesPath() + "models.svo";
         
+        QString modelFilename = GlobalData::getInstance()->getClientsResourcesPath() + "models.svo";
         
         // write the model file
         QFile modelFile(modelFilename);
@@ -246,10 +251,17 @@ void AppDelegate::handleContentSetDownloadFinished() {
             
             emit contentSetDownloadResponse(true);
             
+            // did we have a path in the query?
+            // if so when we copy our share link we should append it
+            QUrlQuery svoQuery(reply->url().query());
+            _sharePath = svoQuery.queryItemValue("path");
+            
             return;
         }
     }
     
+    // if we failed we should clean up the share path
+    _sharePath = QString();
     emit contentSetDownloadResponse(false);
 }
 
