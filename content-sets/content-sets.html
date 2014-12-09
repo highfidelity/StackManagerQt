@@ -26,17 +26,17 @@
       <script type="text/template" class="template">
         <% _.each(sets, function(set, key){ %>
           <div class="col-xs-6" >
-            
+            <% var models_url = "http://hifi-public.s3.amazonaws.com/content-sets/" + key + "/models.svo" + (_.has(set, "path") ? "?path=" + set.path : '') %>
             <div class="panel panel-default" style="margin-top: 15px;">
               <div class="panel-heading">
-                <a href="http://hifi-public.s3.amazonaws.com/content-sets/<%- key %>/models.svo">
+                <a href="<%- models_url %>">
                   <h4 class="media-heading"><%- set.name %></h4>
                 </a>
               </div>
               <div class="panel-body">
                 <ul class="media-list">
                   <li class="media">
-                    <a class="media-left" href="http://hifi-public.s3.amazonaws.com/content-sets/<%- key %>/models.svo">
+                    <a class="media-left" href="<%- models_url %>">
                       <img width="200" height="200" src="http://hifi-public.s3.amazonaws.com/content-sets/<%- key %>/thumbnail.jpg" alt="content set thumbnail">
                     </a>
                     <div class="media-body">

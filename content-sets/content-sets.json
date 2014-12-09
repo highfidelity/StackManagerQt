@@ -1,10 +1,12 @@
 {
   "floating-island": {
     "name": "Floating Island",
-    "description": "Start your galactic empire with this floating island and small oasis. Build it up and share it with your friends."
+    "description": "Start your galactic empire with this floating island and small oasis. Build it up and share it with your friends.",
+    "path": "/1064.2,75.6915.1/0.7448940565916221,0,0,0.6671827669045997"
   },
   "bar" : {
     "name": "The Bar",
-    "description": "Ryan's new description will go here."
+    "description": "A sexy club scene to plan your parties and live shows.",
+    "path": "/1000,10,1000"
   }
 }
