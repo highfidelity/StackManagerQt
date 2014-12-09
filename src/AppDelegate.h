@@ -41,7 +41,7 @@ public:
     
     void requestTemporaryDomain();
     
-    const QString getServerAddress() const;
+    const QString getServerAddress(bool withPath = true) const;
 public slots:
     void downloadContentSet(const QUrl& contentSetURL);
 signals:

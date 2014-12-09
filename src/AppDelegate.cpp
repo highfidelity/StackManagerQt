@@ -119,8 +119,8 @@ void AppDelegate::requestTemporaryDomain() {
     connect(tempReply, &QNetworkReply::finished, this, &AppDelegate::handleTempDomainReply);
 }
 
-const QString AppDelegate::getServerAddress() const {
-    return "hifi://" + _domainServerName + _sharePath;
+const QString AppDelegate::getServerAddress(bool withPath) const {
+    return "hifi://" + _domainServerName + (withPath ? _sharePath : "");
 }
 
 void AppDelegate::handleDomainIDReply() {
@@ -161,7 +161,7 @@ void AppDelegate::handleDomainGetReply() {
         
         qDebug() << "This domain server's name is" << _domainServerName << "- updating address link.";
         
-        emit domainAddressChanged(getServerAddress());
+        emit domainAddressChanged(getServerAddress(false));
     }
 }
 
@@ -206,7 +206,7 @@ void AppDelegate::handleDomainSettingsResponse() {
         qDebug() << "Successfully stored new ID in domain-server.";
         
         emit temporaryDomainResponse(true);
-        emit domainAddressChanged(getServerAddress());
+        emit domainAddressChanged(getServerAddress(false));
     } else {
         qDebug() << "Error saving ID with domain-server -" << reply->errorString();
         emit temporaryDomainResponse(false);
