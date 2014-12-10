@@ -30,14 +30,11 @@ public:
 
     AppDelegate(int argc, char* argv[]);
 
-    void startDomainServer();
-    void stopDomainServer();
-
-    void startAssignment(int id, QString poolID = "");
-    void stopAssignment(int id);
+    void toggleStack(bool start);
+    void toggleDomainServer(bool start);
+    void toggleAssignmentClientMonitor(bool start);
     
-    void stopBaseAssignmentClients();
-    void startBaseAssignmentClients();
+    void stopStack() { toggleStack(false); }
     
     void requestTemporaryDomain();
     
@@ -49,8 +46,8 @@ signals:
     void domainAddressChanged();
     void temporaryDomainResponse(bool wasSuccessful);
     void contentSetDownloadResponse(bool wasSuccessful);
+    void stackStateChanged(bool isOn);
 private slots:
-    void cleanupProcesses();
     void onFileSuccessfullyInstalled(QUrl url);
     void requestDomainServerID();
     void handleDomainIDReply();
@@ -62,23 +59,23 @@ private slots:
 private:
     void createExecutablePath();
     void downloadLatestExecutablesAndRequirements();
-    BackgroundProcess* findBackgroundProcess(QString type);
     
     void sendNewIDToDomainServer();
 
-    MainWindow* _window;
     QNetworkAccessManager* _manager;
     bool _qtReady;
     bool _dsReady;
     bool _dsResourcesReady;
     bool _acReady;
-    QList<BackgroundProcess*> _backgroundProcesses;
-    QHash<QString, int> _logsTabWidgetHash;
+    BackgroundProcess _domainServerProcess;
+    BackgroundProcess _acMonitorProcess;
     
     QString _domainServerID;
     QString _domainServerName;
     
     QString _sharePath;
+    
+    MainWindow _window;
 };
 
 #endif

@@ -17,6 +17,8 @@ class LogViewer : public QWidget
     Q_OBJECT
 public:
     explicit LogViewer(QWidget* parent = 0);
+    
+    void clear();
 
     void appendStandardOutput(const QString& output);
     void appendStandardError(const QString& error);

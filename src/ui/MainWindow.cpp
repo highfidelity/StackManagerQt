@@ -21,7 +21,6 @@
 #include <QtWebKitWidgets/qwebview.h>
 
 #include "AppDelegate.h"
-#include "AssignmentWidget.h"
 #include "GlobalData.h"
 
 const int GLOBAL_X_PADDING = 55;
@@ -31,47 +30,26 @@ const int HORIZONTAL_RULE_TOP_MARGIN = 25;
 
 const int BUTTON_PADDING_FIX = -5;
 
-const int ASSIGNMENT_LAYOUT_RESIZE_FACTOR = 56;
-const int ASSIGNMENT_LAYOUT_WIDGET_STRETCH = 0;
 const QColor lightGrayColor = QColor(205, 205, 205);
 const QColor darkGrayColor = QColor(84, 84, 84);
 const QColor redColor = QColor(189, 54, 78);
 const QColor greenColor = QColor(3, 150, 126);
-
-MainWindow* MainWindow::_instance = NULL;
-
-MainWindow* MainWindow::getInstance() {
-    static QMutex instanceMutex;
-
-    instanceMutex.lock();
-
-    if (!_instance) {
-        _instance = new MainWindow();
-    }
-
-    instanceMutex.unlock();
-
-    return _instance;
-}
 
 const QString SHARE_BUTTON_SHARE_TEXT = "Share";
 const QString SHARE_BUTTON_COPY_LINK_TEXT = "Copy link";
 const QString SHARE_BUTTON_REQUESTING_TEXT = "Requesting...";
 
 MainWindow::MainWindow() :
-    QWidget(0),
+    QWidget(),
     _domainServerRunning(false),
     _startServerButton(NULL),
     _stopServerButton(NULL),
     _serverAddressLabel(NULL),
     _viewLogsButton(NULL),
     _settingsButton(NULL),
-    _runAssignmentButton(NULL),
     _shareButton(NULL),
     _contentSetButton(NULL),
-    _logsWidget(NULL),
-    _assignmentLayout(NULL),
-    _assignmentScrollArea(NULL)
+    _logsWidget(NULL)
 {
     setWindowTitle("High Fidelity Stack Manager");
     const int WINDOW_FIXED_WIDTH = 640;
@@ -142,13 +120,6 @@ MainWindow::MainWindow() :
     _contentSetButton->adjustSize();
     _contentSetButton->setGeometry(_shareButton->geometry().right(), secondaryButtonY,
                                    _contentSetButton->width(), _contentSetButton->height());
-    
-    const int ASSIGNMENT_BUTTON_TOP_MARGIN = 10;
-
-    _runAssignmentButton = new QPushButton("Run assignment", this);
-    _runAssignmentButton->move(GLOBAL_X_PADDING + BUTTON_PADDING_FIX,
-                               _viewLogsButton->geometry().bottom() + REQUIREMENTS_TEXT_TOP_MARGIN
-                               + HORIZONTAL_RULE_TOP_MARGIN + ASSIGNMENT_BUTTON_TOP_MARGIN);
 
     const QSize logsWidgetSize = QSize(500, 500);
     _logsWidget = new QTabWidget;
@@ -157,25 +128,6 @@ MainWindow::MainWindow() :
     _logsWidget->setWindowFlags(Qt::CustomizeWindowHint | Qt::WindowTitleHint |
                                 Qt::WindowMinMaxButtonsHint | Qt::WindowCloseButtonHint);
     _logsWidget->resize(logsWidgetSize);
-    
-    const int ASSIGNMENT_SCROLL_AREA_TOP_MARGIN = 10;
-
-    _assignmentScrollArea = new QScrollArea(this);
-    _assignmentScrollArea->setWidget(new QWidget);
-    _assignmentScrollArea->setWidgetResizable(true);
-    _assignmentScrollArea->setFrameShape(QFrame::NoFrame);
-    _assignmentScrollArea->move(GLOBAL_X_PADDING, _runAssignmentButton->geometry().bottom() + ASSIGNMENT_SCROLL_AREA_TOP_MARGIN);
-    _assignmentScrollArea->setMaximumWidth(width() - GLOBAL_X_PADDING * 2);
-    _assignmentScrollArea->setMaximumHeight(qApp->desktop()->availableGeometry().height() -
-                                            _assignmentScrollArea->geometry().top());
-
-    const int assignmentLayoutSpacingMargin = 0;
-    _assignmentLayout = new QVBoxLayout;
-    _assignmentLayout->setSpacing(assignmentLayoutSpacingMargin);
-    _assignmentLayout->setMargin(assignmentLayoutSpacingMargin);
-    _assignmentLayout->setContentsMargins(assignmentLayoutSpacingMargin, assignmentLayoutSpacingMargin,
-                                          assignmentLayoutSpacingMargin, assignmentLayoutSpacingMargin);
-    _assignmentScrollArea->widget()->setLayout(_assignmentLayout);
 
     connect(_startServerButton, &QPushButton::clicked, this, &MainWindow::toggleDomainServerButton);
     connect(_stopServerButton, &QPushButton::clicked, this, &MainWindow::toggleDomainServerButton);
@@ -183,7 +135,6 @@ MainWindow::MainWindow() :
     connect(_contentSetButton, &QPushButton::clicked, this, &MainWindow::showContentSetPage);
     connect(_viewLogsButton, &QPushButton::clicked, _logsWidget, &QTabWidget::show);
     connect(_settingsButton, &QPushButton::clicked, this, &MainWindow::openSettings);
-    connect(_runAssignmentButton, &QPushButton::clicked, this, &MainWindow::addAssignment);
     
     AppDelegate* app = AppDelegate::getInstance();
     // update the current server address label and change it if the AppDelegate says the address has changed
@@ -198,6 +149,9 @@ MainWindow::MainWindow() :
     
     // handle response for content set download
     connect(app, &AppDelegate::contentSetDownloadResponse, this, &MainWindow::handleContentSetDownloadResponse);
+    
+    // handle stack state change
+    connect(app, &AppDelegate::stackStateChanged, this, &MainWindow::toggleContent);
     
     toggleContent(false);
 
@@ -298,24 +252,7 @@ void MainWindow::toggleContent(bool isRunning) {
     _settingsButton->setVisible(isRunning);
     _shareButton->setVisible(isRunning);
     _contentSetButton->setVisible(isRunning);
-    _runAssignmentButton->setVisible(isRunning);
-    _assignmentScrollArea->setVisible(isRunning);
-    _assignmentScrollArea->widget()->setEnabled(isRunning);
     update();
-}
-
-void MainWindow::setDomainServerStarted() {
-    toggleContent(true);
-}
-
-void MainWindow::setDomainServerStopped() {
-    toggleContent(false);
-    
-    for (int i = 0; i < _assignmentLayout->count(); ++i) {
-        if (qobject_cast<AssignmentWidget*>(_assignmentLayout->itemAt(i)->widget())->isRunning()) {
-            qobject_cast<AssignmentWidget*>(_assignmentLayout->itemAt(i)->widget())->toggleRunningState();
-        }
-    }
 }
 
 void MainWindow::paintEvent(QPaintEvent *) {
@@ -352,20 +289,7 @@ void MainWindow::paintEvent(QPaintEvent *) {
 }
 
 void MainWindow::toggleDomainServerButton() {
-    if (_domainServerRunning) {
-        AppDelegate::getInstance()->stopDomainServer();
-    } else {
-        AppDelegate::getInstance()->startDomainServer();
-    }
-}
-
-void MainWindow::addAssignment() {
-    AssignmentWidget* widget = new AssignmentWidget(_assignmentLayout->count() + 1);
-    _assignmentLayout->addWidget(widget, ASSIGNMENT_LAYOUT_WIDGET_STRETCH, Qt::AlignTop);
-    resize(width(), _assignmentScrollArea->geometry().y()
-           + ASSIGNMENT_LAYOUT_RESIZE_FACTOR * _assignmentLayout->count()
-           + TOP_Y_PADDING);
-    _assignmentScrollArea->resize(_assignmentScrollArea->maximumWidth(), height() - _assignmentScrollArea->geometry().top());
+    AppDelegate::getInstance()->toggleStack(!_domainServerRunning);
 }
 
 void MainWindow::openSettings() {

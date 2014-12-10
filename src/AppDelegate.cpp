@@ -27,7 +27,10 @@ const QString HIGH_FIDELITY_API_URL = "https://data.highfidelity.io/api/v1";
 
 AppDelegate::AppDelegate(int argc, char* argv[]) :
     QApplication(argc, argv),
-    _domainServerName("localhost")
+    _domainServerProcess(GlobalData::getInstance()->getDomainServerExecutablePath(), this),
+    _acMonitorProcess(GlobalData::getInstance()->getAssignmentClientExecutablePath(), this),
+    _domainServerName("localhost"),
+    _window()
 {
     setApplicationName("Stack Manager");
     setOrganizationName("High Fidelity");
@@ -38,63 +41,40 @@ AppDelegate::AppDelegate(int argc, char* argv[]) :
     createExecutablePath();
     downloadLatestExecutablesAndRequirements();
 
-    connect(this, &QApplication::aboutToQuit, this, &AppDelegate::cleanupProcesses);
+    connect(this, &QApplication::aboutToQuit, this, &AppDelegate::stopStack);
 }
 
-void AppDelegate::cleanupProcesses() {
-    for (int i = 0; i < _backgroundProcesses.size(); ++i) {
-        _backgroundProcesses.at(i)->terminate();
-        _backgroundProcesses.at(i)->waitForFinished();
-    }
+void AppDelegate::toggleStack(bool start) {
+    toggleDomainServer(start);
+    toggleAssignmentClientMonitor(start);
+    emit stackStateChanged(start);
 }
 
-void AppDelegate::startDomainServer() {
-    if (findBackgroundProcess("domain-server") == NULL && findBackgroundProcess("assignmentDS") == NULL) {
-        BackgroundProcess* dsProcess = new BackgroundProcess("domain-server");
-        _backgroundProcesses.append(dsProcess);
-        dsProcess->start(GlobalData::getInstance()->getDomainServerExecutablePath(), QStringList());
+void AppDelegate::toggleDomainServer(bool start) {
+    
+    if (start) {
+        _domainServerProcess.start(QStringList());
+        
+        _window.getLogsWidget()->addTab(_domainServerProcess.getLogViewer(), "Domain Server");
+        
+        if (_domainServerID.isEmpty()) {
+            // after giving the domain server some time to set up, ask for its ID
+            QTimer::singleShot(1000, this, SLOT(requestDomainServerID()));
+        }
     } else {
-        findBackgroundProcess("domain-server")->start(GlobalData::getInstance()->getDomainServerExecutablePath(), QStringList());
-    }
-    
-    startBaseAssignmentClients();
-    
-    MainWindow::getInstance()->setDomainServerStarted();
-    MainWindow::getInstance()->getLogsWidget()->addTab(findBackgroundProcess("domain-server")->getLogViewer(), "Domain Server");
-    _logsTabWidgetHash.insert("Domain Server", 0);
-    
-    if (_domainServerID.isEmpty()) {
-        // after giving the domain server some time to set up, ask for its ID
-        QTimer::singleShot(1000, this, SLOT(requestDomainServerID()));
+        _domainServerProcess.terminate();
+        _domainServerProcess.waitForFinished();
     }
 }
 
-void AppDelegate::stopDomainServer() {
-    for (int i = 0; i < _logsTabWidgetHash.size(); ++i) {
-        MainWindow::getInstance()->getLogsWidget()->removeTab(_logsTabWidgetHash.values().at(i));
-    }
-    _logsTabWidgetHash.clear();
-    cleanupProcesses();
-    MainWindow::getInstance()->setDomainServerStopped();
-}
-
-void AppDelegate::startBaseAssignmentClients() {
-    if (!findBackgroundProcess("assignmentDS")) {
-        BackgroundProcess* acProcess = new BackgroundProcess("assignmentDS");
-        _backgroundProcesses.append(acProcess);
-        acProcess->start(GlobalData::getInstance()->getAssignmentClientExecutablePath(),
-                         QStringList() << "-n" << "5");
+void AppDelegate::toggleAssignmentClientMonitor(bool start) {
+    if (start) {
+        _acMonitorProcess.start(QStringList() << "-n" << "5");
+        _window.getLogsWidget()->addTab(_acMonitorProcess.getLogViewer(), "Assignment Clients");
     } else {
-        findBackgroundProcess("assignmentDS")->start(GlobalData::getInstance()->getAssignmentClientExecutablePath(),
-                                                     QStringList() << "-n" << "5");
+        _acMonitorProcess.terminate();
+        _acMonitorProcess.waitForFinished();
     }
-    
-}
-
-void AppDelegate::stopBaseAssignmentClients() {
-    BackgroundProcess* assignmentBaseProcess = findBackgroundProcess("assignmentDS");
-    assignmentBaseProcess->terminate();
-    assignmentBaseProcess->waitForFinished();
 }
 
 void AppDelegate::requestDomainServerID() {
@@ -236,18 +216,18 @@ void AppDelegate::handleContentSetDownloadFinished() {
         modelFile.open(QIODevice::WriteOnly);
         
         // stop the base assignment clients before we try to write the new content
-        stopBaseAssignmentClients();
+        toggleAssignmentClientMonitor(false);
         
         if (modelFile.write(reply->readAll()) == -1) {
             qDebug() << "Error writing content set to" << modelFilename;
             modelFile.close();
-            startBaseAssignmentClients();
+            toggleAssignmentClientMonitor(true);
         } else {
             qDebug() << "Wrote new content set to" << modelFilename;
             modelFile.close();
             
             // restart the assignment-client
-            startBaseAssignmentClients();
+            toggleAssignmentClientMonitor(true);
             
             emit contentSetDownloadResponse(true);
             
@@ -268,37 +248,6 @@ void AppDelegate::handleContentSetDownloadFinished() {
     emit domainAddressChanged();
 }
 
-void AppDelegate::startAssignment(int id, QString poolID) {
-    QStringList argList = QStringList() << "-t" << "2";
-    if (!poolID.isEmpty()) {
-        argList << "--pool" << poolID;
-    }
-    
-    if (findBackgroundProcess("assignment" + QString::number(id)) == NULL) {
-        BackgroundProcess* process = new BackgroundProcess("assignment" + QString::number(id));
-        _backgroundProcesses.append(process);
-        process->start(GlobalData::getInstance()->getAssignmentClientExecutablePath(), argList);
-    } else {
-        findBackgroundProcess("assignment" + QString::number(id))->start(GlobalData::getInstance()->getAssignmentClientExecutablePath(),
-                                                                         argList);
-    }
-    int index = MainWindow::getInstance()->getLogsWidget()->addTab(findBackgroundProcess("assignment" + QString::number(id))->getLogViewer(), "Assignment " + QString::number(id));
-    _logsTabWidgetHash.insert("Assignment " + QString::number(id), index);
-}
-
-void AppDelegate::stopAssignment(int id) {
-    findBackgroundProcess("assignment" + QString::number(id))->terminate();
-    int index = -1;
-    for (int i = 1; i < _logsTabWidgetHash.size(); ++i) {
-        if (MainWindow::getInstance()->getLogsWidget()->tabText(_logsTabWidgetHash.values().at(i)) == "Assignment " + QString::number(id)) {
-            index = i;
-            break;
-        }
-    }
-    MainWindow::getInstance()->getLogsWidget()->removeTab(index);
-    _logsTabWidgetHash.remove("Assignment " + QString::number(id));
-}
-
 void AppDelegate::onFileSuccessfullyInstalled(QUrl url) {
     if (url == GlobalData::getInstance()->getRequirementsURL()) {
         _qtReady = true;
@@ -311,8 +260,8 @@ void AppDelegate::onFileSuccessfullyInstalled(QUrl url) {
     }
 
     if (_qtReady && _acReady && _dsReady && _dsResourcesReady) {
-        MainWindow::getInstance()->setRequirementsLastChecked(QDateTime::currentDateTime().toString());
-        MainWindow::getInstance()->show();
+        _window.setRequirementsLastChecked(QDateTime::currentDateTime().toString());
+        _window.show();
     }
 }
 
@@ -412,7 +361,7 @@ void AppDelegate::downloadLatestExecutablesAndRequirements() {
     if (acMd5Data.size() == 0) {
         // network is not accessible
         qDebug() << "Could not connect to the internet.";
-        MainWindow::getInstance()->show();
+        _window.show();
         return;
     }
 
@@ -488,8 +437,8 @@ void AppDelegate::downloadLatestExecutablesAndRequirements() {
                 SLOT(onFileSuccessfullyInstalled(QUrl)));
         downloadManager->show();
     } else {
-        MainWindow::getInstance()->setRequirementsLastChecked(QDateTime::currentDateTime().toString());
-        MainWindow::getInstance()->show();
+        _window.setRequirementsLastChecked(QDateTime::currentDateTime().toString());
+        _window.show();
     }
 
     if (!_qtReady) {
@@ -507,14 +456,4 @@ void AppDelegate::downloadLatestExecutablesAndRequirements() {
     if (!_dsResourcesReady) {
         downloadManager->downloadFile(GlobalData::getInstance()->getDomainServerResourcesURL());
     }
-}
-
-BackgroundProcess* AppDelegate::findBackgroundProcess(QString type) {
-    for (int i = 0; i < _backgroundProcesses.size(); ++i) {
-        if (_backgroundProcesses.at(i)->getType() == type) {
-            return _backgroundProcesses.at(i);
-        }
-    }
-
-    return NULL;
 }

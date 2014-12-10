@@ -43,6 +43,11 @@ LogViewer::LogViewer(QWidget* parent) :
     setLayout(layout);
 }
 
+void LogViewer::clear() {
+    _outputView->clear();
+    _errorView->clear();
+}
+
 void LogViewer::appendStandardOutput(const QString& output) {
     QTextCursor cursor = _outputView->textCursor();
     cursor.movePosition(QTextCursor::End);

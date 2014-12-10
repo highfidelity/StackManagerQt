@@ -24,11 +24,9 @@
 class MainWindow : public QWidget {
     Q_OBJECT
 public:
-    static MainWindow* getInstance();
-
+    MainWindow();
+    
     void setRequirementsLastChecked(const QString& lastCheckedDateTime);
-    void setDomainServerStarted();
-    void setDomainServerStopped();
     QTabWidget* getLogsWidget() { return _logsWidget; }
 
 protected:
@@ -36,7 +34,6 @@ protected:
 
 private slots:
     void toggleDomainServerButton();
-    void addAssignment();
     void openSettings();
     void updateServerAddressLabel();
     void toggleShareButtonText();
@@ -48,7 +45,6 @@ private slots:
 private:
     void toggleContent(bool isRunning);
     
-    static MainWindow* _instance;
     bool _domainServerRunning;
     
     QString _requirementsLastCheckedDateTime;
@@ -57,14 +53,9 @@ private:
     QLabel* _serverAddressLabel;
     QPushButton* _viewLogsButton;
     QPushButton* _settingsButton;
-    QPushButton* _runAssignmentButton;
     QPushButton* _shareButton;
     QPushButton* _contentSetButton;
     QTabWidget* _logsWidget;
-    QVBoxLayout* _assignmentLayout;
-    QScrollArea* _assignmentScrollArea;
-
-    MainWindow();
 };
 
 #endif

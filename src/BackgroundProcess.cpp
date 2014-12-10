@@ -22,9 +22,9 @@ const int LOG_CHECK_INTERVAL_MS = 500;
 const QString DATETIME_FORMAT = "yyyy-MM-dd_hh.mm.ss";
 const QString LOGS_DIRECTORY = "/Logs/";
 
-BackgroundProcess::BackgroundProcess(const QString& type, QObject *parent) :
+BackgroundProcess::BackgroundProcess(const QString& program, QObject *parent) :
     QProcess(parent),
-    _type(type),
+    _program(program),
     _stdoutFilePos(0),
     _stderrFilePos(0)
 {
@@ -33,25 +33,13 @@ BackgroundProcess::BackgroundProcess(const QString& type, QObject *parent) :
     connect(this, SIGNAL(started()), SLOT(processStarted()));
     connect(this, SIGNAL(error(QProcess::ProcessError)), SLOT(processError()));
 
-    QString path = QStandardPaths::writableLocation(QStandardPaths::DataLocation);
-    path.append(LOGS_DIRECTORY);
-    QDir logDir(path);
-    if (!logDir.exists(path)) {
-        logDir.mkpath(path);
+    _logFilePath = QStandardPaths::writableLocation(QStandardPaths::DataLocation);
+    _logFilePath.append(LOGS_DIRECTORY);
+    QDir logDir(_logFilePath);
+    if (!logDir.exists(_logFilePath)) {
+        logDir.mkpath(_logFilePath);
     }
-
-    QDateTime now = QDateTime::currentDateTime();
-    QString nowString = now.toString(DATETIME_FORMAT);
-    QString baseFilename = path + _type;
-    _stdoutFilename = QString("%1_stdout_%2.txt").arg(baseFilename, nowString);
-    _stderrFilename = QString("%1_stderr_%2.txt").arg(baseFilename, nowString);
-
-    qDebug() << "stdout for " << type << " being written to: " << _stdoutFilename;
-    qDebug() << "stderr for " << type << " being written to: " << _stderrFilename;
-
-    setStandardOutputFile(_stdoutFilename);
-    setStandardErrorFile(_stderrFilename);
-
+    
     _logTimer.setInterval(LOG_CHECK_INTERVAL_MS);
     _logTimer.setSingleShot(false);
     connect(&_logTimer, SIGNAL(timeout()), this, SLOT(receivedStandardError()));
@@ -61,8 +49,34 @@ BackgroundProcess::BackgroundProcess(const QString& type, QObject *parent) :
     setWorkingDirectory(GlobalData::getInstance()->getClientsLaunchPath());
 }
 
+void BackgroundProcess::start(const QStringList& arguments) {
+    
+    QDateTime now = QDateTime::currentDateTime();
+    QString nowString = now.toString(DATETIME_FORMAT);
+    QFileInfo programFile(_program);
+    QString baseFilename = _logFilePath + programFile.completeBaseName();
+    _stdoutFilename = QString("%1_stdout_%2.txt").arg(baseFilename, nowString);
+    _stderrFilename = QString("%1_stderr_%2.txt").arg(baseFilename, nowString);
+    
+    qDebug() << "stdout for " << _program << " being written to: " << _stdoutFilename;
+    qDebug() << "stderr for " << _program << " being written to: " << _stderrFilename;
+    
+    // reset the stdout and stderr file positions
+    _stdoutFilePos = 0;
+    _stderrFilePos = 0;
+    
+    // clear our LogViewer
+    _logViewer->clear();
+    
+    // reset our output and error files
+    setStandardOutputFile(_stdoutFilename);
+    setStandardErrorFile(_stderrFilename);
+    
+    QProcess::start(_program, arguments);
+}
+
 void BackgroundProcess::processStarted() {
-    qDebug() << "process " << _type << " started.";
+    qDebug() << "process " << _program << " started.";
 }
 
 void BackgroundProcess::processError() {
