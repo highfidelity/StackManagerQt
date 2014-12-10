@@ -36,6 +36,8 @@ public:
     
     void stopStack() { toggleStack(false); }
     
+    void cleanupBeforeQuit();
+    
     void requestTemporaryDomain();
     
     const QString getServerAddress(bool withPath = true) const;

@@ -6,6 +6,8 @@
 //  Copyright (c) 2014 High Fidelity. All rights reserved.
 //
 
+#include <csignal>
+
 #include "AppDelegate.h"
 #include "GlobalData.h"
 #include "DownloadManager.h"
@@ -25,6 +27,13 @@
 
 const QString HIGH_FIDELITY_API_URL = "https://data.highfidelity.io/api/v1";
 
+void signalHandler(int param) {
+    AppDelegate* app = AppDelegate::getInstance();
+    
+    app->cleanupBeforeQuit();
+    app->quit();
+}
+
 AppDelegate::AppDelegate(int argc, char* argv[]) :
     QApplication(argc, argv),
     _domainServerProcess(GlobalData::getInstance()->getDomainServerExecutablePath(), this),
@@ -32,6 +41,9 @@ AppDelegate::AppDelegate(int argc, char* argv[]) :
     _domainServerName("localhost"),
     _window()
 {
+    // be a signal handler for SIGTERM so we can stop child processes if we get it
+    signal(SIGTERM, signalHandler);
+    
     setApplicationName("Stack Manager");
     setOrganizationName("High Fidelity");
     setOrganizationDomain("io.highfidelity.StackManager");
@@ -42,6 +54,16 @@ AppDelegate::AppDelegate(int argc, char* argv[]) :
     downloadLatestExecutablesAndRequirements();
 
     connect(this, &QApplication::aboutToQuit, this, &AppDelegate::stopStack);
+}
+
+void AppDelegate::cleanupBeforeQuit() {
+    qDebug() << "Stopping domain-server process prior to quit.";
+    _domainServerProcess.terminate();
+    _domainServerProcess.waitForFinished();
+    
+    qDebug() << "Stopping assignment-client process prior to quit.";
+    _acMonitorProcess.terminate();
+    _acMonitorProcess.waitForFinished();
 }
 
 void AppDelegate::toggleStack(bool start) {
