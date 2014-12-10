@@ -50,7 +50,6 @@ BackgroundProcess::BackgroundProcess(const QString& program, QObject *parent) :
 }
 
 void BackgroundProcess::start(const QStringList& arguments) {
-    
     QDateTime now = QDateTime::currentDateTime();
     QString nowString = now.toString(DATETIME_FORMAT);
     QFileInfo programFile(_program);
@@ -71,6 +70,8 @@ void BackgroundProcess::start(const QStringList& arguments) {
     // reset our output and error files
     setStandardOutputFile(_stdoutFilename);
     setStandardErrorFile(_stderrFilename);
+    
+    _lastArgList = arguments;
     
     QProcess::start(_program, arguments);
 }

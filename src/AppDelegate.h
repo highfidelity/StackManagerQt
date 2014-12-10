@@ -16,6 +16,7 @@
 #include <QList>
 #include <QNetworkAccessManager>
 #include <QUrl>
+#include <QUuid>
 #include <QHash>
 
 #include "MainWindow.h"
@@ -29,10 +30,17 @@ public:
     static AppDelegate* getInstance() { return static_cast<AppDelegate*>(QCoreApplication::instance()); }
 
     AppDelegate(int argc, char* argv[]);
+    ~AppDelegate();
 
     void toggleStack(bool start);
     void toggleDomainServer(bool start);
     void toggleAssignmentClientMonitor(bool start);
+    void toggleScriptedAssignmentClients(bool start);
+    
+    int startScriptedAssignment(const QUuid& scriptID, const QString& pool = QString());
+    void stopScriptedAssignment(BackgroundProcess* backgroundProcess);
+    void stopScriptedAssignment(const QUuid& scriptID);
+    
     
     void stopStack() { toggleStack(false); }
     
@@ -71,6 +79,7 @@ private:
     bool _acReady;
     BackgroundProcess _domainServerProcess;
     BackgroundProcess _acMonitorProcess;
+    QHash<QUuid, BackgroundProcess*> _scriptProcesses;
     
     QString _domainServerID;
     QString _domainServerName;

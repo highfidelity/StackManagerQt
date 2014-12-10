@@ -56,10 +56,27 @@ AppDelegate::AppDelegate(int argc, char* argv[]) :
     connect(this, &QApplication::aboutToQuit, this, &AppDelegate::stopStack);
 }
 
+AppDelegate::~AppDelegate() {
+    QHash<QUuid, BackgroundProcess*>::iterator it = _scriptProcesses.begin();
+    
+    qDebug() << "Stopping scripted assignment-client processes prior to quit.";
+    while (it != _scriptProcesses.end()) {
+        BackgroundProcess* backgroundProcess = it.value();
+        
+        // remove from the script processes hash
+        it = _scriptProcesses.erase(it);
+        
+        // make sure the process is dead
+        backgroundProcess->terminate();
+        backgroundProcess->waitForFinished();
+        backgroundProcess->deleteLater();
+    }
+}
+
 void AppDelegate::cleanupBeforeQuit() {
     qDebug() << "Stopping domain-server process prior to quit.";
     _domainServerProcess.terminate();
-    _domainServerProcess.waitForFinished();
+    _acMonitorProcess.waitForFinished();
     
     qDebug() << "Stopping assignment-client process prior to quit.";
     _acMonitorProcess.terminate();
@@ -69,6 +86,7 @@ void AppDelegate::cleanupBeforeQuit() {
 void AppDelegate::toggleStack(bool start) {
     toggleDomainServer(start);
     toggleAssignmentClientMonitor(start);
+    toggleScriptedAssignmentClients(start);
     emit stackStateChanged(start);
 }
 
@@ -85,7 +103,6 @@ void AppDelegate::toggleDomainServer(bool start) {
         }
     } else {
         _domainServerProcess.terminate();
-        _domainServerProcess.waitForFinished();
     }
 }
 
@@ -95,9 +112,57 @@ void AppDelegate::toggleAssignmentClientMonitor(bool start) {
         _window.getLogsWidget()->addTab(_acMonitorProcess.getLogViewer(), "Assignment Clients");
     } else {
         _acMonitorProcess.terminate();
-        _acMonitorProcess.waitForFinished();
     }
 }
+
+void AppDelegate::toggleScriptedAssignmentClients(bool start) {
+    foreach(BackgroundProcess* scriptProcess, _scriptProcesses) {
+        if (start) {
+            scriptProcess->start(scriptProcess->getLastArgList());
+        } else {
+            scriptProcess->terminate();
+        }
+    }
+}
+
+int AppDelegate::startScriptedAssignment(const QUuid& scriptID, const QString& pool) {
+    
+    BackgroundProcess* scriptProcess = _scriptProcesses.value(scriptID);
+    
+    if (!scriptProcess) {
+        QStringList argList = QStringList() << "-t" << "2";
+        if (!pool.isEmpty()) {
+            argList << "--pool" << pool;
+        }
+        
+        scriptProcess = new BackgroundProcess(GlobalData::getInstance()->getAssignmentClientExecutablePath(),
+                                              this);
+        
+        scriptProcess->start(argList);
+        
+        qint64 processID = scriptProcess->processId();
+        _scriptProcesses.insert(scriptID, scriptProcess);
+        
+        _window.getLogsWidget()->addTab(scriptProcess->getLogViewer(), "Scripted Assignment "
+                                        + QString::number(processID));
+    } else {
+        scriptProcess->QProcess::start();
+    }
+    
+    return scriptProcess->processId();
+}
+
+void AppDelegate::stopScriptedAssignment(BackgroundProcess* backgroundProcess) {
+    backgroundProcess->terminate();
+}
+
+void AppDelegate::stopScriptedAssignment(const QUuid& scriptID) {
+    BackgroundProcess* processValue = _scriptProcesses.take(scriptID);
+    if (processValue) {
+        stopScriptedAssignment(processValue);
+    }
+}
+        
 
 void AppDelegate::requestDomainServerID() {
     // ask the domain-server for its ID so we can update the accessible name

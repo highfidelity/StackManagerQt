@@ -23,6 +23,8 @@ public:
 
     LogViewer* getLogViewer() { return _logViewer; }
     
+    const QStringList& getLastArgList() const { return _lastArgList; }
+    
     void start(const QStringList& arguments);
 
 private slots:
@@ -33,6 +35,7 @@ private slots:
 
 private:
     QString _program;
+    QStringList _lastArgList;
     QString _logFilePath;
     LogViewer* _logViewer;
     QTimer _logTimer;

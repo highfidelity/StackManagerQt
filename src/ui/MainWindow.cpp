@@ -327,7 +327,7 @@ void MainWindow::toggleDomainServerButton() {
 }
 
 void MainWindow::addAssignment() {
-    AssignmentWidget* widget = new AssignmentWidget(_assignmentLayout->count() + 1);
+    AssignmentWidget* widget = new AssignmentWidget(this);
     _assignmentLayout->addWidget(widget, ASSIGNMENT_LAYOUT_WIDGET_STRETCH, Qt::AlignTop);
     resize(width(), _assignmentScrollArea->geometry().y()
            + ASSIGNMENT_LAYOUT_RESIZE_FACTOR * _assignmentLayout->count()
