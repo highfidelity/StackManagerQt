@@ -34,6 +34,7 @@ protected:
 
 private slots:
     void toggleDomainServerButton();
+    void addAssignment();
     void openSettings();
     void updateServerAddressLabel();
     void toggleShareButtonText();
@@ -53,9 +54,12 @@ private:
     QLabel* _serverAddressLabel;
     QPushButton* _viewLogsButton;
     QPushButton* _settingsButton;
+    QPushButton* _runAssignmentButton;
     QPushButton* _shareButton;
     QPushButton* _contentSetButton;
     QTabWidget* _logsWidget;
+    QVBoxLayout* _assignmentLayout;
+    QScrollArea* _assignmentScrollArea;
 };
 
 #endif
