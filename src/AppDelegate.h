@@ -41,7 +41,6 @@ public:
     void stopScriptedAssignment(BackgroundProcess* backgroundProcess);
     void stopScriptedAssignment(const QUuid& scriptID);
     
-    
     void stopStack() { toggleStack(false); }
     
     void cleanupBeforeQuit();

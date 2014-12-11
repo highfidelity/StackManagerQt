@@ -198,8 +198,10 @@ void MainWindow::updateServerAddressLabel() {
                                  "</span></a></p></body></html>");
     _serverAddressLabel->adjustSize();
     
-    _shareButton->setText(SHARE_BUTTON_COPY_LINK_TEXT);
-    _shareButton->setEnabled(true);
+    if (!app->getServerAddress(false).contains("localhost")) {
+        _shareButton->setText(SHARE_BUTTON_COPY_LINK_TEXT);
+        _shareButton->setEnabled(true);
+    }
 }
 
 void MainWindow::toggleShareButtonText() {
