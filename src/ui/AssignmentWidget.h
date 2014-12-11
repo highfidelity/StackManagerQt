@@ -11,6 +11,7 @@
 
 #include <QWidget>
 #include <QLineEdit>
+#include <QUuid>
 
 #include "SvgButton.h"
 
@@ -18,7 +19,7 @@ class AssignmentWidget : public QWidget
 {
     Q_OBJECT
 public:
-    explicit AssignmentWidget(int id, QWidget* parent = 0);
+    AssignmentWidget(QWidget* parent = 0);
 
     bool isRunning() { return _isRunning; }
 
@@ -26,10 +27,11 @@ public slots:
     void toggleRunningState();
 
 private:
-    int _id;
+    int _processID;
     bool _isRunning;
     SvgButton* _runButton;
     QLineEdit* _poolIDLineEdit;
+    QUuid _scriptID;
 };
 
 #endif

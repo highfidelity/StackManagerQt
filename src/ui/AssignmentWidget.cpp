@@ -13,10 +13,11 @@
 
 #include "AppDelegate.h"
 
-AssignmentWidget::AssignmentWidget(int id, QWidget* parent) :
+AssignmentWidget::AssignmentWidget(QWidget* parent) :
     QWidget(parent),
-    _id(id),
-    _isRunning(false)
+    _processID(0),
+    _isRunning(false),
+    _scriptID(QUuid::createUuid())
 {
     setFont(QFont("sans-serif"));
 
@@ -44,14 +45,14 @@ AssignmentWidget::AssignmentWidget(int id, QWidget* parent) :
 }
 
 void AssignmentWidget::toggleRunningState() {
-    if (_isRunning) {
-        AppDelegate::getInstance()->stopAssignment(_id);
+    if (_isRunning && _processID > 0) {
+        AppDelegate::getInstance()->stopScriptedAssignment(_scriptID);
         _runButton->setSvgImage(":/assignment-run.svg");
         update();
         _poolIDLineEdit->setEnabled(true);
         _isRunning = false;
     } else {
-        AppDelegate::getInstance()->startAssignment(_id, _poolIDLineEdit->text());
+        _processID = AppDelegate::getInstance()->startScriptedAssignment(_scriptID, _poolIDLineEdit->text());
         _runButton->setSvgImage(":/assignment-stop.svg");
         update();
         _poolIDLineEdit->setEnabled(false);

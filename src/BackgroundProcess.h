@@ -19,11 +19,13 @@ class BackgroundProcess : public QProcess
 {
     Q_OBJECT
 public:
-    explicit BackgroundProcess(const QString& type, QObject* parent = 0);
-
-    QString& getType() { return _type; }
+    BackgroundProcess(const QString& program, QObject* parent = 0);
 
     LogViewer* getLogViewer() { return _logViewer; }
+    
+    const QStringList& getLastArgList() const { return _lastArgList; }
+    
+    void start(const QStringList& arguments);
 
 private slots:
     void processStarted();
@@ -32,7 +34,9 @@ private slots:
     void receivedStandardError();
 
 private:
-    QString _type;
+    QString _program;
+    QStringList _lastArgList;
+    QString _logFilePath;
     LogViewer* _logViewer;
     QTimer _logTimer;
     QString _stdoutFilename;
