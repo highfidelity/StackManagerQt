@@ -15,6 +15,7 @@
 
 #include <QDateTime>
 #include <QDebug>
+#include <QDesktopServices>
 #include <QDir>
 #include <QFile>
 #include <QFileInfoList>
@@ -38,8 +39,7 @@ AppDelegate::AppDelegate(int argc, char* argv[]) :
     QApplication(argc, argv),
     _domainServerProcess(NULL),
     _acMonitorProcess(NULL),
-    _domainServerName("localhost"),
-    _window()
+    _domainServerName("localhost")
 {
     // be a signal handler for SIGTERM so we can stop child processes if we get it
     signal(SIGTERM, signalHandler);
@@ -48,15 +48,17 @@ AppDelegate::AppDelegate(int argc, char* argv[]) :
     setOrganizationName("High Fidelity");
     setOrganizationDomain("io.highfidelity.StackManager");
     
-    _domainServerProcess = new BackgroundProcess(GlobalData::getInstance()->getAssignmentClientExecutablePath(), this);
-    _acMonitorProcess = new BackgroundProcess(GlobalData::getInstance()->getAssignmentClientExecutablePath(), this);
+    _domainServerProcess = new BackgroundProcess(GlobalData::getInstance().getDomainServerExecutablePath(), this);
+    _acMonitorProcess = new BackgroundProcess(GlobalData::getInstance().getAssignmentClientExecutablePath(), this);
 
     _manager = new QNetworkAccessManager(this);
+    
+     _window = new MainWindow();
 
     createExecutablePath();
     downloadLatestExecutablesAndRequirements();
 
-    connect(this, &QApplication::aboutToQuit, this, &AppDelegate::stopStack);
+    connect(this, &QApplication::aboutToQuit, this, &AppDelegate::stopStack);   
 }
 
 AppDelegate::~AppDelegate() {
@@ -85,6 +87,8 @@ AppDelegate::~AppDelegate() {
     
     _domainServerProcess->deleteLater();
     _acMonitorProcess->deleteLater();
+    
+    _window->deleteLater();
 }
 
 void AppDelegate::toggleStack(bool start) {
@@ -99,7 +103,7 @@ void AppDelegate::toggleDomainServer(bool start) {
     if (start) {
         _domainServerProcess->start(QStringList());
         
-        _window.getLogsWidget()->addTab(_domainServerProcess->getLogViewer(), "Domain Server");
+        _window->getLogsWidget()->addTab(_domainServerProcess->getLogViewer(), "Domain Server");
         
         if (_domainServerID.isEmpty()) {
             // after giving the domain server some time to set up, ask for its ID
@@ -113,7 +117,7 @@ void AppDelegate::toggleDomainServer(bool start) {
 void AppDelegate::toggleAssignmentClientMonitor(bool start) {
     if (start) {
         _acMonitorProcess->start(QStringList() << "-n" << "5");
-        _window.getLogsWidget()->addTab(_acMonitorProcess->getLogViewer(), "Assignment Clients");
+        _window->getLogsWidget()->addTab(_acMonitorProcess->getLogViewer(), "Assignment Clients");
     } else {
         _acMonitorProcess->terminate();
     }
@@ -139,7 +143,7 @@ int AppDelegate::startScriptedAssignment(const QUuid& scriptID, const QString& p
             argList << "--pool" << pool;
         }
         
-        scriptProcess = new BackgroundProcess(GlobalData::getInstance()->getAssignmentClientExecutablePath(),
+        scriptProcess = new BackgroundProcess(GlobalData::getInstance().getAssignmentClientExecutablePath(),
                                               this);
         
         scriptProcess->start(argList);
@@ -147,7 +151,7 @@ int AppDelegate::startScriptedAssignment(const QUuid& scriptID, const QString& p
         qint64 processID = scriptProcess->processId();
         _scriptProcesses.insert(scriptID, scriptProcess);
         
-        _window.getLogsWidget()->addTab(scriptProcess->getLogViewer(), "Scripted Assignment "
+        _window->getLogsWidget()->addTab(scriptProcess->getLogViewer(), "Scripted Assignment "
                                         + QString::number(processID));
     } else {
         scriptProcess->QProcess::start();
@@ -300,7 +304,7 @@ void AppDelegate::handleContentSetDownloadFinished() {
     if (reply->error() == QNetworkReply::NoError
         && reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt() == 200) {
         
-        QString modelFilename = GlobalData::getInstance()->getClientsResourcesPath() + "models.svo";
+        QString modelFilename = GlobalData::getInstance().getClientsResourcesPath() + "models.svo";
         
         // write the model file
         QFile modelFile(modelFilename);
@@ -340,26 +344,26 @@ void AppDelegate::handleContentSetDownloadFinished() {
 }
 
 void AppDelegate::onFileSuccessfullyInstalled(QUrl url) {
-    if (url == GlobalData::getInstance()->getRequirementsURL()) {
+    if (url == GlobalData::getInstance().getRequirementsURL()) {
         _qtReady = true;
-    } else if (url == GlobalData::getInstance()->getAssignmentClientURL()) {
+    } else if (url == GlobalData::getInstance().getAssignmentClientURL()) {
         _acReady = true;
-    } else if (url == GlobalData::getInstance()->getDomainServerURL()) {
+    } else if (url == GlobalData::getInstance().getDomainServerURL()) {
         _dsReady = true;
-    } else if (url == GlobalData::getInstance()->getDomainServerResourcesURL()) {
+    } else if (url == GlobalData::getInstance().getDomainServerResourcesURL()) {
         _dsResourcesReady = true;
     }
 
     if (_qtReady && _acReady && _dsReady && _dsResourcesReady) {
-        _window.setRequirementsLastChecked(QDateTime::currentDateTime().toString());
-        _window.show();
+        _window->setRequirementsLastChecked(QDateTime::currentDateTime().toString());
+        _window->show();
     }
 }
 
 void AppDelegate::createExecutablePath() {
-    QDir launchDir(GlobalData::getInstance()->getClientsLaunchPath());
-    QDir resourcesDir(GlobalData::getInstance()->getClientsResourcesPath());
-    QDir logsDir(GlobalData::getInstance()->getLogsPath());
+    QDir launchDir(GlobalData::getInstance().getClientsLaunchPath());
+    QDir resourcesDir(GlobalData::getInstance().getClientsResourcesPath());
+    QDir logsDir(GlobalData::getInstance().getLogsPath());
     if (!launchDir.exists()) {
         if (QDir().mkpath(launchDir.absolutePath())) {
             qDebug() << "Successfully created directory: "
@@ -391,57 +395,57 @@ void AppDelegate::createExecutablePath() {
 
 void AppDelegate::downloadLatestExecutablesAndRequirements() {
     // Check if Qt is already installed
-    if (GlobalData::getInstance()->getPlatform() == "mac") {
-        if (QDir(GlobalData::getInstance()->getClientsLaunchPath() + "QtCore.framework").exists()) {
+    if (GlobalData::getInstance().getPlatform() == "mac") {
+        if (QDir(GlobalData::getInstance().getClientsLaunchPath() + "QtCore.framework").exists()) {
             _qtReady = true;
         }
-    } else if (GlobalData::getInstance()->getPlatform() == "win") {
-        if (QFileInfo(GlobalData::getInstance()->getClientsLaunchPath() + "Qt5Core.dll").exists()) {
+    } else if (GlobalData::getInstance().getPlatform() == "win") {
+        if (QFileInfo(GlobalData::getInstance().getClientsLaunchPath() + "Qt5Core.dll").exists()) {
             _qtReady = true;
         }
     } else { // linux
-        if (QFileInfo(GlobalData::getInstance()->getClientsLaunchPath() + "libQt5Core.so.5").exists()) {
+        if (QFileInfo(GlobalData::getInstance().getClientsLaunchPath() + "libQt5Core.so.5").exists()) {
             _qtReady = true;
         }
     }
 
-    QFile dsFile(GlobalData::getInstance()->getDomainServerExecutablePath());
+    QFile dsFile(GlobalData::getInstance().getDomainServerExecutablePath());
     QByteArray dsData;
     if (dsFile.open(QIODevice::ReadOnly)) {
         dsData = dsFile.readAll();
         dsFile.close();
     }
-    QFile acFile(GlobalData::getInstance()->getAssignmentClientExecutablePath());
+    QFile acFile(GlobalData::getInstance().getAssignmentClientExecutablePath());
     QByteArray acData;
     if (acFile.open(QIODevice::ReadOnly)) {
         acData = acFile.readAll();
         acFile.close();
     }
-    QFile reqZipFile(GlobalData::getInstance()->getRequirementsZipPath());
+    QFile reqZipFile(GlobalData::getInstance().getRequirementsZipPath());
     QByteArray reqZipData;
     if (reqZipFile.open(QIODevice::ReadOnly)) {
         reqZipData = reqZipFile.readAll();
         reqZipFile.close();
     }
-    QFile resZipFile(GlobalData::getInstance()->getDomainServerResourcesZipPath());
+    QFile resZipFile(GlobalData::getInstance().getDomainServerResourcesZipPath());
     QByteArray resZipData;
     if (resZipFile.open(QIODevice::ReadOnly)) {
         resZipData = resZipFile.readAll();
         resZipFile.close();
     }
 
-    QDir resourcesDir(GlobalData::getInstance()->getClientsResourcesPath());
+    QDir resourcesDir(GlobalData::getInstance().getClientsResourcesPath());
     if (!(resourcesDir.entryInfoList(QDir::AllEntries).size() < 3)) {
         _dsResourcesReady = true;
     }
 
-    QNetworkRequest acReq(QUrl(GlobalData::getInstance()->getAssignmentClientMD5URL()));
+    QNetworkRequest acReq(QUrl(GlobalData::getInstance().getAssignmentClientMD5URL()));
     QNetworkReply* acReply = _manager->get(acReq);
     QEventLoop acLoop;
     connect(acReply, SIGNAL(finished()), &acLoop, SLOT(quit()));
     acLoop.exec();
     QByteArray acMd5Data = acReply->readAll().trimmed();
-    if (GlobalData::getInstance()->getPlatform() == "win") {
+    if (GlobalData::getInstance().getPlatform() == "win") {
         // fix for reading the MD5 hash from Windows-generated
         // binary data of the MD5 hash
         QTextStream stream(acMd5Data);
@@ -452,7 +456,7 @@ void AppDelegate::downloadLatestExecutablesAndRequirements() {
     if (acMd5Data.size() == 0) {
         // network is not accessible
         qDebug() << "Could not connect to the internet.";
-        _window.show();
+        _window->show();
         return;
     }
 
@@ -461,13 +465,13 @@ void AppDelegate::downloadLatestExecutablesAndRequirements() {
         _acReady = true;
     }
 
-    QNetworkRequest dsReq(QUrl(GlobalData::getInstance()->getDomainServerMD5URL()));
+    QNetworkRequest dsReq(QUrl(GlobalData::getInstance().getDomainServerMD5URL()));
     QNetworkReply* dsReply = _manager->get(dsReq);
     QEventLoop dsLoop;
     connect(dsReply, SIGNAL(finished()), &dsLoop, SLOT(quit()));
     dsLoop.exec();
     QByteArray dsMd5Data = dsReply->readAll().trimmed();
-    if (GlobalData::getInstance()->getPlatform() == "win") {
+    if (GlobalData::getInstance().getPlatform() == "win") {
         // fix for reading the MD5 hash from Windows generated
         // binary data of the MD5 hash
         QTextStream stream(dsMd5Data);
@@ -480,13 +484,13 @@ void AppDelegate::downloadLatestExecutablesAndRequirements() {
 
     if (_qtReady) {
         // check MD5 of requirements.zip only if Qt is found
-        QNetworkRequest reqZipReq(QUrl(GlobalData::getInstance()->getRequirementsMD5URL()));
+        QNetworkRequest reqZipReq(QUrl(GlobalData::getInstance().getRequirementsMD5URL()));
         QNetworkReply* reqZipReply = _manager->get(reqZipReq);
         QEventLoop reqZipLoop;
         connect(reqZipReply, SIGNAL(finished()), &reqZipLoop, SLOT(quit()));
         reqZipLoop.exec();
         QByteArray reqZipMd5Data = reqZipReply->readAll().trimmed();
-        if (GlobalData::getInstance()->getPlatform() == "win") {
+        if (GlobalData::getInstance().getPlatform() == "win") {
             // fix for reading the MD5 hash from Windows generated
             // binary data of the MD5 hash
             QTextStream stream(reqZipMd5Data);
@@ -501,13 +505,13 @@ void AppDelegate::downloadLatestExecutablesAndRequirements() {
     if (_dsResourcesReady) {
         // check MD5 of resources.zip only if Domain Server
         // resources are installed
-        QNetworkRequest resZipReq(QUrl(GlobalData::getInstance()->getDomainServerResourcesMD5URL()));
+        QNetworkRequest resZipReq(QUrl(GlobalData::getInstance().getDomainServerResourcesMD5URL()));
         QNetworkReply* resZipReply = _manager->get(resZipReq);
         QEventLoop resZipLoop;
         connect(resZipReply, SIGNAL(finished()), &resZipLoop, SLOT(quit()));
         resZipLoop.exec();
         QByteArray resZipMd5Data = resZipReply->readAll().trimmed();
-        if (GlobalData::getInstance()->getPlatform() == "win") {
+        if (GlobalData::getInstance().getPlatform() == "win") {
             // fix for reading the MD5 hash from Windows generated
             // binary data of the MD5 hash
             QTextStream stream(resZipMd5Data);
@@ -528,23 +532,23 @@ void AppDelegate::downloadLatestExecutablesAndRequirements() {
                 SLOT(onFileSuccessfullyInstalled(QUrl)));
         downloadManager->show();
     } else {
-        _window.setRequirementsLastChecked(QDateTime::currentDateTime().toString());
-        _window.show();
+        _window->setRequirementsLastChecked(QDateTime::currentDateTime().toString());
+        _window->show();
     }
 
     if (!_qtReady) {
-        downloadManager->downloadFile(GlobalData::getInstance()->getRequirementsURL());
+        downloadManager->downloadFile(GlobalData::getInstance().getRequirementsURL());
     }
 
     if (!_acReady) {
-        downloadManager->downloadFile(GlobalData::getInstance()->getAssignmentClientURL());
+        downloadManager->downloadFile(GlobalData::getInstance().getAssignmentClientURL());
     }
 
     if (!_dsReady) {
-        downloadManager->downloadFile(GlobalData::getInstance()->getDomainServerURL());
+        downloadManager->downloadFile(GlobalData::getInstance().getDomainServerURL());
     }
 
     if (!_dsResourcesReady) {
-        downloadManager->downloadFile(GlobalData::getInstance()->getDomainServerResourcesURL());
+        downloadManager->downloadFile(GlobalData::getInstance().getDomainServerResourcesURL());
     }
 }

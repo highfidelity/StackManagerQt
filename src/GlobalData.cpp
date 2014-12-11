@@ -13,24 +13,12 @@
 #include <QDir>
 #include <QDebug>
 
-GlobalData* GlobalData::_instance = NULL;
-
-GlobalData* GlobalData::getInstance() {
-    static QMutex globalDataInstanceMutex;
-
-    globalDataInstanceMutex.lock();
-
-    if (!_instance) {
-        _instance = new GlobalData();
-    }
-
-    globalDataInstanceMutex.unlock();
-
-    return _instance;
+GlobalData& GlobalData::getInstance() {
+    static GlobalData staticInstance;
+    return staticInstance;
 }
 
-GlobalData::GlobalData()
-{
+GlobalData::GlobalData() {
     QString urlBase = "http://s3.amazonaws.com/hifi-public";
 #if defined Q_OS_OSX
     _platform = "mac";
@@ -44,6 +32,7 @@ GlobalData::GlobalData()
     QString assignmentClientExecutable = "assignment-client";
     QString domainServerExecutable = "domain-server";
     QString applicationSupportDirectory = QStandardPaths::writableLocation(QStandardPaths::DataLocation);
+  
     _clientsLaunchPath = QDir::toNativeSeparators(applicationSupportDirectory + "/");
     _clientsResourcePath = QDir::toNativeSeparators(applicationSupportDirectory + "/" + resourcePath);
     _assignmentClientExecutablePath = QDir::toNativeSeparators(_clientsLaunchPath + assignmentClientExecutable);
@@ -75,14 +64,4 @@ GlobalData::GlobalData()
     _availableAssignmentTypes.insert("particle-server", 4);
     _availableAssignmentTypes.insert("metavoxel-server", 5);
     _availableAssignmentTypes.insert("model-server", 6);
-}
-
-int GlobalData::indexForAssignmentType(const QString &type) {
-    for (int i = 0; i < _availableAssignmentTypes.size(); ++i) {
-        if (_availableAssignmentTypes.keys().at(i) == type) {
-            return _availableAssignmentTypes.value(type);
-        }
-    }
-    
-    return -1;
 }

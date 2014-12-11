@@ -59,7 +59,7 @@ MainWindow::MainWindow() :
     const int WINDOW_FIXED_WIDTH = 640;
     const int WINDOW_INITIAL_HEIGHT = 200;
 
-    if (GlobalData::getInstance()->getPlatform() == "win") {
+    if (GlobalData::getInstance().getPlatform() == "win") {
         const int windowsYCoord = 30;
         setGeometry(qApp->desktop()->availableGeometry().width() / 2 - WINDOW_FIXED_WIDTH / 2, windowsYCoord,
                     WINDOW_FIXED_WIDTH, WINDOW_INITIAL_HEIGHT);
