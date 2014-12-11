@@ -53,12 +53,12 @@ AppDelegate::AppDelegate(int argc, char* argv[]) :
 
     _manager = new QNetworkAccessManager(this);
     
-     _window = new MainWindow();
+    _window = new MainWindow();
 
     createExecutablePath();
     downloadLatestExecutablesAndRequirements();
 
-    connect(this, &QApplication::aboutToQuit, this, &AppDelegate::stopStack);   
+    connect(this, &QApplication::aboutToQuit, this, &AppDelegate::stopStack);
 }
 
 AppDelegate::~AppDelegate() {
