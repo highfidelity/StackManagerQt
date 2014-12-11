@@ -17,11 +17,10 @@
 
 #include "Downloader.h"
 
-class DownloadManager : public QWidget
-{
+class DownloadManager : public QWidget {
     Q_OBJECT
 public:
-    explicit DownloadManager(QNetworkAccessManager* manager, QWidget* parent = 0);
+    DownloadManager(QNetworkAccessManager* manager, QWidget* parent = 0);
     ~DownloadManager();
 
     void downloadFile(QUrl url);
