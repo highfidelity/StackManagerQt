@@ -79,7 +79,7 @@ void DownloadManager::onDownloadStarted(Downloader* downloader, QUrl url) {
     QProgressBar* progressBar = new QProgressBar;
     _table->setCellWidget(rowIndex, 1, progressBar);
     QTableWidgetItem* statusItem = new QTableWidgetItem;
-    if (QFile(QDir::toNativeSeparators(GlobalData::getInstance()->getClientsLaunchPath() + "/" + QFileInfo(url.toString()).fileName())).exists()) {
+    if (QFile(QDir::toNativeSeparators(GlobalData::getInstance().getClientsLaunchPath() + "/" + QFileInfo(url.toString()).fileName())).exists()) {
         statusItem->setText("Updating");
     } else {
         statusItem->setText("Downloading");

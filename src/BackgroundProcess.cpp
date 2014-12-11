@@ -46,7 +46,7 @@ BackgroundProcess::BackgroundProcess(const QString& program, QObject *parent) :
     connect(&_logTimer, SIGNAL(timeout()), this, SLOT(receivedStandardOutput()));
     connect(this, SIGNAL(started()), &_logTimer, SLOT(start()));
 
-    setWorkingDirectory(GlobalData::getInstance()->getClientsLaunchPath());
+    setWorkingDirectory(GlobalData::getInstance().getClientsLaunchPath());
 }
 
 void BackgroundProcess::start(const QStringList& arguments) {

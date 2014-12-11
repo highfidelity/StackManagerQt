@@ -12,10 +12,9 @@
 #include <QString>
 #include <QHash>
 
-class GlobalData
-{
+class GlobalData {
 public:
-    static GlobalData* getInstance();
+    static GlobalData& getInstance();
 
     QString getPlatform() { return _platform; }
     QString getClientsLaunchPath() { return _clientsLaunchPath; }
@@ -35,12 +34,10 @@ public:
     QString getDefaultDomain() { return _defaultDomain; }
     QString getLogsPath() { return _logsPath; }
     QHash<QString, int> getAvailableAssignmentTypes() { return _availableAssignmentTypes; }
-    int indexForAssignmentType(const QString& type);
+
 
 private:
     GlobalData();
-
-    static GlobalData* _instance;
 
     QString _platform;
     QString _clientsLaunchPath;

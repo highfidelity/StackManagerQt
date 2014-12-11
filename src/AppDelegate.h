@@ -84,7 +84,7 @@ private:
     
     QString _sharePath;
     
-    MainWindow _window;
+    MainWindow* _window;
 };
 
 #endif

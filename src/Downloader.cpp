@@ -56,7 +56,7 @@ void Downloader::downloadFinished() {
     emit downloadCompleted(_url);
 
     QString fileName = QFileInfo(_url.toString()).fileName();
-    QString fileDir = GlobalData::getInstance()->getClientsLaunchPath();
+    QString fileDir = GlobalData::getInstance().getClientsLaunchPath();
     QString filePath = fileDir + fileName;
 
     QFile file(filePath);
