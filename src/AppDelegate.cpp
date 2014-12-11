@@ -68,7 +68,6 @@ AppDelegate::~AppDelegate() {
         
         // make sure the process is dead
         backgroundProcess->terminate();
-        backgroundProcess->waitForFinished();
         backgroundProcess->deleteLater();
     }
 }
@@ -76,11 +75,9 @@ AppDelegate::~AppDelegate() {
 void AppDelegate::cleanupBeforeQuit() {
     qDebug() << "Stopping domain-server process prior to quit.";
     _domainServerProcess.terminate();
-    _acMonitorProcess.waitForFinished();
     
     qDebug() << "Stopping assignment-client process prior to quit.";
     _acMonitorProcess.terminate();
-    _acMonitorProcess.waitForFinished();
 }
 
 void AppDelegate::toggleStack(bool start) {

@@ -81,7 +81,7 @@ void BackgroundProcess::processStarted() {
 }
 
 void BackgroundProcess::processError() {
-    qDebug() << errorString();
+    qDebug() << "process error for" << _program << "-" << errorString();
 }
 
 void BackgroundProcess::receivedStandardOutput() {
