@@ -9,6 +9,7 @@
 #include <csignal>
 
 #include "AppDelegate.h"
+#include "BackgroundProcess.h"
 #include "GlobalData.h"
 #include "DownloadManager.h"
 
@@ -30,14 +31,13 @@ const QString HIGH_FIDELITY_API_URL = "https://data.highfidelity.io/api/v1";
 void signalHandler(int param) {
     AppDelegate* app = AppDelegate::getInstance();
     
-    app->cleanupBeforeQuit();
     app->quit();
 }
 
 AppDelegate::AppDelegate(int argc, char* argv[]) :
     QApplication(argc, argv),
-    _domainServerProcess(GlobalData::getInstance()->getDomainServerExecutablePath(), this),
-    _acMonitorProcess(GlobalData::getInstance()->getAssignmentClientExecutablePath(), this),
+    _domainServerProcess(NULL),
+    _acMonitorProcess(NULL),
     _domainServerName("localhost"),
     _window()
 {
@@ -47,6 +47,9 @@ AppDelegate::AppDelegate(int argc, char* argv[]) :
     setApplicationName("Stack Manager");
     setOrganizationName("High Fidelity");
     setOrganizationDomain("io.highfidelity.StackManager");
+    
+    _domainServerProcess = new BackgroundProcess(GlobalData::getInstance()->getAssignmentClientExecutablePath(), this);
+    _acMonitorProcess = new BackgroundProcess(GlobalData::getInstance()->getAssignmentClientExecutablePath(), this);
 
     _manager = new QNetworkAccessManager(this);
 
@@ -71,16 +74,17 @@ AppDelegate::~AppDelegate() {
         backgroundProcess->waitForFinished();
         backgroundProcess->deleteLater();
     }
-}
-
-void AppDelegate::cleanupBeforeQuit() {
+    
     qDebug() << "Stopping domain-server process prior to quit.";
-    _domainServerProcess.terminate();
-    _domainServerProcess.waitForFinished();
+    _domainServerProcess->terminate();
+    _domainServerProcess->waitForFinished();
     
     qDebug() << "Stopping assignment-client process prior to quit.";
-    _acMonitorProcess.terminate();
-    _acMonitorProcess.waitForFinished();
+    _acMonitorProcess->terminate();
+    _acMonitorProcess->waitForFinished();
+    
+    _domainServerProcess->deleteLater();
+    _acMonitorProcess->deleteLater();
 }
 
 void AppDelegate::toggleStack(bool start) {
@@ -93,25 +97,25 @@ void AppDelegate::toggleStack(bool start) {
 void AppDelegate::toggleDomainServer(bool start) {
     
     if (start) {
-        _domainServerProcess.start(QStringList());
+        _domainServerProcess->start(QStringList());
         
-        _window.getLogsWidget()->addTab(_domainServerProcess.getLogViewer(), "Domain Server");
+        _window.getLogsWidget()->addTab(_domainServerProcess->getLogViewer(), "Domain Server");
         
         if (_domainServerID.isEmpty()) {
             // after giving the domain server some time to set up, ask for its ID
             QTimer::singleShot(1000, this, SLOT(requestDomainServerID()));
         }
     } else {
-        _domainServerProcess.terminate();
+        _domainServerProcess->terminate();
     }
 }
 
 void AppDelegate::toggleAssignmentClientMonitor(bool start) {
     if (start) {
-        _acMonitorProcess.start(QStringList() << "-n" << "5");
-        _window.getLogsWidget()->addTab(_acMonitorProcess.getLogViewer(), "Assignment Clients");
+        _acMonitorProcess->start(QStringList() << "-n" << "5");
+        _window.getLogsWidget()->addTab(_acMonitorProcess->getLogViewer(), "Assignment Clients");
     } else {
-        _acMonitorProcess.terminate();
+        _acMonitorProcess->terminate();
     }
 }
 

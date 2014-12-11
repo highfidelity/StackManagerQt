@@ -9,7 +9,6 @@
 #ifndef hifi_AppDelegate_h
 #define hifi_AppDelegate_h
 
-#include "BackgroundProcess.h"
 
 #include <QApplication>
 #include <QCoreApplication>
@@ -20,6 +19,8 @@
 #include <QHash>
 
 #include "MainWindow.h"
+
+class BackgroundProcess;
 
 const QString DOMAIN_SERVER_BASE_URL = "http://localhost:40100";
 
@@ -42,8 +43,6 @@ public:
     void stopScriptedAssignment(const QUuid& scriptID);
     
     void stopStack() { toggleStack(false); }
-    
-    void cleanupBeforeQuit();
     
     void requestTemporaryDomain();
     
@@ -76,8 +75,8 @@ private:
     bool _dsReady;
     bool _dsResourcesReady;
     bool _acReady;
-    BackgroundProcess _domainServerProcess;
-    BackgroundProcess _acMonitorProcess;
+    BackgroundProcess* _domainServerProcess;
+    BackgroundProcess* _acMonitorProcess;
     QHash<QUuid, BackgroundProcess*> _scriptProcesses;
     
     QString _domainServerID;
