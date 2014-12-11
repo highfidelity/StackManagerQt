@@ -312,6 +312,7 @@ void AppDelegate::handleContentSetDownloadFinished() {
         
         // stop the base assignment clients before we try to write the new content
         toggleAssignmentClientMonitor(false);
+        _acMonitorProcess->waitForFinished();
         
         if (modelFile.write(reply->readAll()) == -1) {
             qDebug() << "Error writing content set to" << modelFilename;
