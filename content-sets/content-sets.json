@@ -8,5 +8,10 @@
     "name": "The Bar",
     "description": "A sexy club scene to plan your parties and live shows.",
     "path": "/1048.52,9.5386,1005.7/-0.0000565125,-0.395713,-0.000131155,0.918374"
+  },
+  "space": {
+    "name": "Space",
+    "description": "Vast, empty, nothingness. A completely clean slate for you to start building anything you desire.",
+    "path": "/1000,100,100"
   }
 }
