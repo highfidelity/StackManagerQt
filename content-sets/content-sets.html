@@ -34,16 +34,12 @@
                 </a>
               </div>
               <div class="panel-body">
-                <ul class="media-list">
-                  <li class="media">
-                    <a class="media-left" href="<%- models_url %>">
-                      <img width="200" height="200" src="http://hifi-public.s3.amazonaws.com/content-sets/<%- key %>/thumbnail.jpg" alt="content set thumbnail">
-                    </a>
-                    <div class="media-body">
-                      <%- set.description %>
-                    </div>
-                  </li>
-                </ul>
+                <p class="text-center">
+                  <a href="<%- models_url %>">
+                    <img width="200" height="200" src="http://hifi-public.s3.amazonaws.com/content-sets/<%- key %>/thumbnail.jpg" alt="content set thumbnail">
+                  </a>
+                </p>
+                <p><%- set.description %></p>
               </div>
             </div>
           </div>
