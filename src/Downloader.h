@@ -18,9 +18,9 @@ class Downloader : public QObject
 {
     Q_OBJECT
 public:
-    explicit Downloader(QUrl url, QObject* parent = 0);
+    explicit Downloader(const QUrl& url, QObject* parent = 0);
 
-    QUrl& getUrl() { return _url; }
+    const QUrl& getUrl() { return _url; }
 
     void start(QNetworkAccessManager* manager);
 
@@ -30,13 +30,13 @@ private slots:
     void downloadFinished();
 
 signals:
-    void downloadStarted(Downloader* downloader, QUrl url);
-    void downloadCompleted(QUrl url);
-    void downloadProgress(QUrl url, int percentage);
-    void downloadFailed(QUrl url);
-    void installingFiles(QUrl url);
-    void filesSuccessfullyInstalled(QUrl url);
-    void filesInstallationFailed(QUrl url);
+    void downloadStarted(Downloader* downloader, const QUrl& url);
+    void downloadCompleted(const QUrl& url);
+    void downloadProgress(const QUrl& url, int percentage);
+    void downloadFailed(const QUrl& url);
+    void installingFiles(const QUrl& url);
+    void filesSuccessfullyInstalled(const QUrl& url);
+    void filesInstallationFailed(const QUrl& url);
 
 private:
     QUrl _url;
