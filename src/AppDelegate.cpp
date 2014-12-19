@@ -37,6 +37,10 @@ void signalHandler(int param) {
 
 AppDelegate::AppDelegate(int argc, char* argv[]) :
     QApplication(argc, argv),
+    _qtReady(false),
+    _dsReady(false),
+    _dsResourcesReady(false),
+    _acReady(false),
     _domainServerProcess(NULL),
     _acMonitorProcess(NULL),
     _domainServerName("localhost")
