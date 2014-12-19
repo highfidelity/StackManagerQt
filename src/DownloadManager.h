@@ -23,16 +23,16 @@ public:
     DownloadManager(QNetworkAccessManager* manager, QWidget* parent = 0);
     ~DownloadManager();
 
-    void downloadFile(QUrl url);
+    void downloadFile(const QUrl& url);
 
 private slots:
-    void onDownloadStarted(Downloader* downloader, QUrl url);
-    void onDownloadCompleted(QUrl url);
-    void onDownloadProgress(QUrl url, int percentage);
-    void onDownloadFailed(QUrl url);
-    void onInstallingFiles(QUrl url);
-    void onFilesSuccessfullyInstalled(QUrl url);
-    void onFilesInstallationFailed(QUrl url);
+    void onDownloadStarted(Downloader* downloader, const QUrl& url);
+    void onDownloadCompleted(const QUrl& url);
+    void onDownloadProgress(const QUrl& url, int percentage);
+    void onDownloadFailed(const QUrl& url);
+    void onInstallingFiles(const QUrl& url);
+    void onFilesSuccessfullyInstalled(const QUrl& url);
+    void onFilesInstallationFailed(const QUrl& url);
 
 protected:
     void closeEvent(QCloseEvent*);
@@ -45,8 +45,8 @@ private:
     QNetworkAccessManager* _manager;
     QHash<Downloader*, int> _downloaderHash;
 
-    int downloaderRowIndexForUrl(QUrl url);
-    Downloader* downloaderForUrl(QUrl url);
+    int downloaderRowIndexForUrl(const QUrl& url);
+    Downloader* downloaderForUrl(const QUrl& url);
 };
 
 #endif
