@@ -165,6 +165,7 @@ int AppDelegate::startScriptedAssignment(const QUuid& scriptID, const QString& p
 }
 
 void AppDelegate::stopScriptedAssignment(BackgroundProcess* backgroundProcess) {
+    _window->getLogsWidget()->removeTab(_window->getLogsWidget()->indexOf(backgroundProcess->getLogViewer()));
     backgroundProcess->terminate();
 }
 
