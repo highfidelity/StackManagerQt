@@ -56,7 +56,7 @@ signals:
     void contentSetDownloadResponse(bool wasSuccessful);
     void stackStateChanged(bool isOn);
 private slots:
-    void onFileSuccessfullyInstalled(QUrl url);
+    void onFileSuccessfullyInstalled(const QUrl& url);
     void requestDomainServerID();
     void handleDomainIDReply();
     void handleDomainGetReply();

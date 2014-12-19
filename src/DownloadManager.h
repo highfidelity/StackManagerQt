@@ -38,7 +38,7 @@ protected:
     void closeEvent(QCloseEvent*);
 
 signals:
-    void fileSuccessfullyInstalled(QUrl url);
+    void fileSuccessfullyInstalled(const QUrl& url);
 
 private:
     QTableWidget* _table;

@@ -348,7 +348,7 @@ void AppDelegate::handleContentSetDownloadFinished() {
     emit domainAddressChanged();
 }
 
-void AppDelegate::onFileSuccessfullyInstalled(QUrl url) {
+void AppDelegate::onFileSuccessfullyInstalled(const QUrl& url) {
     if (url == GlobalData::getInstance().getRequirementsURL()) {
         _qtReady = true;
     } else if (url == GlobalData::getInstance().getAssignmentClientURL()) {
