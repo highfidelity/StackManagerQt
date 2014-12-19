@@ -51,7 +51,7 @@ DownloadManager::~DownloadManager() {
     _downloaderHash.clear();
 }
 
-void DownloadManager::downloadFile(QUrl url) {
+void DownloadManager::downloadFile(const QUrl& url) {
     for (int i = 0; i < _downloaderHash.size(); ++i) {
         if (_downloaderHash.keys().at(i)->getUrl() == url) {
             qDebug() << "Downloader for URL " << url << " already initialised.";
@@ -71,7 +71,7 @@ void DownloadManager::downloadFile(QUrl url) {
     downloader->start(_manager);
 }
 
-void DownloadManager::onDownloadStarted(Downloader* downloader, QUrl url) {
+void DownloadManager::onDownloadStarted(Downloader* downloader, const QUrl& url) {
     int rowIndex = _table->rowCount();
     _table->setRowCount(rowIndex + 1);
     QTableWidgetItem* nameItem = new QTableWidgetItem(QFileInfo(url.toString()).fileName());
@@ -88,24 +88,24 @@ void DownloadManager::onDownloadStarted(Downloader* downloader, QUrl url) {
     _downloaderHash.insert(downloader, rowIndex);
 }
 
-void DownloadManager::onDownloadCompleted(QUrl url) {
+void DownloadManager::onDownloadCompleted(const QUrl& url) {
     _table->item(downloaderRowIndexForUrl(url), 2)->setText("Download Complete");
 }
 
-void DownloadManager::onDownloadProgress(QUrl url, int percentage) {
+void DownloadManager::onDownloadProgress(const QUrl& url, int percentage) {
     qobject_cast<QProgressBar*>(_table->cellWidget(downloaderRowIndexForUrl(url), 1))->setValue(percentage);
 }
 
-void DownloadManager::onDownloadFailed(QUrl url) {
+void DownloadManager::onDownloadFailed(const QUrl& url) {
     _table->item(downloaderRowIndexForUrl(url), 2)->setText("Download Failed");
     _downloaderHash.remove(downloaderForUrl(url));
 }
 
-void DownloadManager::onInstallingFiles(QUrl url) {
+void DownloadManager::onInstallingFiles(const QUrl& url) {
     _table->item(downloaderRowIndexForUrl(url), 2)->setText("Installing");
 }
 
-void DownloadManager::onFilesSuccessfullyInstalled(QUrl url) {
+void DownloadManager::onFilesSuccessfullyInstalled(const QUrl& url) {
     _table->item(downloaderRowIndexForUrl(url), 2)->setText("Successfully Installed");
     _downloaderHash.remove(downloaderForUrl(url));
     emit fileSuccessfullyInstalled(url);
@@ -114,7 +114,7 @@ void DownloadManager::onFilesSuccessfullyInstalled(QUrl url) {
     }
 }
 
-void DownloadManager::onFilesInstallationFailed(QUrl url) {
+void DownloadManager::onFilesInstallationFailed(const QUrl& url) {
     _table->item(downloaderRowIndexForUrl(url), 2)->setText("Installation Failed");
     _downloaderHash.remove(downloaderForUrl(url));
 }
@@ -136,7 +136,7 @@ void DownloadManager::closeEvent(QCloseEvent*) {
     }
 }
 
-int DownloadManager::downloaderRowIndexForUrl(QUrl url) {
+int DownloadManager::downloaderRowIndexForUrl(const QUrl& url) {
     QHash<Downloader*, int>::const_iterator i = _downloaderHash.constBegin();
     while (i != _downloaderHash.constEnd()) {
         if (i.key()->getUrl() == url) {
@@ -149,7 +149,7 @@ int DownloadManager::downloaderRowIndexForUrl(QUrl url) {
     return -1;
 }
 
-Downloader* DownloadManager::downloaderForUrl(QUrl url) {
+Downloader* DownloadManager::downloaderForUrl(const QUrl& url) {
     QHash<Downloader*, int>::const_iterator i = _downloaderHash.constBegin();
     while (i != _downloaderHash.constEnd()) {
         if (i.key()->getUrl() == url) {

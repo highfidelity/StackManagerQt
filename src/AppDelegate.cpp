@@ -37,6 +37,10 @@ void signalHandler(int param) {
 
 AppDelegate::AppDelegate(int argc, char* argv[]) :
     QApplication(argc, argv),
+    _qtReady(false),
+    _dsReady(false),
+    _dsResourcesReady(false),
+    _acReady(false),
     _domainServerProcess(NULL),
     _acMonitorProcess(NULL),
     _domainServerName("localhost")
@@ -344,7 +348,7 @@ void AppDelegate::handleContentSetDownloadFinished() {
     emit domainAddressChanged();
 }
 
-void AppDelegate::onFileSuccessfullyInstalled(QUrl url) {
+void AppDelegate::onFileSuccessfullyInstalled(const QUrl& url) {
     if (url == GlobalData::getInstance().getRequirementsURL()) {
         _qtReady = true;
     } else if (url == GlobalData::getInstance().getAssignmentClientURL()) {
