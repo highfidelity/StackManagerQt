@@ -44,6 +44,7 @@ qt5_add_resources(QT_RES "${QT_RES_FILES}")
 set(SM_SRCS ${QT_RES} ${SRCS} ${HEADERS})
 
 if (APPLE)
+  set(CMAKE_OSX_DEPLOYMENT_TARGET 10.8)
   set(MACOSX_BUNDLE_BUNDLE_NAME "Stack Manager")
   set(MACOSX_BUNDLE_GUI_IDENTIFIER io.highfidelity.StackManager)
   set(MACOSX_BUNDLE_ICON_FILE icon.icns)
