@@ -260,6 +260,7 @@ void AppDelegate::handleTempDomainReply() {
         
         sendNewIDToDomainServer();
     } else {
+        qDebug() << "Error creating temporary domain -" << reply->errorString();
         emit temporaryDomainResponse(false);
     }
 }
