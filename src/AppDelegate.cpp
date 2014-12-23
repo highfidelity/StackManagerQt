@@ -35,6 +35,38 @@ void signalHandler(int param) {
     app->quit();
 }
 
+static QTextStream* outStream = NULL;
+
+void myMessageHandler(QtMsgType type, const QMessageLogContext &context, const QString &msg) {
+    Q_UNUSED(context);
+    
+    QString dateTime = QDateTime::currentDateTime().toString("dd/MM/yyyy hh:mm:ss");
+    QString txt = QString("[%1] ").arg(dateTime);
+    
+    //in this function, you can write the message to any stream!
+    switch (type) {
+        case QtDebugMsg:
+            fprintf(stdout, "Debug: %s\n", qPrintable(msg));
+            txt += msg;
+            break;
+        case QtWarningMsg:
+            fprintf(stdout, "Warning: %s\n", qPrintable(msg));
+            txt += msg;
+            break;
+        case QtCriticalMsg:
+            fprintf(stdout, "Critical: %s\n", qPrintable(msg));
+            txt += msg;
+            break;
+        case QtFatalMsg:
+            fprintf(stdout, "Fatal: %s\n", qPrintable(msg));
+            txt += msg;
+    }
+    
+    if (outStream) {
+        *outStream << txt << endl;
+    }
+}
+
 AppDelegate::AppDelegate(int argc, char* argv[]) :
     QApplication(argc, argv),
     _qtReady(false),
@@ -51,6 +83,16 @@ AppDelegate::AppDelegate(int argc, char* argv[]) :
     setApplicationName("Stack Manager");
     setOrganizationName("High Fidelity");
     setOrganizationDomain("io.highfidelity.StackManager");
+    
+    QFile* logFile = new QFile("last_run_log", this);
+    if (!logFile->open(QIODevice::WriteOnly | QIODevice::Truncate)) {
+        qDebug() << "Failed to open log file. Will not be able to write STDOUT/STDERR to file.";
+    } else {
+        outStream = new QTextStream(logFile);
+    }
+    
+    
+    qInstallMessageHandler(myMessageHandler);
     
     _domainServerProcess = new BackgroundProcess(GlobalData::getInstance().getDomainServerExecutablePath(), this);
     _acMonitorProcess = new BackgroundProcess(GlobalData::getInstance().getAssignmentClientExecutablePath(), this);
@@ -93,6 +135,9 @@ AppDelegate::~AppDelegate() {
     _acMonitorProcess->deleteLater();
     
     _window->deleteLater();
+    
+    delete outStream;
+    outStream = NULL;
 }
 
 void AppDelegate::toggleStack(bool start) {
