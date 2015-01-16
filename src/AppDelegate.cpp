@@ -19,6 +19,7 @@
 #include <QDir>
 #include <QFile>
 #include <QFileInfoList>
+#include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QMessageBox>
@@ -234,13 +235,12 @@ void AppDelegate::requestDomainServerID() {
 }
 
 void AppDelegate::requestTemporaryDomain() {
-    QUrl tempDomainURL = HIGH_FIDELITY_API_URL + "/domains";
-    QString tempDomainJSON = "{\"domain\": {\"temporary\": true }}";
+    QUrl tempDomainURL = HIGH_FIDELITY_API_URL + "/domains/temporary";
     
     QNetworkRequest tempDomainRequest(tempDomainURL);
     tempDomainRequest.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
     
-    QNetworkReply* tempReply = _manager->post(tempDomainRequest, tempDomainJSON.toLocal8Bit());
+    QNetworkReply* tempReply = _manager->post(tempDomainRequest, QByteArray());
     connect(tempReply, &QNetworkReply::finished, this, &AppDelegate::handleTempDomainReply);
 }
 
@@ -282,7 +282,17 @@ void AppDelegate::handleDomainGetReply() {
     if (reply->error() == QNetworkReply::NoError
         && reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt() == 200) {
         QJsonDocument responseDocument = QJsonDocument::fromJson(reply->readAll());
-        _domainServerName = responseDocument.object()["domain"].toObject()["name"].toString();
+        
+        QJsonObject domainObject = responseDocument.object()["domain"].toObject();
+        
+        const QString DOMAIN_NAME_KEY = "name";
+        const QString DOMAIN_NAMES_KEY = "names";
+        
+        if (domainObject.contains(DOMAIN_NAME_KEY)) {
+            _domainServerName = domainObject[DOMAIN_NAME_KEY].toString();
+        } else if (domainObject.contains(DOMAIN_NAMES_KEY)) {
+            _domainServerName = domainObject[DOMAIN_NAMES_KEY].toArray()[0].toString();
+        }
         
         qDebug() << "This domain server's name is" << _domainServerName << "- updating address link.";
         
@@ -296,7 +306,9 @@ void AppDelegate::handleTempDomainReply() {
     if (reply->error() == QNetworkReply::NoError
         && reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt() == 200) {
         QJsonDocument responseDocument = QJsonDocument::fromJson(reply->readAll());
-        QJsonObject domainObject = responseDocument.object()["domain"].toObject();
+        
+        const QString JSON_DOMAIN_KEY = "domain";
+        QJsonObject domainObject = responseDocument.object()["data"].toObject()[JSON_DOMAIN_KEY].toObject();
         
         _domainServerName = domainObject["name"].toString();
         _domainServerID = domainObject["id"].toString();
