@@ -191,7 +191,7 @@ MainWindow::MainWindow() :
 void MainWindow::updateServerAddressLabel() {
     AppDelegate* app = AppDelegate::getInstance();
     
-    _serverAddressLabel->setText("<html><head/><body style=\"font:14px 'Helvetica', 'Arial', 'sans-serif';"
+    _serverAddressLabel->setText("<html><head/><body style=\"font:14pt 'Helvetica', 'Arial', 'sans-serif';"
                                  "font-weight: bold;\"><p><span style=\"color:#545454;\">Accessible at: </span>"
                                  "<a href=\"" + app->getServerAddress() + "\">"
                                  "<span style=\"color:#29957e;\">" + app->getServerAddress(false) +
