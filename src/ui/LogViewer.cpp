@@ -19,7 +19,7 @@ LogViewer::LogViewer(QWidget* parent) :
     QVBoxLayout* layout = new QVBoxLayout;
     QLabel* outputLabel = new QLabel;
     outputLabel->setText("Standard Output:");
-    outputLabel->setStyleSheet("font-size: 13px;");
+    outputLabel->setStyleSheet("font-size: 13pt;");
 
     layout->addWidget(outputLabel);
 
@@ -31,7 +31,7 @@ LogViewer::LogViewer(QWidget* parent) :
 
     QLabel* errorLabel = new QLabel;
     errorLabel->setText("Standard Error:");
-    errorLabel->setStyleSheet("font-size: 13px;");
+    errorLabel->setStyleSheet("font-size: 13pt;");
 
     layout->addWidget(errorLabel);
 
