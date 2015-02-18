@@ -63,6 +63,10 @@ MainWindow::MainWindow() :
         const int windowsYCoord = 30;
         setGeometry(qApp->desktop()->availableGeometry().width() / 2 - WINDOW_FIXED_WIDTH / 2, windowsYCoord,
                     WINDOW_FIXED_WIDTH, WINDOW_INITIAL_HEIGHT);
+    } else if (GlobalData::getInstance().getPlatform() == "linux") {
+        const int linuxYCoord = 30;
+        setGeometry(qApp->desktop()->availableGeometry().width() / 2 - WINDOW_FIXED_WIDTH / 2, linuxYCoord,
+                    WINDOW_FIXED_WIDTH, WINDOW_INITIAL_HEIGHT + 40);
     } else {
         const int unixYCoord = 0;
         setGeometry(qApp->desktop()->availableGeometry().width() / 2 - WINDOW_FIXED_WIDTH / 2, unixYCoord,
@@ -304,6 +308,9 @@ void MainWindow::paintEvent(QPaintEvent *) {
     if (!_requirementsLastCheckedDateTime.isEmpty()) {
         font.setBold(false);
         font.setUnderline(false);
+        if (GlobalData::getInstance().getPlatform() == "linux") {
+            font.setPointSize(14);
+        }
         painter.setFont(font);
         painter.setPen(darkGrayColor);
         
