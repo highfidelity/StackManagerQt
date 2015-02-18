@@ -98,9 +98,6 @@ AppDelegate::AppDelegate(int argc, char* argv[]) :
     
     
     qInstallMessageHandler(myMessageHandler);
-
-    qDebug() << "HERE " << GlobalData::getInstance().getDomainServerExecutablePath() << endl;
-    
     _domainServerProcess = new BackgroundProcess(GlobalData::getInstance().getDomainServerExecutablePath(), this);
     _acMonitorProcess = new BackgroundProcess(GlobalData::getInstance().getAssignmentClientExecutablePath(), this);
 

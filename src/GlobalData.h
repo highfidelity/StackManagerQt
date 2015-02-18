@@ -60,6 +60,7 @@ private:
     QString _logsPath;
     QString _hifiBuildDirectory;
 
+    QString _resourcePath;
     QString _assignmentClientExecutable;
     QString _domainServerExecutable;
 

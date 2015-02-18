@@ -28,13 +28,13 @@ GlobalData::GlobalData() {
     _platform = "linux";
 #endif
 
-    QString resourcePath = "resources/";
+    _resourcePath = "resources/";
     _assignmentClientExecutable = "assignment-client";
     _domainServerExecutable = "domain-server";
     QString applicationSupportDirectory = QStandardPaths::writableLocation(QStandardPaths::DataLocation);
   
     _clientsLaunchPath = QDir::toNativeSeparators(applicationSupportDirectory + "/");
-    _clientsResourcePath = QDir::toNativeSeparators(applicationSupportDirectory + "/" + resourcePath);
+    _clientsResourcePath = QDir::toNativeSeparators(applicationSupportDirectory + "/" + _resourcePath);
 
     _assignmentClientExecutablePath = QDir::toNativeSeparators(_clientsLaunchPath + _assignmentClientExecutable);
     if (_platform == "win") {
@@ -73,9 +73,9 @@ GlobalData::GlobalData() {
 
 void GlobalData::setHifiBuildDirectory(const QString hifiBuildDirectory) {
     _hifiBuildDirectory = hifiBuildDirectory;
-
-    _assignmentClientExecutablePath =
-        QDir::toNativeSeparators(_hifiBuildDirectory + "/assignment-client/" + _assignmentClientExecutable);
-    _domainServerExecutablePath =
-        QDir::toNativeSeparators(_hifiBuildDirectory + "/domain-server/" + _domainServerExecutable);
+    _clientsLaunchPath = QDir::toNativeSeparators(_hifiBuildDirectory + "/assignment-client/");
+    _clientsResourcePath = QDir::toNativeSeparators(_clientsLaunchPath + "/" + _resourcePath);
+    _logsPath = QDir::toNativeSeparators(_clientsLaunchPath + "logs/");
+    _assignmentClientExecutablePath = QDir::toNativeSeparators(_clientsLaunchPath + _assignmentClientExecutable);
+    _domainServerExecutablePath = QDir::toNativeSeparators(_hifiBuildDirectory + "/domain-server/" + _domainServerExecutable);
 }
