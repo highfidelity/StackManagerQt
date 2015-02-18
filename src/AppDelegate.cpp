@@ -27,6 +27,7 @@
 #include <QNetworkRequest>
 #include <QUrlQuery>
 #include <QUuid>
+#include <QCommandLineParser>
 
 const QString HIGH_FIDELITY_API_URL = "https://data.highfidelity.io/api/v1";
 
@@ -80,7 +81,10 @@ AppDelegate::AppDelegate(int argc, char* argv[]) :
 {
     // be a signal handler for SIGTERM so we can stop child processes if we get it
     signal(SIGTERM, signalHandler);
-    
+
+    // look for command-line options
+    parseCommandLine();
+
     setApplicationName("Stack Manager");
     setOrganizationName("High Fidelity");
     setOrganizationDomain("io.highfidelity.StackManager");
@@ -94,6 +98,8 @@ AppDelegate::AppDelegate(int argc, char* argv[]) :
     
     
     qInstallMessageHandler(myMessageHandler);
+
+    qDebug() << "HERE " << GlobalData::getInstance().getDomainServerExecutablePath() << endl;
     
     _domainServerProcess = new BackgroundProcess(GlobalData::getInstance().getDomainServerExecutablePath(), this);
     _acMonitorProcess = new BackgroundProcess(GlobalData::getInstance().getAssignmentClientExecutablePath(), this);
@@ -139,6 +145,34 @@ AppDelegate::~AppDelegate() {
     
     delete outStream;
     outStream = NULL;
+}
+
+void AppDelegate::parseCommandLine() {
+    QCommandLineParser parser;
+    parser.setApplicationDescription("High Fidelity Stack Manager");
+    parser.addHelpOption();
+
+    const QCommandLineOption helpOption = parser.addHelpOption();
+
+    const QCommandLineOption hifiBuildDirectoryOption("b", "Path to build of hifi", "build-directory");
+    parser.addOption(hifiBuildDirectoryOption);
+
+    if (!parser.parse(QCoreApplication::arguments())) {
+        qCritical() << parser.errorText() << endl;
+        parser.showHelp();
+        Q_UNREACHABLE();
+    }
+
+    if (parser.isSet(helpOption)) {
+        parser.showHelp();
+        Q_UNREACHABLE();
+    }
+
+    if (parser.isSet(hifiBuildDirectoryOption)) {
+        const QString hifiBuildDirectory = parser.value(hifiBuildDirectoryOption);
+        qDebug() << "hifiBuildDirectory=" << hifiBuildDirectory << "\n";
+        GlobalData::getInstance().setHifiBuildDirectory(hifiBuildDirectory);
+    }
 }
 
 void AppDelegate::toggleStack(bool start) {
@@ -473,18 +507,7 @@ void AppDelegate::downloadLatestExecutablesAndRequirements() {
         }
     }
 
-    QFile dsFile(GlobalData::getInstance().getDomainServerExecutablePath());
-    QByteArray dsData;
-    if (dsFile.open(QIODevice::ReadOnly)) {
-        dsData = dsFile.readAll();
-        dsFile.close();
-    }
-    QFile acFile(GlobalData::getInstance().getAssignmentClientExecutablePath());
-    QByteArray acData;
-    if (acFile.open(QIODevice::ReadOnly)) {
-        acData = acFile.readAll();
-        acFile.close();
-    }
+
     QFile reqZipFile(GlobalData::getInstance().getRequirementsZipPath());
     QByteArray reqZipData;
     if (reqZipFile.open(QIODevice::ReadOnly)) {
@@ -503,47 +526,67 @@ void AppDelegate::downloadLatestExecutablesAndRequirements() {
         _dsResourcesReady = true;
     }
 
-    QNetworkRequest acReq(QUrl(GlobalData::getInstance().getAssignmentClientMD5URL()));
-    QNetworkReply* acReply = _manager->get(acReq);
-    QEventLoop acLoop;
-    connect(acReply, SIGNAL(finished()), &acLoop, SLOT(quit()));
-    acLoop.exec();
-    QByteArray acMd5Data = acReply->readAll().trimmed();
-    if (GlobalData::getInstance().getPlatform() == "win") {
-        // fix for reading the MD5 hash from Windows-generated
-        // binary data of the MD5 hash
-        QTextStream stream(acMd5Data);
-        stream >> acMd5Data;
-    }
-
-    // fix for Mac and Linux network accessibility
-    if (acMd5Data.size() == 0) {
-        // network is not accessible
-        qDebug() << "Could not connect to the internet.";
-        _window->show();
-        return;
-    }
-
-    qDebug() << "AC MD5: " << acMd5Data;
-    if (acMd5Data.toLower() == QCryptographicHash::hash(acData, QCryptographicHash::Md5).toHex()) {
-        _acReady = true;
-    }
-
-    QNetworkRequest dsReq(QUrl(GlobalData::getInstance().getDomainServerMD5URL()));
-    QNetworkReply* dsReply = _manager->get(dsReq);
-    QEventLoop dsLoop;
-    connect(dsReply, SIGNAL(finished()), &dsLoop, SLOT(quit()));
-    dsLoop.exec();
-    QByteArray dsMd5Data = dsReply->readAll().trimmed();
-    if (GlobalData::getInstance().getPlatform() == "win") {
-        // fix for reading the MD5 hash from Windows generated
-        // binary data of the MD5 hash
-        QTextStream stream(dsMd5Data);
-        stream >> dsMd5Data;
-    }
-    qDebug() << "DS MD5: " << dsMd5Data;
-    if (dsMd5Data.toLower() == QCryptographicHash::hash(dsData, QCryptographicHash::Md5).toHex()) {
+    // if the user has set hifiBuildDirectory, don't attempt to download the domain-server or assignement-client
+    if (GlobalData::getInstance().isGetHifiBuildDirectorySet()) {
         _dsReady = true;
+        _acReady = true;
+    } else {
+        QByteArray dsData;
+        QFile dsFile(GlobalData::getInstance().getDomainServerExecutablePath());
+        if (dsFile.open(QIODevice::ReadOnly)) {
+            dsData = dsFile.readAll();
+            dsFile.close();
+        }
+        QByteArray acData;
+        QFile acFile(GlobalData::getInstance().getAssignmentClientExecutablePath());
+        if (acFile.open(QIODevice::ReadOnly)) {
+            acData = acFile.readAll();
+            acFile.close();
+        }
+
+        QNetworkRequest acReq(QUrl(GlobalData::getInstance().getAssignmentClientMD5URL()));
+        QNetworkReply* acReply = _manager->get(acReq);
+        QEventLoop acLoop;
+        connect(acReply, SIGNAL(finished()), &acLoop, SLOT(quit()));
+        acLoop.exec();
+        QByteArray acMd5Data = acReply->readAll().trimmed();
+        if (GlobalData::getInstance().getPlatform() == "win") {
+            // fix for reading the MD5 hash from Windows-generated
+            // binary data of the MD5 hash
+            QTextStream stream(acMd5Data);
+            stream >> acMd5Data;
+        }
+
+        // fix for Mac and Linux network accessibility
+        if (acMd5Data.size() == 0) {
+            // network is not accessible
+            qDebug() << "Could not connect to the internet.";
+            _window->show();
+            return;
+        }
+
+        qDebug() << "AC MD5: " << acMd5Data;
+        if (acMd5Data.toLower() == QCryptographicHash::hash(acData, QCryptographicHash::Md5).toHex()) {
+            _acReady = true;
+        }
+
+
+        QNetworkRequest dsReq(QUrl(GlobalData::getInstance().getDomainServerMD5URL()));
+        QNetworkReply* dsReply = _manager->get(dsReq);
+        QEventLoop dsLoop;
+        connect(dsReply, SIGNAL(finished()), &dsLoop, SLOT(quit()));
+        dsLoop.exec();
+        QByteArray dsMd5Data = dsReply->readAll().trimmed();
+        if (GlobalData::getInstance().getPlatform() == "win") {
+            // fix for reading the MD5 hash from Windows generated
+            // binary data of the MD5 hash
+            QTextStream stream(dsMd5Data);
+            stream >> dsMd5Data;
+        }
+        qDebug() << "DS MD5: " << dsMd5Data;
+        if (dsMd5Data.toLower() == QCryptographicHash::hash(dsData, QCryptographicHash::Md5).toHex()) {
+            _dsReady = true;
+        }
     }
 
     if (_qtReady) {
