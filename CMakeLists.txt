@@ -35,10 +35,19 @@ include_directories(
   ${ZLIB_INCLUDE_DIRS}
   src
   src/ui
+  ${PROJECT_BINARY_DIR}/includes
 )
 
+if (DEFINED ENV{JOB_ID})
+  set(BUILD_SEQ $ENV{JOB_ID})
+else ()
+  set(BUILD_SEQ "dev")
+endif ()
+
+configure_file(src/StackManagerVersion.h.in "${PROJECT_BINARY_DIR}/includes/StackManagerVersion.h")
+
 file(GLOB SRCS "src/*.cpp" "src/ui/*.cpp")
-file(GLOB HEADERS "src/*.h" "src/ui/*.h")
+file(GLOB HEADERS "src/*.h" "src/ui/*.h" "${PROJECT_BINARY_DIR}/includes/*.h")
 file(GLOB QT_RES_FILES "src/*.qrc")
 qt5_add_resources(QT_RES "${QT_RES_FILES}")
 set(SM_SRCS ${QT_RES} ${SRCS} ${HEADERS})
