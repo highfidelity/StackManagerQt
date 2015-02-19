@@ -35,6 +35,8 @@ public:
     QString getLogsPath() { return _logsPath; }
     QHash<QString, int> getAvailableAssignmentTypes() { return _availableAssignmentTypes; }
 
+    void setHifiBuildDirectory(const QString hifiBuildDirectory);
+    bool isGetHifiBuildDirectorySet() { return _hifiBuildDirectory != ""; }
 
 private:
     GlobalData();
@@ -56,6 +58,12 @@ private:
     QString _domainServerMD5URL;
     QString _defaultDomain;
     QString _logsPath;
+    QString _hifiBuildDirectory;
+
+    QString _resourcePath;
+    QString _assignmentClientExecutable;
+    QString _domainServerExecutable;
+
     QHash<QString, int> _availableAssignmentTypes;
 };
 

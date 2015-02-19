@@ -28,18 +28,19 @@ GlobalData::GlobalData() {
     _platform = "linux";
 #endif
 
-    QString resourcePath = "resources/";
-    QString assignmentClientExecutable = "assignment-client";
-    QString domainServerExecutable = "domain-server";
+    _resourcePath = "resources/";
+    _assignmentClientExecutable = "assignment-client";
+    _domainServerExecutable = "domain-server";
     QString applicationSupportDirectory = QStandardPaths::writableLocation(QStandardPaths::DataLocation);
   
     _clientsLaunchPath = QDir::toNativeSeparators(applicationSupportDirectory + "/");
-    _clientsResourcePath = QDir::toNativeSeparators(applicationSupportDirectory + "/" + resourcePath);
-    _assignmentClientExecutablePath = QDir::toNativeSeparators(_clientsLaunchPath + assignmentClientExecutable);
+    _clientsResourcePath = QDir::toNativeSeparators(applicationSupportDirectory + "/" + _resourcePath);
+
+    _assignmentClientExecutablePath = QDir::toNativeSeparators(_clientsLaunchPath + _assignmentClientExecutable);
     if (_platform == "win") {
         _assignmentClientExecutablePath.append(".exe");
     }
-    _domainServerExecutablePath = QDir::toNativeSeparators(_clientsLaunchPath + domainServerExecutable);
+    _domainServerExecutablePath = QDir::toNativeSeparators(_clientsLaunchPath + _domainServerExecutable);
     if (_platform == "win") {
         _domainServerExecutablePath.append(".exe");
     }
@@ -64,4 +65,17 @@ GlobalData::GlobalData() {
     _availableAssignmentTypes.insert("particle-server", 4);
     _availableAssignmentTypes.insert("metavoxel-server", 5);
     _availableAssignmentTypes.insert("model-server", 6);
+
+    // allow user to override path to binaries so that they can run their own builds
+    _hifiBuildDirectory = "";
+}
+
+
+void GlobalData::setHifiBuildDirectory(const QString hifiBuildDirectory) {
+    _hifiBuildDirectory = hifiBuildDirectory;
+    _clientsLaunchPath = QDir::toNativeSeparators(_hifiBuildDirectory + "/assignment-client/");
+    _clientsResourcePath = QDir::toNativeSeparators(_clientsLaunchPath + "/" + _resourcePath);
+    _logsPath = QDir::toNativeSeparators(_clientsLaunchPath + "logs/");
+    _assignmentClientExecutablePath = QDir::toNativeSeparators(_clientsLaunchPath + _assignmentClientExecutable);
+    _domainServerExecutablePath = QDir::toNativeSeparators(_hifiBuildDirectory + "/domain-server/" + _domainServerExecutable);
 }

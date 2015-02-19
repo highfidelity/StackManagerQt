@@ -65,6 +65,7 @@ private slots:
     void handleContentSetDownloadFinished();
 
 private:
+    void parseCommandLine();
     void createExecutablePath();
     void downloadLatestExecutablesAndRequirements();
     
