@@ -23,6 +23,7 @@
 #include "AppDelegate.h"
 #include "AssignmentWidget.h"
 #include "GlobalData.h"
+#include "StackManagerVersion.h"
 
 const int GLOBAL_X_PADDING = 55;
 const int TOP_Y_PADDING = 25;
@@ -55,7 +56,10 @@ MainWindow::MainWindow() :
     _contentSetButton(NULL),
     _logsWidget(NULL)
 {
-    setWindowTitle("High Fidelity Stack Manager");
+    // Set build version
+    QCoreApplication::setApplicationVersion(BUILD_VERSION);
+
+    setWindowTitle("High Fidelity Stack Manager (build " + QCoreApplication::applicationVersion() + ")");
     const int WINDOW_FIXED_WIDTH = 640;
     const int WINDOW_INITIAL_HEIGHT = 200;
 
