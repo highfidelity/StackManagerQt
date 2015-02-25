@@ -61,6 +61,8 @@ private:
     QTabWidget* _logsWidget;
     QVBoxLayout* _assignmentLayout;
     QScrollArea* _assignmentScrollArea;
+
+    QSharedMemory* _localHttpPortSharedMem; // memory shared with domain server
 };
 
 #endif

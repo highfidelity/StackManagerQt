@@ -11,7 +11,6 @@
 
 #include <QString>
 #include <QHash>
-#include <QDebug>
 
 class GlobalData {
 public:

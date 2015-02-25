@@ -55,7 +55,8 @@ MainWindow::MainWindow() :
     _settingsButton(NULL),
     _shareButton(NULL),
     _contentSetButton(NULL),
-    _logsWidget(NULL)
+    _logsWidget(NULL),
+    _localHttpPortSharedMem(NULL)
 {
     // Set build version
     QCoreApplication::setApplicationVersion(BUILD_VERSION);
@@ -216,21 +217,23 @@ void MainWindow::updateServerAddressLabel() {
 
 void MainWindow::updateServerBaseUrl() {
     AppDelegate* app = AppDelegate::getInstance();
+    quint16 localPort;
 
     // XXX this code is duplicate of LimitedNodeList::getLocalServerPortFromSharedMemory
     const QString key = "domain-server.local-http-port";
-    QSharedMemory sharedMem(key, this); // memory shared with domain server
-    quint16 localPort;
+    if (!_localHttpPortSharedMem) {
+        _localHttpPortSharedMem = new sharedMem(key, this);
+    }
 
-    if (!sharedMem.attach(QSharedMemory::ReadOnly)) {
+    if (!_localHttpPortSharedMem.attach(QSharedMemory::ReadOnly)) {
         qWarning() << "Could not attach to shared memory at key" << key;
         return;
     }
 
-    if (sharedMem.isAttached()) {
-        sharedMem.lock();
-        memcpy(&localPort, sharedMem.data(), sizeof(localPort));
-        sharedMem.unlock();
+    if (_localHttpPortSharedMem.isAttached()) {
+        _localHttpPortSharedMem.lock();
+        memcpy(&localPort, _localHttpPortSharedMem.data(), sizeof(localPort));
+        _localHttpPortSharedMem.unlock();
         GlobalData::getInstance().setDomainServerBaseUrl(QString("http://localhost:") + QString::number(localPort));
     }
 }
