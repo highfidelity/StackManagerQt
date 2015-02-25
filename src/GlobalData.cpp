@@ -68,6 +68,8 @@ GlobalData::GlobalData() {
 
     // allow user to override path to binaries so that they can run their own builds
     _hifiBuildDirectory = "";
+
+    _domainServerBaseUrl = "http://localhost:40100";
 }
 
 

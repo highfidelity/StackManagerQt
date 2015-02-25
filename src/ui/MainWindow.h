@@ -37,6 +37,7 @@ private slots:
     void addAssignment();
     void openSettings();
     void updateServerAddressLabel();
+    void updateServerBaseUrl();
     void toggleShareButtonText();
     void handleShareButton();
     void showContentSetPage();

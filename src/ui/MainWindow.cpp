@@ -19,6 +19,7 @@
 #include <QLayoutItem>
 #include <QCursor>
 #include <QtWebKitWidgets/qwebview.h>
+#include <QSharedMemory>
 
 #include "AppDelegate.h"
 #include "AssignmentWidget.h"
@@ -179,6 +180,7 @@ MainWindow::MainWindow() :
     // update the current server address label and change it if the AppDelegate says the address has changed
     updateServerAddressLabel();
     connect(app, &AppDelegate::domainAddressChanged, this, &MainWindow::updateServerAddressLabel);
+    connect(app, &AppDelegate::domainAddressChanged, this, &MainWindow::updateServerBaseUrl);
     
     // if domain is missing an ID, let us switch our share button text
     connect(app, &AppDelegate::domainServerIDMissing, this, &MainWindow::toggleShareButtonText);
@@ -211,6 +213,28 @@ void MainWindow::updateServerAddressLabel() {
         _shareButton->setEnabled(true);
     }
 }
+
+void MainWindow::updateServerBaseUrl() {
+    AppDelegate* app = AppDelegate::getInstance();
+
+    // XXX this code is duplicate of LimitedNodeList::getLocalServerPortFromSharedMemory
+    const QString key = "domain-server.local-http-port";
+    QSharedMemory sharedMem(key, this); // memory shared with domain server
+    quint16 localPort;
+
+    if (!sharedMem.attach(QSharedMemory::ReadOnly)) {
+        qWarning() << "Could not attach to shared memory at key" << key;
+        return;
+    }
+
+    if (sharedMem.isAttached()) {
+        sharedMem.lock();
+        memcpy(&localPort, sharedMem.data(), sizeof(localPort));
+        sharedMem.unlock();
+        GlobalData::getInstance().setDomainServerBaseUrl(QString("http://localhost:") + QString::number(localPort));
+    }
+}
+
 
 void MainWindow::toggleShareButtonText() {
     _shareButton->setText(_shareButton->text() == SHARE_BUTTON_COPY_LINK_TEXT
@@ -349,5 +373,5 @@ void MainWindow::addAssignment() {
 }
 
 void MainWindow::openSettings() {
-    QDesktopServices::openUrl(QUrl(DOMAIN_SERVER_BASE_URL + "/settings/"));
+    QDesktopServices::openUrl(QUrl(GlobalData::getInstance().getDomainServerBaseUrl() + "/settings/"));
 }
