@@ -19,7 +19,6 @@
 #include <QLayoutItem>
 #include <QCursor>
 #include <QtWebKitWidgets/qwebview.h>
-#include <QSharedMemory>
 
 #include "AppDelegate.h"
 #include "AssignmentWidget.h"
@@ -216,24 +215,9 @@ void MainWindow::updateServerAddressLabel() {
 }
 
 void MainWindow::updateServerBaseUrl() {
-    AppDelegate* app = AppDelegate::getInstance();
     quint16 localPort;
 
-    // XXX this code is duplicate of LimitedNodeList::getLocalServerPortFromSharedMemory
-    const QString key = "domain-server.local-http-port";
-    if (!_localHttpPortSharedMem) {
-        _localHttpPortSharedMem = new sharedMem(key, this);
-    }
-
-    if (!_localHttpPortSharedMem.attach(QSharedMemory::ReadOnly)) {
-        qWarning() << "Could not attach to shared memory at key" << key;
-        return;
-    }
-
-    if (_localHttpPortSharedMem.isAttached()) {
-        _localHttpPortSharedMem.lock();
-        memcpy(&localPort, _localHttpPortSharedMem.data(), sizeof(localPort));
-        _localHttpPortSharedMem.unlock();
+    if (getLocalServerPortFromSharedMemory("domain-server.local-http-port", _localHttpPortSharedMem, localPort)) {
         GlobalData::getInstance().setDomainServerBaseUrl(QString("http://localhost:") + QString::number(localPort));
     }
 }
@@ -377,4 +361,25 @@ void MainWindow::addAssignment() {
 
 void MainWindow::openSettings() {
     QDesktopServices::openUrl(QUrl(GlobalData::getInstance().getDomainServerBaseUrl() + "/settings/"));
+}
+
+
+// XXX this code is duplicate of LimitedNodeList::getLocalServerPortFromSharedMemory
+bool MainWindow::getLocalServerPortFromSharedMemory(const QString key, QSharedMemory*& sharedMem, quint16& localPort) {
+    if (!sharedMem) {
+        sharedMem = new QSharedMemory(key, this);
+                
+        if (!sharedMem->attach(QSharedMemory::ReadOnly)) {
+            qWarning() << "Could not attach to shared memory at key" << key;
+        }
+    }
+
+    if (sharedMem->isAttached()) {
+        sharedMem->lock();
+        memcpy(&localPort, sharedMem->data(), sizeof(localPort));
+        sharedMem->unlock();
+        return true;
+    }
+
+    return false;
 }
