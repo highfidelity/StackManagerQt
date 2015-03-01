@@ -715,8 +715,7 @@ void AppDelegate::parseVersionXml() {
                 }
             }
             while (!(xml.tokenType() == QXmlStreamReader::EndElement && xml.name().toString() == "project")) {
-                if (projectName != "")
-                {
+                if (projectName != "") {
                     if (xml.tokenType() == QXmlStreamReader::StartElement && xml.name().toString() == "platform") {
                         QString platformName = "";
                         foreach(const QXmlStreamAttribute &attr, xml.attributes()) {
@@ -728,8 +727,7 @@ void AppDelegate::parseVersionXml() {
                         int latestVersion = 0;
                         VersionInformation latestVersionInformation;
                         while (!(xml.tokenType() == QXmlStreamReader::EndElement && xml.name().toString() == "platform")) {
-                            if (platformName == operatingSystem)
-                            {
+                            if (platformName == operatingSystem) {
                                 if (xml.tokenType() == QXmlStreamReader::StartElement && xml.name().toString() == "build") {
                                     VersionInformation buildVersionInformation;
                                     while (!(xml.tokenType() == QXmlStreamReader::EndElement && xml.name().toString() == "build")) {
@@ -788,8 +786,7 @@ void AppDelegate::parseVersionXml() {
 
     if (projectVersions.contains("stackmanager")) {
         VersionInformation latestVersion = projectVersions["stackmanager"];
-        if (QCoreApplication::applicationVersion() != latestVersion.version && QCoreApplication::applicationVersion() != "dev")
-        {
+        if (QCoreApplication::applicationVersion() != latestVersion.version && QCoreApplication::applicationVersion() != "dev") {
             _window->setUpdateNotification("There is an update available. Please download and install version " + latestVersion.version + ".");
             _window->update();
         }
