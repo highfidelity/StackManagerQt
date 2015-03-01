@@ -28,8 +28,16 @@
 #include <QUrlQuery>
 #include <QUuid>
 #include <QCommandLineParser>
+#include <QXmlStreamReader>
 
 const QString HIGH_FIDELITY_API_URL = "https://data.highfidelity.io/api/v1";
+
+const QString CHECK_BUILDS_URL = "https://highfidelity.io/builds.xml";
+
+// Use a custom User-Agent to avoid ModSecurity filtering, e.g. by hosting providers.
+const QByteArray HIGH_FIDELITY_USER_AGENT = "Mozilla/5.0 (HighFidelity)";
+
+const int VERSION_CHECK_INTERVAL_MS = 86400000; // a day
 
 void signalHandler(int param) {
     AppDelegate* app = AppDelegate::getInstance();
@@ -107,6 +115,10 @@ AppDelegate::AppDelegate(int argc, char* argv[]) :
 
     createExecutablePath();
     downloadLatestExecutablesAndRequirements();
+
+    _checkVersionTimer.setInterval(0);
+    connect(&_checkVersionTimer, SIGNAL(timeout()), this, SLOT(checkVersion()));
+    _checkVersionTimer.start();
 
     connect(this, &QApplication::aboutToQuit, this, &AppDelegate::stopStack);
 }
@@ -655,4 +667,133 @@ void AppDelegate::downloadLatestExecutablesAndRequirements() {
     if (!_dsResourcesReady) {
         downloadManager->downloadFile(GlobalData::getInstance().getDomainServerResourcesURL());
     }
+}
+
+void AppDelegate::checkVersion() {
+    QNetworkRequest latestVersionRequest((QUrl(CHECK_BUILDS_URL)));
+    latestVersionRequest.setHeader(QNetworkRequest::UserAgentHeader, HIGH_FIDELITY_USER_AGENT);
+    latestVersionRequest.setAttribute(QNetworkRequest::CacheLoadControlAttribute, QNetworkRequest::PreferCache);
+    QNetworkReply* reply = _manager->get(latestVersionRequest);
+    connect(reply, &QNetworkReply::finished, this, &AppDelegate::parseVersionXml);
+
+    _checkVersionTimer.setInterval(VERSION_CHECK_INTERVAL_MS);
+    _checkVersionTimer.start();
+}
+
+void AppDelegate::parseVersionXml() {
+
+#ifdef Q_OS_WIN32
+    QString operatingSystem("windows");
+#endif
+
+#ifdef Q_OS_MAC
+    QString operatingSystem("mac");
+#endif
+
+#ifdef Q_OS_LINUX
+    QString operatingSystem("ubuntu");
+#endif
+
+    QNetworkReply* sender = qobject_cast<QNetworkReply*>(QObject::sender());
+    QXmlStreamReader xml(sender);
+
+    struct VersionInformation {
+        QString version;
+        QUrl downloadUrl;
+        QString timeStamp;
+        QString releaseNotes;
+    };
+    QHash<QString, VersionInformation> projectVersions;
+
+    while (!xml.atEnd() && !xml.hasError()) {
+        if (xml.tokenType() == QXmlStreamReader::StartElement && xml.name().toString() == "project") {
+            QString projectName = "";
+            foreach(const QXmlStreamAttribute &attr, xml.attributes()) {
+                if (attr.name().toString() == "name") {
+                    projectName = attr.value().toString();
+                    break;
+                }
+            }
+            while (!(xml.tokenType() == QXmlStreamReader::EndElement && xml.name().toString() == "project")) {
+                if (projectName != "")
+                {
+                    if (xml.tokenType() == QXmlStreamReader::StartElement && xml.name().toString() == "platform") {
+                        QString platformName = "";
+                        foreach(const QXmlStreamAttribute &attr, xml.attributes()) {
+                            if (attr.name().toString() == "name") {
+                                platformName = attr.value().toString();
+                                break;
+                            }
+                        }
+                        int latestVersion = 0;
+                        VersionInformation latestVersionInformation;
+                        while (!(xml.tokenType() == QXmlStreamReader::EndElement && xml.name().toString() == "platform")) {
+                            if (platformName == operatingSystem)
+                            {
+                                if (xml.tokenType() == QXmlStreamReader::StartElement && xml.name().toString() == "build") {
+                                    VersionInformation buildVersionInformation;
+                                    while (!(xml.tokenType() == QXmlStreamReader::EndElement && xml.name().toString() == "build")) {
+                                        if (xml.tokenType() == QXmlStreamReader::StartElement && xml.name().toString() == "version") {
+                                            xml.readNext();
+                                            buildVersionInformation.version = xml.text().toString();
+                                        }
+                                        if (xml.tokenType() == QXmlStreamReader::StartElement && xml.name().toString() == "url") {
+                                            xml.readNext();
+                                            buildVersionInformation.downloadUrl = QUrl(xml.text().toString());
+                                        }
+                                        if (xml.tokenType() == QXmlStreamReader::StartElement && xml.name().toString() == "timestamp") {
+                                            xml.readNext();
+                                            buildVersionInformation.timeStamp = xml.text().toString();
+                                        }
+                                        if (xml.tokenType() == QXmlStreamReader::StartElement && xml.name().toString() == "note") {
+                                            xml.readNext();
+                                            if (buildVersionInformation.releaseNotes != "") {
+                                                buildVersionInformation.releaseNotes += "\n";
+                                            }
+                                            buildVersionInformation.releaseNotes += xml.text().toString();
+                                        }
+                                        xml.readNext();
+                                    }
+                                    if (latestVersion < buildVersionInformation.version.toInt()) {
+                                        latestVersionInformation = buildVersionInformation;
+                                        latestVersion = buildVersionInformation.version.toInt();
+                                    }
+                                }
+                            }
+                            xml.readNext();
+                        }
+                        if (latestVersion>0) {
+                            projectVersions[projectName] = latestVersionInformation;
+                        }
+                    }
+                }
+                xml.readNext();
+            }
+        }
+        xml.readNext();
+    }
+
+#ifdef WANT_DEBUG
+    qDebug() << "parsed projects for OS" << operatingSystem;
+    QHashIterator<QString, VersionInformation> projectVersion(projectVersions);
+    while (projectVersion.hasNext()) {
+        projectVersion.next();
+        qDebug() << "project:" << projectVersion.key();
+        qDebug() << "version:" << projectVersion.value().version;
+        qDebug() << "downloadUrl:" << projectVersion.value().downloadUrl.toString();
+        qDebug() << "timeStamp:" << projectVersion.value().timeStamp;
+        qDebug() << "releaseNotes:" << projectVersion.value().releaseNotes;
+    }
+#endif
+
+    if (projectVersions.contains("stackmanager")) {
+        VersionInformation latestVersion = projectVersions["stackmanager"];
+        if (QCoreApplication::applicationVersion() != latestVersion.version && QCoreApplication::applicationVersion() != "dev")
+        {
+            _window->setUpdateNotification("There is an update available. Please download and install version " + latestVersion.version + ".");
+            _window->update();
+        }
+    }
+
+    sender->deleteLater();
 }

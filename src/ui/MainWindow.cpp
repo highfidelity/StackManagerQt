@@ -284,6 +284,10 @@ void MainWindow::setRequirementsLastChecked(const QString& lastCheckedDateTime) 
     _requirementsLastCheckedDateTime = lastCheckedDateTime;
 }
 
+void MainWindow::setUpdateNotification(const QString& updateNotification) {
+    _updateNotification = updateNotification;
+}
+
 void MainWindow::toggleContent(bool isRunning) {
     _stopServerButton->setVisible(isRunning);
     _startServerButton->setVisible(!isRunning);
@@ -309,7 +313,25 @@ void MainWindow::paintEvent(QPaintEvent *) {
     int currentY = (_domainServerRunning ?  _viewLogsButton->geometry().bottom() : _startServerButton->geometry().bottom())
         + REQUIREMENTS_TEXT_TOP_MARGIN;
     
-    if (!_requirementsLastCheckedDateTime.isEmpty()) {
+    if (!_updateNotification.isEmpty()) {
+        font.setBold(true);
+        font.setUnderline(false);
+        if (GlobalData::getInstance().getPlatform() == "linux") {
+            font.setPointSize(14);
+        }
+        painter.setFont(font);
+        painter.setPen(redColor);
+
+        QString updateNotificationString = ">>> " + _updateNotification + " <<<";
+        float fontWidth = QFontMetrics(font).width(updateNotificationString);
+
+        painter.drawText(QRectF(_domainServerRunning ? GLOBAL_X_PADDING : ((width() - fontWidth) / 2.0f),
+                                currentY,
+                                fontWidth,
+                                QFontMetrics(font).height()),
+                                ">>> " + _updateNotification + " <<<");
+    }
+    else if (!_requirementsLastCheckedDateTime.isEmpty()) {
         font.setBold(false);
         font.setUnderline(false);
         if (GlobalData::getInstance().getPlatform() == "linux") {
@@ -325,7 +347,7 @@ void MainWindow::paintEvent(QPaintEvent *) {
                                 currentY,
                                 fontWidth,
                                 QFontMetrics(font).height()),
-                         "Requirements are up to date as of " + _requirementsLastCheckedDateTime);
+                                "Requirements are up to date as of " + _requirementsLastCheckedDateTime);
     }
     
     if (_domainServerRunning) {
