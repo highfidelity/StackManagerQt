@@ -17,6 +17,7 @@
 #include <QUrl>
 #include <QUuid>
 #include <QHash>
+#include <QTimer>
 
 #include "MainWindow.h"
 
@@ -61,6 +62,8 @@ private slots:
     void handleTempDomainReply();
     void handleDomainSettingsResponse();
     void handleContentSetDownloadFinished();
+    void checkVersion();
+    void parseVersionXml();
 
 private:
     void parseCommandLine();
@@ -81,6 +84,8 @@ private:
     QString _domainServerID;
     QString _domainServerName;
     
+    QTimer _checkVersionTimer;
+
     QString _sharePath;
     
     MainWindow* _window;

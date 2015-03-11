@@ -28,6 +28,7 @@ public:
     MainWindow();
     
     void setRequirementsLastChecked(const QString& lastCheckedDateTime);
+    void setUpdateNotification(const QString& updateNotification);
     QTabWidget* getLogsWidget() { return _logsWidget; }
     bool getLocalServerPortFromSharedMemory(const QString key, QSharedMemory*& sharedMem, quint16& localPort);
 
@@ -52,6 +53,7 @@ private:
     bool _domainServerRunning;
     
     QString _requirementsLastCheckedDateTime;
+    QString _updateNotification;
     SvgButton* _startServerButton;
     SvgButton* _stopServerButton;
     QLabel* _serverAddressLabel;
