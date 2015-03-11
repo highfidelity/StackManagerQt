@@ -256,7 +256,8 @@ void AppDelegate::stopScriptedAssignment(const QUuid& scriptID) {
 
 void AppDelegate::requestDomainServerID() {
     // ask the domain-server for its ID so we can update the accessible name
-    QUrl domainIDURL = DOMAIN_SERVER_BASE_URL + "/id";
+    emit domainAddressChanged();
+    QUrl domainIDURL = GlobalData::getInstance().getDomainServerBaseUrl() + "/id";
     
     qDebug() << "Requesting domain server ID from" << domainIDURL.toString();
     
@@ -358,7 +359,7 @@ void AppDelegate::sendNewIDToDomainServer() {
     // it is possible this will require authentication - if so there's nothing we can do about it for now
     QString settingsJSON = "{\"metaverse\": { \"id\": \"%1\", \"automatic_networking\": \"full\", \"local_port\": \"0\" } }";
 
-    QNetworkRequest settingsRequest(DOMAIN_SERVER_BASE_URL + "/settings.json");
+    QNetworkRequest settingsRequest(GlobalData::getInstance().getDomainServerBaseUrl() + "/settings.json");
     settingsRequest.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
     
     QNetworkReply* settingsReply = _manager->post(settingsRequest, settingsJSON.arg(_domainServerID).toLocal8Bit());

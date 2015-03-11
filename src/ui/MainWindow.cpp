@@ -54,7 +54,8 @@ MainWindow::MainWindow() :
     _settingsButton(NULL),
     _shareButton(NULL),
     _contentSetButton(NULL),
-    _logsWidget(NULL)
+    _logsWidget(NULL),
+    _localHttpPortSharedMem(NULL)
 {
     // Set build version
     QCoreApplication::setApplicationVersion(BUILD_VERSION);
@@ -179,6 +180,7 @@ MainWindow::MainWindow() :
     // update the current server address label and change it if the AppDelegate says the address has changed
     updateServerAddressLabel();
     connect(app, &AppDelegate::domainAddressChanged, this, &MainWindow::updateServerAddressLabel);
+    connect(app, &AppDelegate::domainAddressChanged, this, &MainWindow::updateServerBaseUrl);
     
     // if domain is missing an ID, let us switch our share button text
     connect(app, &AppDelegate::domainServerIDMissing, this, &MainWindow::toggleShareButtonText);
@@ -211,6 +213,15 @@ void MainWindow::updateServerAddressLabel() {
         _shareButton->setEnabled(true);
     }
 }
+
+void MainWindow::updateServerBaseUrl() {
+    quint16 localPort;
+
+    if (getLocalServerPortFromSharedMemory("domain-server.local-http-port", _localHttpPortSharedMem, localPort)) {
+        GlobalData::getInstance().setDomainServerBaseUrl(QString("http://localhost:") + QString::number(localPort));
+    }
+}
+
 
 void MainWindow::toggleShareButtonText() {
     _shareButton->setText(_shareButton->text() == SHARE_BUTTON_COPY_LINK_TEXT
@@ -349,5 +360,26 @@ void MainWindow::addAssignment() {
 }
 
 void MainWindow::openSettings() {
-    QDesktopServices::openUrl(QUrl(DOMAIN_SERVER_BASE_URL + "/settings/"));
+    QDesktopServices::openUrl(QUrl(GlobalData::getInstance().getDomainServerBaseUrl() + "/settings/"));
+}
+
+
+// XXX this code is duplicate of LimitedNodeList::getLocalServerPortFromSharedMemory
+bool MainWindow::getLocalServerPortFromSharedMemory(const QString key, QSharedMemory*& sharedMem, quint16& localPort) {
+    if (!sharedMem) {
+        sharedMem = new QSharedMemory(key, this);
+                
+        if (!sharedMem->attach(QSharedMemory::ReadOnly)) {
+            qWarning() << "Could not attach to shared memory at key" << key;
+        }
+    }
+
+    if (sharedMem->isAttached()) {
+        sharedMem->lock();
+        memcpy(&localPort, sharedMem->data(), sizeof(localPort));
+        sharedMem->unlock();
+        return true;
+    }
+
+    return false;
 }

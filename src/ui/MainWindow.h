@@ -17,6 +17,7 @@
 #include <QTabWidget>
 #include <QVBoxLayout>
 #include <QWidget>
+#include <QSharedMemory>
 
 
 #include "SvgButton.h"
@@ -28,6 +29,7 @@ public:
     
     void setRequirementsLastChecked(const QString& lastCheckedDateTime);
     QTabWidget* getLogsWidget() { return _logsWidget; }
+    bool getLocalServerPortFromSharedMemory(const QString key, QSharedMemory*& sharedMem, quint16& localPort);
 
 protected:
     virtual void paintEvent(QPaintEvent*);
@@ -37,6 +39,7 @@ private slots:
     void addAssignment();
     void openSettings();
     void updateServerAddressLabel();
+    void updateServerBaseUrl();
     void toggleShareButtonText();
     void handleShareButton();
     void showContentSetPage();
@@ -60,6 +63,8 @@ private:
     QTabWidget* _logsWidget;
     QVBoxLayout* _assignmentLayout;
     QScrollArea* _assignmentScrollArea;
+
+    QSharedMemory* _localHttpPortSharedMem; // memory shared with domain server
 };
 
 #endif

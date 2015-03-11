@@ -38,6 +38,9 @@ public:
     void setHifiBuildDirectory(const QString hifiBuildDirectory);
     bool isGetHifiBuildDirectorySet() { return _hifiBuildDirectory != ""; }
 
+    void setDomainServerBaseUrl(const QString domainServerBaseUrl) { _domainServerBaseUrl = domainServerBaseUrl; }
+    QString getDomainServerBaseUrl() { return _domainServerBaseUrl; }
+
 private:
     GlobalData();
 
@@ -65,6 +68,8 @@ private:
     QString _domainServerExecutable;
 
     QHash<QString, int> _availableAssignmentTypes;
+
+    QString _domainServerBaseUrl;
 };
 
 #endif

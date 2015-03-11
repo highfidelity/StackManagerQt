@@ -22,8 +22,6 @@
 
 class BackgroundProcess;
 
-const QString DOMAIN_SERVER_BASE_URL = "http://localhost:40100";
-
 class AppDelegate : public QApplication
 {
     Q_OBJECT
