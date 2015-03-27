@@ -30,7 +30,7 @@
 #include <QCommandLineParser>
 #include <QXmlStreamReader>
 
-const QString HIGH_FIDELITY_API_URL = "https://data.highfidelity.io/api/v1";
+const QString HIGH_FIDELITY_API_URL = "https://metaverse.highfidelity.com/api/v1";
 
 const QString CHECK_BUILDS_URL = "https://highfidelity.io/builds.xml";
 
