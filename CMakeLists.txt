@@ -1,6 +1,5 @@
 cmake_minimum_required(VERSION 2.8.11)
 
-
 if (POLICY CMP0028)
   cmake_policy(SET CMP0028 OLD)
 endif ()
