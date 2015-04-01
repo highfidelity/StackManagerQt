@@ -38,6 +38,7 @@ DownloadManager::DownloadManager(QNetworkAccessManager* manager, QWidget* parent
     layout->addWidget(label);
 
     _table = new QTableWidget;
+    _table->setEditTriggers(QTableWidget::NoEditTriggers);
     _table->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     _table->setColumnCount(3);
     _table->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
