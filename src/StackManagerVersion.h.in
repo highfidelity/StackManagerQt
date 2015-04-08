@@ -13,3 +13,4 @@
 
 const QString BUILD_VERSION = "@BUILD_SEQ@";
 const QString URL_BASE = "@BASE_URL@";
+const bool PR_BUILD = @PR_BUILD@;
