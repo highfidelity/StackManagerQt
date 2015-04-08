@@ -7,6 +7,7 @@
 //
 
 #include "GlobalData.h"
+#include "StackManagerVersion.h"
 
 #include <QMutex>
 #include <QStandardPaths>
@@ -19,7 +20,7 @@ GlobalData& GlobalData::getInstance() {
 }
 
 GlobalData::GlobalData() {
-    QString urlBase = "http://s3.amazonaws.com/hifi-public";
+    QString urlBase = URL_BASE;
 #if defined Q_OS_OSX
     _platform = "mac";
 #elif defined Q_OS_WIN32
