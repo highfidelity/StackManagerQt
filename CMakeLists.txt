@@ -39,6 +39,7 @@ include_directories(
 )
 
 if (DEFINED ENV{JOB_ID})
+  set(PR_BUILD "false")
   set(BUILD_SEQ $ENV{JOB_ID})
 else ()
   set(BUILD_SEQ "dev")
