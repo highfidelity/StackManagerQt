@@ -7,6 +7,7 @@
 //
 
 #include "GlobalData.h"
+#include "StackManagerVersion.h"
 
 #include <QMutex>
 #include <QStandardPaths>
@@ -19,7 +20,7 @@ GlobalData& GlobalData::getInstance() {
 }
 
 GlobalData::GlobalData() {
-    QString urlBase = "http://s3.amazonaws.com/hifi-public";
+    QString urlBase = URL_BASE;
 #if defined Q_OS_OSX
     _platform = "mac";
 #elif defined Q_OS_WIN32
@@ -32,7 +33,10 @@ GlobalData::GlobalData() {
     _assignmentClientExecutable = "assignment-client";
     _domainServerExecutable = "domain-server";
     QString applicationSupportDirectory = QStandardPaths::writableLocation(QStandardPaths::DataLocation);
-  
+    if (PR_BUILD) {
+        applicationSupportDirectory += "/pr-binaries";
+    }
+    
     _clientsLaunchPath = QDir::toNativeSeparators(applicationSupportDirectory + "/");
     _clientsResourcePath = QDir::toNativeSeparators(applicationSupportDirectory + "/" + _resourcePath);
 
@@ -61,10 +65,7 @@ GlobalData::GlobalData() {
     _logsPath = QDir::toNativeSeparators(_clientsLaunchPath + "logs/");
     _availableAssignmentTypes.insert("audio-mixer", 0);
     _availableAssignmentTypes.insert("avatar-mixer", 1);
-    _availableAssignmentTypes.insert("voxel-server", 3);
-    _availableAssignmentTypes.insert("particle-server", 4);
-    _availableAssignmentTypes.insert("metavoxel-server", 5);
-    _availableAssignmentTypes.insert("model-server", 6);
+    _availableAssignmentTypes.insert("entity-server", 6);
 
     // allow user to override path to binaries so that they can run their own builds
     _hifiBuildDirectory = "";
