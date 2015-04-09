@@ -65,7 +65,7 @@ GlobalData::GlobalData() {
     _logsPath = QDir::toNativeSeparators(_clientsLaunchPath + "logs/");
     _availableAssignmentTypes.insert("audio-mixer", 0);
     _availableAssignmentTypes.insert("avatar-mixer", 1);
-    _availableAssignmentTypes.insert("entities-server", 6);
+    _availableAssignmentTypes.insert("entity-server", 6);
 
     // allow user to override path to binaries so that they can run their own builds
     _hifiBuildDirectory = "";
