@@ -41,6 +41,7 @@ include_directories(
 if (DEFINED ENV{JOB_ID})
   set(PR_BUILD "false")
   set(BUILD_SEQ $ENV{JOB_ID})
+  set(BASE_URL "http://s3.amazonaws.com/hifi-public")
 else ()
   set(BUILD_SEQ "dev")
   if (DEFINED ENV{PR_NUMBER})
