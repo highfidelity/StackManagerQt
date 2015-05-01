@@ -204,6 +204,8 @@ void AppDelegate::toggleDomainServer(bool start) {
         }
     } else {
         _domainServerProcess->terminate();
+        _domainServerProcess->waitForFinished(3000);
+        _domainServerProcess->kill();
     }
 }
 
@@ -213,6 +215,8 @@ void AppDelegate::toggleAssignmentClientMonitor(bool start) {
         _window->getLogsWidget()->addTab(_acMonitorProcess->getLogViewer(), "Assignment Clients");
     } else {
         _acMonitorProcess->terminate();
+        _acMonitorProcess->waitForFinished(8000);
+        _acMonitorProcess->kill();
     }
 }
 
@@ -222,6 +226,8 @@ void AppDelegate::toggleScriptedAssignmentClients(bool start) {
             scriptProcess->start(scriptProcess->getLastArgList());
         } else {
             scriptProcess->terminate();
+            scriptProcess->waitForFinished(8000);
+            scriptProcess->kill();
         }
     }
 }
@@ -256,6 +262,8 @@ int AppDelegate::startScriptedAssignment(const QUuid& scriptID, const QString& p
 void AppDelegate::stopScriptedAssignment(BackgroundProcess* backgroundProcess) {
     _window->getLogsWidget()->removeTab(_window->getLogsWidget()->indexOf(backgroundProcess->getLogViewer()));
     backgroundProcess->terminate();
+    backgroundProcess->waitForFinished(3000);
+    backgroundProcess->kill();
 }
 
 void AppDelegate::stopScriptedAssignment(const QUuid& scriptID) {
@@ -419,7 +427,6 @@ void AppDelegate::handleContentSetDownloadFinished() {
         
         // stop the base assignment clients before we try to write the new content
         toggleAssignmentClientMonitor(false);
-        _acMonitorProcess->waitForFinished();
         
         if (modelFile.write(reply->readAll()) == -1) {
             qDebug() << "Error writing content set to" << modelFilename;
@@ -681,6 +688,13 @@ void AppDelegate::checkVersion() {
     _checkVersionTimer.start();
 }
 
+struct VersionInformation {
+    QString version;
+    QUrl downloadUrl;
+    QString timeStamp;
+    QString releaseNotes;
+};
+
 void AppDelegate::parseVersionXml() {
 
 #ifdef Q_OS_WIN32
@@ -698,12 +712,6 @@ void AppDelegate::parseVersionXml() {
     QNetworkReply* sender = qobject_cast<QNetworkReply*>(QObject::sender());
     QXmlStreamReader xml(sender);
 
-    struct VersionInformation {
-        QString version;
-        QUrl downloadUrl;
-        QString timeStamp;
-        QString releaseNotes;
-    };
     QHash<QString, VersionInformation> projectVersions;
 
     while (!xml.atEnd() && !xml.hasError()) {
