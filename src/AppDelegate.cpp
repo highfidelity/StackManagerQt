@@ -39,6 +39,8 @@ const QByteArray HIGH_FIDELITY_USER_AGENT = "Mozilla/5.0 (HighFidelity)";
 
 const int VERSION_CHECK_INTERVAL_MS = 86400000; // a day
 
+const int WAIT_FOR_CHILD_MSECS = 5000;
+
 void signalHandler(int param) {
     AppDelegate* app = AppDelegate::getInstance();
     
@@ -204,7 +206,7 @@ void AppDelegate::toggleDomainServer(bool start) {
         }
     } else {
         _domainServerProcess->terminate();
-        _domainServerProcess->waitForFinished(3000);
+        _domainServerProcess->waitForFinished(WAIT_FOR_CHILD_MSECS);
         _domainServerProcess->kill();
     }
 }
@@ -215,7 +217,7 @@ void AppDelegate::toggleAssignmentClientMonitor(bool start) {
         _window->getLogsWidget()->addTab(_acMonitorProcess->getLogViewer(), "Assignment Clients");
     } else {
         _acMonitorProcess->terminate();
-        _acMonitorProcess->waitForFinished(8000);
+        _acMonitorProcess->waitForFinished(WAIT_FOR_CHILD_MSECS);
         _acMonitorProcess->kill();
     }
 }
@@ -226,7 +228,7 @@ void AppDelegate::toggleScriptedAssignmentClients(bool start) {
             scriptProcess->start(scriptProcess->getLastArgList());
         } else {
             scriptProcess->terminate();
-            scriptProcess->waitForFinished(8000);
+            scriptProcess->waitForFinished(WAIT_FOR_CHILD_MSECS);
             scriptProcess->kill();
         }
     }
@@ -262,7 +264,7 @@ int AppDelegate::startScriptedAssignment(const QUuid& scriptID, const QString& p
 void AppDelegate::stopScriptedAssignment(BackgroundProcess* backgroundProcess) {
     _window->getLogsWidget()->removeTab(_window->getLogsWidget()->indexOf(backgroundProcess->getLogViewer()));
     backgroundProcess->terminate();
-    backgroundProcess->waitForFinished(3000);
+    backgroundProcess->waitForFinished(WAIT_FOR_CHILD_MSECS);
     backgroundProcess->kill();
 }
 
