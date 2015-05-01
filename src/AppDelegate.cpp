@@ -39,6 +39,8 @@ const QByteArray HIGH_FIDELITY_USER_AGENT = "Mozilla/5.0 (HighFidelity)";
 
 const int VERSION_CHECK_INTERVAL_MS = 86400000; // a day
 
+const int WAIT_FOR_CHILD_MSECS = 5000;
+
 void signalHandler(int param) {
     AppDelegate* app = AppDelegate::getInstance();
     
@@ -204,6 +206,8 @@ void AppDelegate::toggleDomainServer(bool start) {
         }
     } else {
         _domainServerProcess->terminate();
+        _domainServerProcess->waitForFinished(WAIT_FOR_CHILD_MSECS);
+        _domainServerProcess->kill();
     }
 }
 
@@ -213,6 +217,8 @@ void AppDelegate::toggleAssignmentClientMonitor(bool start) {
         _window->getLogsWidget()->addTab(_acMonitorProcess->getLogViewer(), "Assignment Clients");
     } else {
         _acMonitorProcess->terminate();
+        _acMonitorProcess->waitForFinished(WAIT_FOR_CHILD_MSECS);
+        _acMonitorProcess->kill();
     }
 }
 
@@ -222,6 +228,8 @@ void AppDelegate::toggleScriptedAssignmentClients(bool start) {
             scriptProcess->start(scriptProcess->getLastArgList());
         } else {
             scriptProcess->terminate();
+            scriptProcess->waitForFinished(WAIT_FOR_CHILD_MSECS);
+            scriptProcess->kill();
         }
     }
 }
@@ -256,6 +264,8 @@ int AppDelegate::startScriptedAssignment(const QUuid& scriptID, const QString& p
 void AppDelegate::stopScriptedAssignment(BackgroundProcess* backgroundProcess) {
     _window->getLogsWidget()->removeTab(_window->getLogsWidget()->indexOf(backgroundProcess->getLogViewer()));
     backgroundProcess->terminate();
+    backgroundProcess->waitForFinished(WAIT_FOR_CHILD_MSECS);
+    backgroundProcess->kill();
 }
 
 void AppDelegate::stopScriptedAssignment(const QUuid& scriptID) {
@@ -419,7 +429,6 @@ void AppDelegate::handleContentSetDownloadFinished() {
         
         // stop the base assignment clients before we try to write the new content
         toggleAssignmentClientMonitor(false);
-        _acMonitorProcess->waitForFinished();
         
         if (modelFile.write(reply->readAll()) == -1) {
             qDebug() << "Error writing content set to" << modelFilename;
@@ -681,6 +690,13 @@ void AppDelegate::checkVersion() {
     _checkVersionTimer.start();
 }
 
+struct VersionInformation {
+    QString version;
+    QUrl downloadUrl;
+    QString timeStamp;
+    QString releaseNotes;
+};
+
 void AppDelegate::parseVersionXml() {
 
 #ifdef Q_OS_WIN32
@@ -698,12 +714,6 @@ void AppDelegate::parseVersionXml() {
     QNetworkReply* sender = qobject_cast<QNetworkReply*>(QObject::sender());
     QXmlStreamReader xml(sender);
 
-    struct VersionInformation {
-        QString version;
-        QUrl downloadUrl;
-        QString timeStamp;
-        QString releaseNotes;
-    };
     QHash<QString, VersionInformation> projectVersions;
 
     while (!xml.atEnd() && !xml.hasError()) {
