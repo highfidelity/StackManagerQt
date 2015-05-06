@@ -24,7 +24,8 @@
     </div>
     <div class="row" id="content-set-panels">
       <script type="text/template" class="template">
-        <% _.each(sets, function(set, key){ %>
+        <% var index = 1 %>
+        <% _.each(sets, function(set, key, list){ %>
           <div class="col-xs-4" >
             <% var models_url = "http://hifi-public.s3.amazonaws.com/content-sets/" + key + "/models.svo" + (_.has(set, "path") ? "?path=" + set.path : '') %>
             <div class="panel panel-default" style="margin-top: 15px;">
@@ -43,6 +44,10 @@
               </div>
             </div>
           </div>
+          <% if (index % 3 == 0) { %>
+            <div class="clearfix"></div>
+          <% } %>
+          <% index++ %>
           <% }); %>
       </script>
     </div>
