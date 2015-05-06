@@ -4,6 +4,16 @@
     "description": "Start your galactic empire with this floating island and small oasis. Build it up and share it with your friends.",
     "path": "/1064.2,75.6,915.1/0.0000127922,0.71653,0.0000684642,0.697556"
   },
+  "low-poly-floating-island": {
+    "name": "Low-poly Floating Island",
+    "description": "Impressionism with polygons. If you want your virtual island to be nothing but a beautiful painting, this is the aesthetic for you.",
+    "path": "/8216.88,580.568,8264.03/-0.000192036,-0.838296,-0.000124955,0.545216"
+  },
+  "mid-century-modern-living-room": {
+    "name": "Mid-century Modern Living Room",
+    "description": "Timeless, mid-century modern beauty. Notice the classic Eames Recliner and the beautiful built-in shelving.",
+    "path": "/8206.3,22.7,8210.6,110.9"
+  },
   "bar" : {
     "name": "The Bar",
     "description": "A sexy club scene to plan your parties and live shows.",
