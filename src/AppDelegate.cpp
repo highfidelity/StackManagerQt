@@ -385,11 +385,11 @@ void AppDelegate::sendNewIDToDomainServer() {
     settingsRequest.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
 
     QNetworkReply* settingsReply = _manager->post(settingsRequest, settingsJSON.arg(_domainServerID).toLocal8Bit());
-    connect(settingsReply, &QNetworkReply::finished, this, &AppDelegate::handleDomainSettingsResponse);
+    connect(settingsReply, &QNetworkReply::finished, this, &AppDelegate::handleChangeDomainIDResponse);
 
 }
 
-void AppDelegate::handleDomainSettingsResponse() {
+void AppDelegate::handleChangeDomainIDResponse() {
     QNetworkReply* reply = qobject_cast<QNetworkReply*>(sender());
 
     if (reply->error() == QNetworkReply::NoError
@@ -402,6 +402,28 @@ void AppDelegate::handleDomainSettingsResponse() {
     } else {
         qDebug() << "Error saving ID with domain-server -" << reply->errorString();
         emit temporaryDomainResponse(false);
+    }
+}
+
+void AppDelegate::changeDomainServerIndexPath(const QString& newPath) {
+    QString pathsJSON = "{\"paths\": { \"\\\": \"%1\" } }";
+
+    QNetworkRequest settingsRequest(GlobalData::getInstance().getDomainServerBaseUrl() + "/settings.json");
+    settingsRequest.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+
+    QNetworkReply* settingsReply = _manager->post(settingsRequest, pathsJSON.arg(newPath).toLocal8Bit());
+    connect(settingsReply, &QNetworkReply::finished, this, &AppDelegate::handleChangeIndexPathResponse);
+}
+
+void AppDelegate::handleChangeIndexPathResponse() {
+    QNetworkReply* reply = qobject_cast<QNetworkReply*>(sender());
+
+    if (reply->error() == QNetworkReply::NoError
+        && reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt() == 200) {
+
+        qDebug() << "Successfully changed index path in domain-server.";
+    } else {
+        qDebug() << "Error changing domain-server index path-" << reply->errorString();
     }
 }
 
@@ -446,7 +468,7 @@ void AppDelegate::handleContentSetDownloadFinished() {
             // did we have a path in the query?
             // if so when we need to set the DS index path to that path
             QUrlQuery svoQuery(reply->url().query());
-            svoQuery.queryItemValue("path");
+            changeDomainServerIndexPath(svoQuery.queryItemValue("path"));
 
             emit domainAddressChanged();
 

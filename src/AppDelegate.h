@@ -60,7 +60,8 @@ private slots:
     void handleDomainIDReply();
     void handleDomainGetReply();
     void handleTempDomainReply();
-    void handleDomainSettingsResponse();
+    void handleChangeDomainIDResponse();
+    void handleChangeIndexPathResponse();
     void handleContentSetDownloadFinished();
     void checkVersion();
     void parseVersionXml();
@@ -71,6 +72,7 @@ private:
     void downloadLatestExecutablesAndRequirements();
 
     void sendNewIDToDomainServer();
+    void changeDomainServerIndexPath(const QString& newPath);
 
     QNetworkAccessManager* _manager;
     bool _qtReady;
