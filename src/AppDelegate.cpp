@@ -43,7 +43,7 @@ const int WAIT_FOR_CHILD_MSECS = 5000;
 
 void signalHandler(int param) {
     AppDelegate* app = AppDelegate::getInstance();
-    
+
     app->quit();
 }
 
@@ -51,10 +51,10 @@ static QTextStream* outStream = NULL;
 
 void myMessageHandler(QtMsgType type, const QMessageLogContext &context, const QString &msg) {
     Q_UNUSED(context);
-    
+
     QString dateTime = QDateTime::currentDateTime().toString("dd/MM/yyyy hh:mm:ss");
     QString txt = QString("[%1] ").arg(dateTime);
-    
+
     //in this function, you can write the message to any stream!
     switch (type) {
         case QtDebugMsg:
@@ -73,7 +73,7 @@ void myMessageHandler(QtMsgType type, const QMessageLogContext &context, const Q
             fprintf(stdout, "Fatal: %s\n", qPrintable(msg));
             txt += msg;
     }
-    
+
     if (outStream) {
         *outStream << txt << endl;
     }
@@ -98,21 +98,21 @@ AppDelegate::AppDelegate(int argc, char* argv[]) :
     setApplicationName("Stack Manager");
     setOrganizationName("High Fidelity");
     setOrganizationDomain("io.highfidelity.StackManager");
-    
+
     QFile* logFile = new QFile("last_run_log", this);
     if (!logFile->open(QIODevice::WriteOnly | QIODevice::Truncate)) {
         qDebug() << "Failed to open log file. Will not be able to write STDOUT/STDERR to file.";
     } else {
         outStream = new QTextStream(logFile);
     }
-    
-    
+
+
     qInstallMessageHandler(myMessageHandler);
     _domainServerProcess = new BackgroundProcess(GlobalData::getInstance().getDomainServerExecutablePath(), this);
     _acMonitorProcess = new BackgroundProcess(GlobalData::getInstance().getAssignmentClientExecutablePath(), this);
 
     _manager = new QNetworkAccessManager(this);
-    
+
     _window = new MainWindow();
 
     createExecutablePath();
@@ -127,33 +127,33 @@ AppDelegate::AppDelegate(int argc, char* argv[]) :
 
 AppDelegate::~AppDelegate() {
     QHash<QUuid, BackgroundProcess*>::iterator it = _scriptProcesses.begin();
-    
+
     qDebug() << "Stopping scripted assignment-client processes prior to quit.";
     while (it != _scriptProcesses.end()) {
         BackgroundProcess* backgroundProcess = it.value();
-        
+
         // remove from the script processes hash
         it = _scriptProcesses.erase(it);
-        
+
         // make sure the process is dead
         backgroundProcess->terminate();
         backgroundProcess->waitForFinished();
         backgroundProcess->deleteLater();
     }
-    
+
     qDebug() << "Stopping domain-server process prior to quit.";
     _domainServerProcess->terminate();
     _domainServerProcess->waitForFinished();
-    
+
     qDebug() << "Stopping assignment-client process prior to quit.";
     _acMonitorProcess->terminate();
     _acMonitorProcess->waitForFinished();
-    
+
     _domainServerProcess->deleteLater();
     _acMonitorProcess->deleteLater();
-    
+
     _window->deleteLater();
-    
+
     delete outStream;
     outStream = NULL;
 }
@@ -194,12 +194,12 @@ void AppDelegate::toggleStack(bool start) {
 }
 
 void AppDelegate::toggleDomainServer(bool start) {
-    
+
     if (start) {
         _domainServerProcess->start(QStringList());
-        
+
         _window->getLogsWidget()->addTab(_domainServerProcess->getLogViewer(), "Domain Server");
-        
+
         if (_domainServerID.isEmpty()) {
             // after giving the domain server some time to set up, ask for its ID
             QTimer::singleShot(1000, this, SLOT(requestDomainServerID()));
@@ -235,29 +235,29 @@ void AppDelegate::toggleScriptedAssignmentClients(bool start) {
 }
 
 int AppDelegate::startScriptedAssignment(const QUuid& scriptID, const QString& pool) {
-    
+
     BackgroundProcess* scriptProcess = _scriptProcesses.value(scriptID);
-    
+
     if (!scriptProcess) {
         QStringList argList = QStringList() << "-t" << "2";
         if (!pool.isEmpty()) {
             argList << "--pool" << pool;
         }
-        
+
         scriptProcess = new BackgroundProcess(GlobalData::getInstance().getAssignmentClientExecutablePath(),
                                               this);
-        
+
         scriptProcess->start(argList);
-        
+
         qint64 processID = scriptProcess->processId();
         _scriptProcesses.insert(scriptID, scriptProcess);
-        
+
         _window->getLogsWidget()->addTab(scriptProcess->getLogViewer(), "Scripted Assignment "
                                         + QString::number(processID));
     } else {
         scriptProcess->QProcess::start();
     }
-    
+
     return scriptProcess->processId();
 }
 
@@ -274,47 +274,47 @@ void AppDelegate::stopScriptedAssignment(const QUuid& scriptID) {
         stopScriptedAssignment(processValue);
     }
 }
-        
+
 
 void AppDelegate::requestDomainServerID() {
     // ask the domain-server for its ID so we can update the accessible name
     emit domainAddressChanged();
     QUrl domainIDURL = GlobalData::getInstance().getDomainServerBaseUrl() + "/id";
-    
+
     qDebug() << "Requesting domain server ID from" << domainIDURL.toString();
-    
+
     QNetworkReply* idReply = _manager->get(QNetworkRequest(domainIDURL));
-    
+
     connect(idReply, &QNetworkReply::finished, this, &AppDelegate::handleDomainIDReply);
 }
 
 void AppDelegate::requestTemporaryDomain() {
     QUrl tempDomainURL = HIGH_FIDELITY_API_URL + "/domains/temporary";
-    
+
     QNetworkRequest tempDomainRequest(tempDomainURL);
     tempDomainRequest.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
-    
+
     QNetworkReply* tempReply = _manager->post(tempDomainRequest, QByteArray());
     connect(tempReply, &QNetworkReply::finished, this, &AppDelegate::handleTempDomainReply);
 }
 
-const QString AppDelegate::getServerAddress(bool withPath) const {
-    return "hifi://" + _domainServerName + (withPath ? _sharePath : "");
+const QString AppDelegate::getServerAddress() const {
+    return "hifi://" + _domainServerName;
 }
 
 void AppDelegate::handleDomainIDReply() {
     QNetworkReply* reply = qobject_cast<QNetworkReply*>(sender());
-    
+
     if (reply->error() == QNetworkReply::NoError
         && reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt() == 200) {
         _domainServerID = QString(reply->readAll());
-        
+
         if (!_domainServerID.isEmpty()) {
-            
+
             if (!QUuid(_domainServerID).isNull()) {
                 qDebug() << "The domain server ID is" << _domainServerID;
                 qDebug() << "Asking High Fidelity API for associated domain name.";
-                
+
                 // fire off a request to high fidelity API to see if this domain exists with them
                 QUrl domainGetURL = HIGH_FIDELITY_API_URL + "/domains/" + _domainServerID;
                 QNetworkReply* domainGetReply = _manager->get(QNetworkRequest(domainGetURL));
@@ -332,43 +332,43 @@ void AppDelegate::handleDomainIDReply() {
 
 void AppDelegate::handleDomainGetReply() {
     QNetworkReply* reply = qobject_cast<QNetworkReply*>(sender());
-    
+
     if (reply->error() == QNetworkReply::NoError
         && reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt() == 200) {
         QJsonDocument responseDocument = QJsonDocument::fromJson(reply->readAll());
-        
+
         QJsonObject domainObject = responseDocument.object()["domain"].toObject();
-        
+
         const QString DOMAIN_NAME_KEY = "name";
         const QString DOMAIN_NAMES_KEY = "names";
-        
+
         if (domainObject.contains(DOMAIN_NAME_KEY)) {
             _domainServerName = domainObject[DOMAIN_NAME_KEY].toString();
         } else if (domainObject.contains(DOMAIN_NAMES_KEY)) {
             _domainServerName = domainObject[DOMAIN_NAMES_KEY].toArray()[0].toString();
         }
-        
+
         qDebug() << "This domain server's name is" << _domainServerName << "- updating address link.";
-        
+
         emit domainAddressChanged();
     }
 }
 
 void AppDelegate::handleTempDomainReply() {
     QNetworkReply* reply = qobject_cast<QNetworkReply*>(sender());
-    
+
     if (reply->error() == QNetworkReply::NoError
         && reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt() == 200) {
         QJsonDocument responseDocument = QJsonDocument::fromJson(reply->readAll());
-        
+
         const QString JSON_DOMAIN_KEY = "domain";
         QJsonObject domainObject = responseDocument.object()["data"].toObject()[JSON_DOMAIN_KEY].toObject();
-        
+
         _domainServerName = domainObject["name"].toString();
         _domainServerID = domainObject["id"].toString();
-        
+
         qDebug() << "Received new name" << _domainServerName << "and new ID" << _domainServerID << "for temp domain.";
-        
+
         sendNewIDToDomainServer();
     } else {
         qDebug() << "Error creating temporary domain -" << reply->errorString();
@@ -383,20 +383,20 @@ void AppDelegate::sendNewIDToDomainServer() {
 
     QNetworkRequest settingsRequest(GlobalData::getInstance().getDomainServerBaseUrl() + "/settings.json");
     settingsRequest.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
-    
+
     QNetworkReply* settingsReply = _manager->post(settingsRequest, settingsJSON.arg(_domainServerID).toLocal8Bit());
     connect(settingsReply, &QNetworkReply::finished, this, &AppDelegate::handleDomainSettingsResponse);
-    
+
 }
 
 void AppDelegate::handleDomainSettingsResponse() {
     QNetworkReply* reply = qobject_cast<QNetworkReply*>(sender());
-    
+
     if (reply->error() == QNetworkReply::NoError
         && reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt() == 200) {
-        
+
         qDebug() << "Successfully stored new ID in domain-server.";
-        
+
         emit temporaryDomainResponse(true);
         emit domainAddressChanged();
     } else {
@@ -417,19 +417,19 @@ void AppDelegate::downloadContentSet(const QUrl& contentSetURL) {
 
 void AppDelegate::handleContentSetDownloadFinished() {
     QNetworkReply* reply = qobject_cast<QNetworkReply*>(sender());
-    
+
     if (reply->error() == QNetworkReply::NoError
         && reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt() == 200) {
-        
+
         QString modelFilename = GlobalData::getInstance().getClientsResourcesPath() + "models.svo";
-        
+
         // write the model file
         QFile modelFile(modelFilename);
         modelFile.open(QIODevice::WriteOnly);
-        
+
         // stop the base assignment clients before we try to write the new content
         toggleAssignmentClientMonitor(false);
-        
+
         if (modelFile.write(reply->readAll()) == -1) {
             qDebug() << "Error writing content set to" << modelFilename;
             modelFile.close();
@@ -437,25 +437,24 @@ void AppDelegate::handleContentSetDownloadFinished() {
         } else {
             qDebug() << "Wrote new content set to" << modelFilename;
             modelFile.close();
-            
+
             // restart the assignment-client
             toggleAssignmentClientMonitor(true);
-            
+
             emit contentSetDownloadResponse(true);
-            
+
             // did we have a path in the query?
-            // if so when we copy our share link we should append it
+            // if so when we need to set the DS index path to that path
             QUrlQuery svoQuery(reply->url().query());
-            _sharePath = svoQuery.queryItemValue("path");
-            
+            svoQuery.queryItemValue("path");
+
             emit domainAddressChanged();
-            
+
             return;
         }
     }
-    
+
     // if we failed we should clean up the share path
-    _sharePath = QString();
     emit contentSetDownloadResponse(false);
     emit domainAddressChanged();
 }
