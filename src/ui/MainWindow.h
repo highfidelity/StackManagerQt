@@ -26,7 +26,7 @@ class MainWindow : public QWidget {
     Q_OBJECT
 public:
     MainWindow();
-    
+
     void setRequirementsLastChecked(const QString& lastCheckedDateTime);
     void setUpdateNotification(const QString& updateNotification);
     QTabWidget* getLogsWidget() { return _logsWidget; }
@@ -44,14 +44,15 @@ private slots:
     void toggleShareButtonText();
     void handleShareButton();
     void showContentSetPage();
+
     void handleTemporaryDomainCreateResponse(bool wasSuccessful);
     void handleContentSetDownloadResponse(bool wasSuccessful);
-
+    void handleIndexPathChangeResponse(bool wasSuccessful);
 private:
     void toggleContent(bool isRunning);
-    
+
     bool _domainServerRunning;
-    
+
     QString _requirementsLastCheckedDateTime;
     QString _updateNotification;
     SvgButton* _startServerButton;

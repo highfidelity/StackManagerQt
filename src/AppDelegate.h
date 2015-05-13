@@ -36,16 +36,16 @@ public:
     void toggleDomainServer(bool start);
     void toggleAssignmentClientMonitor(bool start);
     void toggleScriptedAssignmentClients(bool start);
-    
+
     int startScriptedAssignment(const QUuid& scriptID, const QString& pool = QString());
     void stopScriptedAssignment(BackgroundProcess* backgroundProcess);
     void stopScriptedAssignment(const QUuid& scriptID);
-    
+
     void stopStack() { toggleStack(false); }
-    
+
     void requestTemporaryDomain();
-    
-    const QString getServerAddress(bool withPath = true) const;
+
+    const QString getServerAddress() const;
 public slots:
     void downloadContentSet(const QUrl& contentSetURL);
 signals:
@@ -53,6 +53,7 @@ signals:
     void domainAddressChanged();
     void temporaryDomainResponse(bool wasSuccessful);
     void contentSetDownloadResponse(bool wasSuccessful);
+    void indexPathChangeResponse(bool wasSuccessful);
     void stackStateChanged(bool isOn);
 private slots:
     void onFileSuccessfullyInstalled(const QUrl& url);
@@ -60,7 +61,8 @@ private slots:
     void handleDomainIDReply();
     void handleDomainGetReply();
     void handleTempDomainReply();
-    void handleDomainSettingsResponse();
+    void handleChangeDomainIDResponse();
+    void handleChangeIndexPathResponse();
     void handleContentSetDownloadFinished();
     void checkVersion();
     void parseVersionXml();
@@ -69,8 +71,9 @@ private:
     void parseCommandLine();
     void createExecutablePath();
     void downloadLatestExecutablesAndRequirements();
-    
+
     void sendNewIDToDomainServer();
+    void changeDomainServerIndexPath(const QString& newPath);
 
     QNetworkAccessManager* _manager;
     bool _qtReady;
@@ -80,14 +83,12 @@ private:
     BackgroundProcess* _domainServerProcess;
     BackgroundProcess* _acMonitorProcess;
     QHash<QUuid, BackgroundProcess*> _scriptProcesses;
-    
+
     QString _domainServerID;
     QString _domainServerName;
-    
+
     QTimer _checkVersionTimer;
 
-    QString _sharePath;
-    
     MainWindow* _window;
 };
 
