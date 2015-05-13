@@ -406,13 +406,15 @@ void AppDelegate::handleChangeDomainIDResponse() {
 }
 
 void AppDelegate::changeDomainServerIndexPath(const QString& newPath) {
-    QString pathsJSON = "{\"paths\": { \"/\": { \"viewpoint\": \"%1\" }}}";
+    if (!newPath.isEmpty()) {
+        QString pathsJSON = "{\"paths\": { \"/\": { \"viewpoint\": \"%1\" }}}";
 
-    QNetworkRequest settingsRequest(GlobalData::getInstance().getDomainServerBaseUrl() + "/settings.json");
-    settingsRequest.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+        QNetworkRequest settingsRequest(GlobalData::getInstance().getDomainServerBaseUrl() + "/settings.json");
+        settingsRequest.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
 
-    QNetworkReply* settingsReply = _manager->post(settingsRequest, pathsJSON.arg(newPath).toLocal8Bit());
-    connect(settingsReply, &QNetworkReply::finished, this, &AppDelegate::handleChangeIndexPathResponse);
+        QNetworkReply* settingsReply = _manager->post(settingsRequest, pathsJSON.arg(newPath).toLocal8Bit());
+        connect(settingsReply, &QNetworkReply::finished, this, &AppDelegate::handleChangeIndexPathResponse);
+    }
 }
 
 void AppDelegate::handleChangeIndexPathResponse() {
