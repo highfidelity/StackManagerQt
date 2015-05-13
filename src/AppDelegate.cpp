@@ -406,7 +406,7 @@ void AppDelegate::handleChangeDomainIDResponse() {
 }
 
 void AppDelegate::changeDomainServerIndexPath(const QString& newPath) {
-    QString pathsJSON = "{\"paths\": { \"\\\": \"%1\" } }";
+    QString pathsJSON = "{\"paths\": { \"/\": { \"viewpoint\": \"%1\" }}}";
 
     QNetworkRequest settingsRequest(GlobalData::getInstance().getDomainServerBaseUrl() + "/settings.json");
     settingsRequest.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
