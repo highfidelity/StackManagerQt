@@ -191,6 +191,9 @@ MainWindow::MainWindow() :
     // handle response for content set download
     connect(app, &AppDelegate::contentSetDownloadResponse, this, &MainWindow::handleContentSetDownloadResponse);
 
+    // handle response for index path change
+    connect(app, &AppDelegate::indexPathChangeResponse, this, &MainWindow::handleIndexPathChangeResponse);
+
     // handle stack state change
     connect(app, &AppDelegate::stackStateChanged, this, &MainWindow::toggleContent);
 
@@ -288,6 +291,15 @@ void MainWindow::handleContentSetDownloadResponse(bool wasSuccessful) {
                                  "Your new content set has been downloaded and your assignment-clients have been restarted.");
     } else {
         QMessageBox::information(this, "Error", "There was a problem downloading that content set. Please try again!");
+    }
+}
+
+void MainWindow::handleIndexPathChangeResponse(bool wasSuccessful) {
+    if (!wasSuccessful) {
+        QString errorMessage = "The content set was downloaded successfully but there was a problem changing your \
+            domain-server index path.\n\nIf you want users to jump to the new content set when they come to your domain \
+            please try and re-download the content set.";
+        QMessageBox::information(this, "Error", errorMessage);
     }
 }
 

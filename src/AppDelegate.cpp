@@ -422,8 +422,10 @@ void AppDelegate::handleChangeIndexPathResponse() {
         && reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt() == 200) {
 
         qDebug() << "Successfully changed index path in domain-server.";
+        emit indexPathChangeResponse(true);
     } else {
         qDebug() << "Error changing domain-server index path-" << reply->errorString();
+        emit indexPathChangeResponse(false);
     }
 }
 

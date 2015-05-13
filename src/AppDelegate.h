@@ -53,6 +53,7 @@ signals:
     void domainAddressChanged();
     void temporaryDomainResponse(bool wasSuccessful);
     void contentSetDownloadResponse(bool wasSuccessful);
+    void indexPathChangeResponse(bool wasSuccessful);
     void stackStateChanged(bool isOn);
 private slots:
     void onFileSuccessfullyInstalled(const QUrl& url);
