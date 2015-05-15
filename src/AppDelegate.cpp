@@ -340,12 +340,16 @@ void AppDelegate::handleDomainGetReply() {
         QJsonObject domainObject = responseDocument.object()["domain"].toObject();
 
         const QString DOMAIN_NAME_KEY = "name";
-        const QString DOMAIN_NAMES_KEY = "names";
+        const QString DOMAIN_OWNER_PLACES_KEY = "owner_places";
 
         if (domainObject.contains(DOMAIN_NAME_KEY)) {
             _domainServerName = domainObject[DOMAIN_NAME_KEY].toString();
-        } else if (domainObject.contains(DOMAIN_NAMES_KEY)) {
-            _domainServerName = domainObject[DOMAIN_NAMES_KEY].toArray()[0].toString();
+        } else if (domainObject.contains(DOMAIN_OWNER_PLACES_KEY)) {
+            QJsonArray ownerPlaces = domainObject[DOMAIN_OWNER_PLACES_KEY].toArray();
+            if (ownerPlaces.size() > 0) {
+                _domainServerName = ownerPlaces[0].toObject()[DOMAIN_NAME_KEY].toString();
+
+            }
         }
 
         qDebug() << "This domain server's name is" << _domainServerName << "- updating address link.";
