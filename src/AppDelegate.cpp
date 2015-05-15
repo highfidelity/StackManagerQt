@@ -348,7 +348,6 @@ void AppDelegate::handleDomainGetReply() {
             QJsonArray ownerPlaces = domainObject[DOMAIN_OWNER_PLACES_KEY].toArray();
             if (ownerPlaces.size() > 0) {
                 _domainServerName = ownerPlaces[0].toObject()[DOMAIN_NAME_KEY].toString();
-
             }
         }
 
