@@ -59,7 +59,7 @@ private:
     QPushButton* _viewLogsButton;
     QPushButton* _settingsButton;
     QPushButton* _runAssignmentButton;
-    QPushButton* _shareButton;
+    QPushButton* _copyLinkButton;
     QPushButton* _contentSetButton;
     QTabWidget* _logsWidget;
     QVBoxLayout* _assignmentLayout;

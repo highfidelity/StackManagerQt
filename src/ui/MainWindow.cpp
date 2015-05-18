@@ -50,7 +50,7 @@ MainWindow::MainWindow() :
     _serverAddressLabel(NULL),
     _viewLogsButton(NULL),
     _settingsButton(NULL),
-    _shareButton(NULL),
+    _copyLinkButton(NULL),
     _contentSetButton(NULL),
     _logsWidget(NULL),
     _localHttpPortSharedMem(NULL)
@@ -121,15 +121,15 @@ MainWindow::MainWindow() :
     _settingsButton->setGeometry(_viewLogsButton->geometry().right(), secondaryButtonY,
                                  _settingsButton->width(), _settingsButton->height());
 
-    _shareButton = new QPushButton(SHARE_BUTTON_COPY_LINK_TEXT, this);
-    _shareButton->adjustSize();
-    _shareButton->setGeometry(_settingsButton->geometry().right(), secondaryButtonY,
-                              _shareButton->width(), _shareButton->height());
+    _copyLinkButton = new QPushButton(SHARE_BUTTON_COPY_LINK_TEXT, this);
+    _copyLinkButton->adjustSize();
+    _copyLinkButton->setGeometry(_settingsButton->geometry().right(), secondaryButtonY,
+                              _copyLinkButton->width(), _copyLinkButton->height());
 
     // add the drop down for content sets
     _contentSetButton = new QPushButton("Get content set", this);
     _contentSetButton->adjustSize();
-    _contentSetButton->setGeometry(_shareButton->geometry().right(), secondaryButtonY,
+    _contentSetButton->setGeometry(_copyLinkButton->geometry().right(), secondaryButtonY,
                                    _contentSetButton->width(), _contentSetButton->height());
 
     const int ASSIGNMENT_BUTTON_TOP_MARGIN = 10;
@@ -168,7 +168,7 @@ MainWindow::MainWindow() :
 
     connect(_startServerButton, &QPushButton::clicked, this, &MainWindow::toggleDomainServerButton);
     connect(_stopServerButton, &QPushButton::clicked, this, &MainWindow::toggleDomainServerButton);
-    connect(_shareButton, &QPushButton::clicked, this, &MainWindow::handleCopyLinkButton);
+    connect(_copyLinkButton, &QPushButton::clicked, this, &MainWindow::handleCopyLinkButton);
     connect(_contentSetButton, &QPushButton::clicked, this, &MainWindow::showContentSetPage);
     connect(_viewLogsButton, &QPushButton::clicked, _logsWidget, &QTabWidget::show);
     connect(_settingsButton, &QPushButton::clicked, this, &MainWindow::openSettings);\
@@ -273,7 +273,7 @@ void MainWindow::toggleContent(bool isRunning) {
     _serverAddressLabel->setVisible(isRunning);
     _viewLogsButton->setVisible(isRunning);
     _settingsButton->setVisible(isRunning);
-    _shareButton->setVisible(isRunning);
+    _copyLinkButton->setVisible(isRunning);
     _contentSetButton->setVisible(isRunning);
     _runAssignmentButton->setVisible(isRunning);
     _assignmentScrollArea->setVisible(isRunning);
