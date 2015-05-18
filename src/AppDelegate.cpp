@@ -422,7 +422,7 @@ void AppDelegate::handleContentSetDownloadFinished() {
         }
     }
 
-    // if we failed we should clean up the share path
+    // if we failed we need to emit our signal with a fail
     emit contentSetDownloadResponse(false);
     emit domainAddressChanged();
 }
