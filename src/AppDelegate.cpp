@@ -288,16 +288,6 @@ void AppDelegate::requestDomainServerID() {
     connect(idReply, &QNetworkReply::finished, this, &AppDelegate::handleDomainIDReply);
 }
 
-void AppDelegate::requestTemporaryDomain() {
-    QUrl tempDomainURL = HIGH_FIDELITY_API_URL + "/domains/temporary";
-
-    QNetworkRequest tempDomainRequest(tempDomainURL);
-    tempDomainRequest.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
-
-    QNetworkReply* tempReply = _manager->post(tempDomainRequest, QByteArray());
-    connect(tempReply, &QNetworkReply::finished, this, &AppDelegate::handleTempDomainReply);
-}
-
 const QString AppDelegate::getServerAddress() const {
     return "hifi://" + _domainServerName;
 }
@@ -354,57 +344,6 @@ void AppDelegate::handleDomainGetReply() {
         qDebug() << "This domain server's name is" << _domainServerName << "- updating address link.";
 
         emit domainAddressChanged();
-    }
-}
-
-void AppDelegate::handleTempDomainReply() {
-    QNetworkReply* reply = qobject_cast<QNetworkReply*>(sender());
-
-    if (reply->error() == QNetworkReply::NoError
-        && reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt() == 200) {
-        QJsonDocument responseDocument = QJsonDocument::fromJson(reply->readAll());
-
-        const QString JSON_DOMAIN_KEY = "domain";
-        QJsonObject domainObject = responseDocument.object()["data"].toObject()[JSON_DOMAIN_KEY].toObject();
-
-        _domainServerName = domainObject["name"].toString();
-        _domainServerID = domainObject["id"].toString();
-
-        qDebug() << "Received new name" << _domainServerName << "and new ID" << _domainServerID << "for temp domain.";
-
-        sendNewIDToDomainServer();
-    } else {
-        qDebug() << "Error creating temporary domain -" << reply->errorString();
-        emit temporaryDomainResponse(false);
-    }
-}
-
-void AppDelegate::sendNewIDToDomainServer() {
-    // setup a JSON object for the settings we are posting
-    // it is possible this will require authentication - if so there's nothing we can do about it for now
-    QString settingsJSON = "{\"metaverse\": { \"id\": \"%1\", \"automatic_networking\": \"full\", \"local_port\": \"0\" } }";
-
-    QNetworkRequest settingsRequest(GlobalData::getInstance().getDomainServerBaseUrl() + "/settings.json");
-    settingsRequest.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
-
-    QNetworkReply* settingsReply = _manager->post(settingsRequest, settingsJSON.arg(_domainServerID).toLocal8Bit());
-    connect(settingsReply, &QNetworkReply::finished, this, &AppDelegate::handleChangeDomainIDResponse);
-
-}
-
-void AppDelegate::handleChangeDomainIDResponse() {
-    QNetworkReply* reply = qobject_cast<QNetworkReply*>(sender());
-
-    if (reply->error() == QNetworkReply::NoError
-        && reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt() == 200) {
-
-        qDebug() << "Successfully stored new ID in domain-server.";
-
-        emit temporaryDomainResponse(true);
-        emit domainAddressChanged();
-    } else {
-        qDebug() << "Error saving ID with domain-server -" << reply->errorString();
-        emit temporaryDomainResponse(false);
     }
 }
 

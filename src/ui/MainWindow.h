@@ -41,11 +41,9 @@ private slots:
     void openSettings();
     void updateServerAddressLabel();
     void updateServerBaseUrl();
-    void toggleShareButtonText();
-    void handleShareButton();
+    void handleCopyLinkButton();
     void showContentSetPage();
 
-    void handleTemporaryDomainCreateResponse(bool wasSuccessful);
     void handleContentSetDownloadResponse(bool wasSuccessful);
     void handleIndexPathChangeResponse(bool wasSuccessful);
 private:

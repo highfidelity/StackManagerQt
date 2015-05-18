@@ -43,15 +43,12 @@ public:
 
     void stopStack() { toggleStack(false); }
 
-    void requestTemporaryDomain();
-
     const QString getServerAddress() const;
 public slots:
     void downloadContentSet(const QUrl& contentSetURL);
 signals:
     void domainServerIDMissing();
     void domainAddressChanged();
-    void temporaryDomainResponse(bool wasSuccessful);
     void contentSetDownloadResponse(bool wasSuccessful);
     void indexPathChangeResponse(bool wasSuccessful);
     void stackStateChanged(bool isOn);
@@ -60,8 +57,6 @@ private slots:
     void requestDomainServerID();
     void handleDomainIDReply();
     void handleDomainGetReply();
-    void handleTempDomainReply();
-    void handleChangeDomainIDResponse();
     void handleChangeIndexPathResponse();
     void handleContentSetDownloadFinished();
     void checkVersion();
@@ -72,7 +67,6 @@ private:
     void createExecutablePath();
     void downloadLatestExecutablesAndRequirements();
 
-    void sendNewIDToDomainServer();
     void changeDomainServerIndexPath(const QString& newPath);
 
     QNetworkAccessManager* _manager;
