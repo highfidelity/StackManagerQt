@@ -40,9 +40,7 @@ const QColor darkGrayColor = QColor(84, 84, 84);
 const QColor redColor = QColor(189, 54, 78);
 const QColor greenColor = QColor(3, 150, 126);
 
-const QString SHARE_BUTTON_SHARE_TEXT = "Share";
 const QString SHARE_BUTTON_COPY_LINK_TEXT = "Copy link";
-const QString SHARE_BUTTON_REQUESTING_TEXT = "Requesting...";
 
 MainWindow::MainWindow() :
     QWidget(),
@@ -52,7 +50,7 @@ MainWindow::MainWindow() :
     _serverAddressLabel(NULL),
     _viewLogsButton(NULL),
     _settingsButton(NULL),
-    _shareButton(NULL),
+    _copyLinkButton(NULL),
     _contentSetButton(NULL),
     _logsWidget(NULL),
     _localHttpPortSharedMem(NULL)
@@ -123,15 +121,15 @@ MainWindow::MainWindow() :
     _settingsButton->setGeometry(_viewLogsButton->geometry().right(), secondaryButtonY,
                                  _settingsButton->width(), _settingsButton->height());
 
-    _shareButton = new QPushButton(SHARE_BUTTON_COPY_LINK_TEXT, this);
-    _shareButton->adjustSize();
-    _shareButton->setGeometry(_settingsButton->geometry().right(), secondaryButtonY,
-                              _shareButton->width(), _shareButton->height());
+    _copyLinkButton = new QPushButton(SHARE_BUTTON_COPY_LINK_TEXT, this);
+    _copyLinkButton->adjustSize();
+    _copyLinkButton->setGeometry(_settingsButton->geometry().right(), secondaryButtonY,
+                              _copyLinkButton->width(), _copyLinkButton->height());
 
     // add the drop down for content sets
     _contentSetButton = new QPushButton("Get content set", this);
     _contentSetButton->adjustSize();
-    _contentSetButton->setGeometry(_shareButton->geometry().right(), secondaryButtonY,
+    _contentSetButton->setGeometry(_copyLinkButton->geometry().right(), secondaryButtonY,
                                    _contentSetButton->width(), _contentSetButton->height());
 
     const int ASSIGNMENT_BUTTON_TOP_MARGIN = 10;
@@ -170,7 +168,7 @@ MainWindow::MainWindow() :
 
     connect(_startServerButton, &QPushButton::clicked, this, &MainWindow::toggleDomainServerButton);
     connect(_stopServerButton, &QPushButton::clicked, this, &MainWindow::toggleDomainServerButton);
-    connect(_shareButton, &QPushButton::clicked, this, &MainWindow::handleShareButton);
+    connect(_copyLinkButton, &QPushButton::clicked, this, &MainWindow::handleCopyLinkButton);
     connect(_contentSetButton, &QPushButton::clicked, this, &MainWindow::showContentSetPage);
     connect(_viewLogsButton, &QPushButton::clicked, _logsWidget, &QTabWidget::show);
     connect(_settingsButton, &QPushButton::clicked, this, &MainWindow::openSettings);\
@@ -181,12 +179,6 @@ MainWindow::MainWindow() :
     updateServerAddressLabel();
     connect(app, &AppDelegate::domainAddressChanged, this, &MainWindow::updateServerAddressLabel);
     connect(app, &AppDelegate::domainAddressChanged, this, &MainWindow::updateServerBaseUrl);
-
-    // if domain is missing an ID, let us switch our share button text
-    connect(app, &AppDelegate::domainServerIDMissing, this, &MainWindow::toggleShareButtonText);
-
-    // handle temp domain response for window
-    connect(app, &AppDelegate::temporaryDomainResponse, this, &MainWindow::handleTemporaryDomainCreateResponse);
 
     // handle response for content set download
     connect(app, &AppDelegate::contentSetDownloadResponse, this, &MainWindow::handleContentSetDownloadResponse);
@@ -210,11 +202,6 @@ void MainWindow::updateServerAddressLabel() {
                                  "<span style=\"color:#29957e;\">" + app->getServerAddress() +
                                  "</span></a></p></body></html>");
     _serverAddressLabel->adjustSize();
-
-    if (!app->getServerAddress().contains("localhost")) {
-        _shareButton->setText(SHARE_BUTTON_COPY_LINK_TEXT);
-        _shareButton->setEnabled(true);
-    }
 }
 
 void MainWindow::updateServerBaseUrl() {
@@ -226,29 +213,9 @@ void MainWindow::updateServerBaseUrl() {
 }
 
 
-void MainWindow::toggleShareButtonText() {
-    _shareButton->setText(_shareButton->text() == SHARE_BUTTON_COPY_LINK_TEXT
-                          ? SHARE_BUTTON_SHARE_TEXT : SHARE_BUTTON_COPY_LINK_TEXT);
-}
-
-void MainWindow::handleShareButton() {
-    if (_shareButton->text() == SHARE_BUTTON_COPY_LINK_TEXT) {
-        QClipboard *clipboard = QApplication::clipboard();
-        clipboard->setText(AppDelegate::getInstance()->getServerAddress());
-    } else {
-        // user hit the share button, show them a dialog asking them if they want to get a temp name
-        const QString SHARE_DIALOG_MESSAGE = "This will create a temporary domain name (valid for 30 days)"
-            " so other users can easily connect to your domain.\n\nThis will restart your domain with"
-            " the new temporary name and ID.\n\nDo you want to continue?";
-        QMessageBox::StandardButton clickedButton = QMessageBox::question(this, "Share domain",  SHARE_DIALOG_MESSAGE);
-
-        if (clickedButton == QMessageBox::Yes) {
-            _shareButton->setText(SHARE_BUTTON_REQUESTING_TEXT);
-            _shareButton->setEnabled(false);
-
-            AppDelegate::getInstance()->requestTemporaryDomain();
-        }
-    }
+void MainWindow::handleCopyLinkButton() {
+    QClipboard *clipboard = QApplication::clipboard();
+    clipboard->setText(AppDelegate::getInstance()->getServerAddress());
 }
 
 void MainWindow::showContentSetPage() {
@@ -271,18 +238,6 @@ void MainWindow::showContentSetPage() {
     connect(contentSetWebView->page(), &QWebPage::linkClicked, contentSetWebView, &QWebView::close);
 
     contentSetWebView->show();
-}
-
-void MainWindow::handleTemporaryDomainCreateResponse(bool wasSuccessful) {
-    if (wasSuccessful) {
-        _shareButton->setEnabled(true);
-        _shareButton->setText(SHARE_BUTTON_COPY_LINK_TEXT);
-    } else {
-        _shareButton->setEnabled(true);
-        _shareButton->setText(SHARE_BUTTON_SHARE_TEXT);
-
-        QMessageBox::information(this, "Error", "There was a problem sharing your domain. Please try again!");
-    }
 }
 
 void MainWindow::handleContentSetDownloadResponse(bool wasSuccessful) {
@@ -318,7 +273,7 @@ void MainWindow::toggleContent(bool isRunning) {
     _serverAddressLabel->setVisible(isRunning);
     _viewLogsButton->setVisible(isRunning);
     _settingsButton->setVisible(isRunning);
-    _shareButton->setVisible(isRunning);
+    _copyLinkButton->setVisible(isRunning);
     _contentSetButton->setVisible(isRunning);
     _runAssignmentButton->setVisible(isRunning);
     _assignmentScrollArea->setVisible(isRunning);

@@ -41,11 +41,9 @@ private slots:
     void openSettings();
     void updateServerAddressLabel();
     void updateServerBaseUrl();
-    void toggleShareButtonText();
-    void handleShareButton();
+    void handleCopyLinkButton();
     void showContentSetPage();
 
-    void handleTemporaryDomainCreateResponse(bool wasSuccessful);
     void handleContentSetDownloadResponse(bool wasSuccessful);
     void handleIndexPathChangeResponse(bool wasSuccessful);
 private:
@@ -61,7 +59,7 @@ private:
     QPushButton* _viewLogsButton;
     QPushButton* _settingsButton;
     QPushButton* _runAssignmentButton;
-    QPushButton* _shareButton;
+    QPushButton* _copyLinkButton;
     QPushButton* _contentSetButton;
     QTabWidget* _logsWidget;
     QVBoxLayout* _assignmentLayout;
