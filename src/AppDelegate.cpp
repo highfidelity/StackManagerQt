@@ -441,6 +441,7 @@ void AppDelegate::onFileSuccessfullyInstalled(const QUrl& url) {
     if (_qtReady && _acReady && _dsReady && _dsResourcesReady) {
         _window->setRequirementsLastChecked(QDateTime::currentDateTime().toString());
         _window->show();
+        toggleStack(true);
     }
 }
 
@@ -627,6 +628,7 @@ void AppDelegate::downloadLatestExecutablesAndRequirements() {
     } else {
         _window->setRequirementsLastChecked(QDateTime::currentDateTime().toString());
         _window->show();
+        toggleStack(true);
     }
 
     if (!_qtReady) {
