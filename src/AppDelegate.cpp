@@ -32,7 +32,7 @@
 
 const QString HIGH_FIDELITY_API_URL = "https://metaverse.highfidelity.com/api/v1";
 
-const QString CHECK_BUILDS_URL = "https://highfidelity.io/builds.xml";
+const QString CHECK_BUILDS_URL = "https://highfidelity.com/builds.xml";
 
 // Use a custom User-Agent to avoid ModSecurity filtering, e.g. by hosting providers.
 const QByteArray HIGH_FIDELITY_USER_AGENT = "Mozilla/5.0 (HighFidelity)";
