@@ -60,7 +60,7 @@ MainWindow::MainWindow() :
 
     setWindowTitle("High Fidelity Stack Manager (build " + QCoreApplication::applicationVersion() + ")");
     const int WINDOW_FIXED_WIDTH = 640;
-    const int WINDOW_INITIAL_HEIGHT = 200;
+    const int WINDOW_INITIAL_HEIGHT = 170;
 
     if (GlobalData::getInstance().getPlatform() == "win") {
         const int windowsYCoord = 30;
@@ -258,7 +258,7 @@ void MainWindow::paintEvent(QPaintEvent *) {
     QFont font("Helvetica");
     font.insertSubstitutions("Helvetica", QStringList() << "Arial" << "sans-serif");
 
-    int currentY = (_domainServerRunning ?  _viewLogsButton->geometry().bottom() : _startServerButton->geometry().bottom())
+    int currentY = (_domainServerRunning ? _viewLogsButton->geometry().bottom() : _startServerButton->geometry().bottom())
         + REQUIREMENTS_TEXT_TOP_MARGIN;
 
     if (!_updateNotification.isEmpty()) {
@@ -271,13 +271,13 @@ void MainWindow::paintEvent(QPaintEvent *) {
         painter.setPen(redColor);
 
         QString updateNotificationString = ">>> " + _updateNotification + " <<<";
-        float fontWidth = QFontMetrics(font).width(updateNotificationString);
+        float fontWidth = QFontMetrics(font).width(updateNotificationString) + GLOBAL_X_PADDING;
 
-        painter.drawText(QRectF(_domainServerRunning ? GLOBAL_X_PADDING : ((width() - fontWidth) / 2.0f),
+        painter.drawText(QRectF(_domainServerRunning ? ((width() - fontWidth) / 2.0f) : GLOBAL_X_PADDING,
                                 currentY,
                                 fontWidth,
                                 QFontMetrics(font).height()),
-                                ">>> " + _updateNotification + " <<<");
+                                updateNotificationString);
     }
     else if (!_requirementsLastCheckedDateTime.isEmpty()) {
         font.setBold(false);
@@ -296,12 +296,6 @@ void MainWindow::paintEvent(QPaintEvent *) {
                                 fontWidth,
                                 QFontMetrics(font).height()),
                                 "Requirements are up to date as of " + _requirementsLastCheckedDateTime);
-    }
-
-    if (_domainServerRunning) {
-        currentY += HORIZONTAL_RULE_TOP_MARGIN;
-        painter.setPen(lightGrayColor);
-        painter.drawLine(0, currentY, width(), currentY);
     }
 }
 
