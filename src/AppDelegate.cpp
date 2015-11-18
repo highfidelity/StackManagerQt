@@ -213,7 +213,7 @@ void AppDelegate::toggleDomainServer(bool start) {
 
 void AppDelegate::toggleAssignmentClientMonitor(bool start) {
     if (start) {
-        _acMonitorProcess->start(QStringList() << "--min" << "4");
+        _acMonitorProcess->start(QStringList() << "--min" << "5");
         _window->getLogsWidget()->addTab(_acMonitorProcess->getLogViewer(), "Assignment Clients");
     } else {
         _acMonitorProcess->terminate();
