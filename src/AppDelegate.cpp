@@ -72,6 +72,8 @@ void myMessageHandler(QtMsgType type, const QMessageLogContext &context, const Q
         case QtFatalMsg:
             fprintf(stdout, "Fatal: %s\n", qPrintable(msg));
             txt += msg;
+        default:
+            break;
     }
 
     if (outStream) {
